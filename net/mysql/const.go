@@ -1,0 +1,222 @@
+package mysql
+
+const (
+	MinProtocolVersion byte   = 10
+	MaxPayloadLen      int    = 1<<24 - 1
+	TimeFormat         string = "2016-08-25 14:30:00"
+	ServerVersion      string = "5.5.5-SaaShard"
+	SourceInfo         string = "github.com/berkaroad/saashard"
+)
+
+const (
+	OK_HEADER          byte = 0x00
+	ERR_HEADER         byte = 0xff
+	EOF_HEADER         byte = 0xfe
+	LocalInFile_HEADER byte = 0xfb
+)
+
+const (
+	SERVER_STATUS_IN_TRANS             uint16 = 0x0001
+	SERVER_STATUS_AUTOCOMMIT           uint16 = 0x0002
+	SERVER_MORE_RESULTS_EXISTS         uint16 = 0x0008
+	SERVER_STATUS_NO_GOOD_INDEX_USED   uint16 = 0x0010
+	SERVER_STATUS_NO_INDEX_USED        uint16 = 0x0020
+	SERVER_STATUS_CURSOR_EXISTS        uint16 = 0x0040
+	SERVER_STATUS_LAST_ROW_SEND        uint16 = 0x0080
+	SERVER_STATUS_DB_DROPPED           uint16 = 0x0100
+	SERVER_STATUS_NO_BACKSLASH_ESCAPED uint16 = 0x0200
+	SERVER_STATUS_METADATA_CHANGED     uint16 = 0x0400
+	SERVER_QUERY_WAS_SLOW              uint16 = 0x0800
+	SERVER_PS_OUT_PARAMS               uint16 = 0x1000
+)
+
+const (
+	COM_SLEEP byte = iota
+	COM_QUIT
+	COM_INIT_DB
+	COM_QUERY
+	COM_FIELD_LIST
+	COM_CREATE_DB
+	COM_DROP_DB
+	COM_REFRESH
+	COM_SHUTDOWN
+	COM_STATISTICS
+	COM_PROCESS_INFO
+	COM_CONNECT
+	COM_PROCESS_KILL
+	COM_DEBUG
+	COM_PING
+	COM_TIME
+	COM_DELAYED_INSERT
+	COM_CHANGE_USER
+	COM_BINLOG_DUMP
+	COM_TABLE_DUMP
+	COM_CONNECT_OUT
+	COM_REGISTER_SLAVE
+	COM_STMT_PREPARE
+	COM_STMT_EXECUTE
+	COM_STMT_SEND_LONG_DATA
+	COM_STMT_CLOSE
+	COM_STMT_RESET
+	COM_SET_OPTION
+	COM_STMT_FETCH
+	COM_DAEMON
+	COM_BINLOG_DUMP_GTID
+	COM_RESET_CONNECTION
+)
+
+const (
+	CLIENT_LONG_PASSWORD uint32 = 1 << iota
+	CLIENT_FOUND_ROWS
+	CLIENT_LONG_FLAG
+	CLIENT_CONNECT_WITH_DB
+	CLIENT_NO_SCHEMA
+	CLIENT_COMPRESS
+	CLIENT_ODBC
+	CLIENT_LOCAL_FILES
+	CLIENT_IGNORE_SPACE
+	CLIENT_PROTOCOL_41
+	CLIENT_INTERACTIVE
+	CLIENT_SSL
+	CLIENT_IGNORE_SIGPIPE
+	CLIENT_TRANSACTIONS
+	CLIENT_RESERVED
+	CLIENT_SECURE_CONNECTION
+	CLIENT_MULTI_STATEMENTS
+	CLIENT_MULTI_RESULTS
+	CLIENT_PS_MULTI_RESULTS
+	CLIENT_PLUGIN_AUTH
+	CLIENT_CONNECT_ATTRS
+	CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA
+	CLIENT_CAN_HANDLE_EXPIRED_PASSWORDS
+	CLIENT_SESSION_TRACK
+	CLIENT_DEPRECATE_EOF
+)
+
+//https://dev.mysql.com/doc/internals/en/com-query-response.html#packet-Protocol::ColumnType
+const (
+	MYSQL_TYPE_DECIMAL byte = iota
+	MYSQL_TYPE_TINY
+	MYSQL_TYPE_SHORT
+	MYSQL_TYPE_LONG
+	MYSQL_TYPE_FLOAT
+	MYSQL_TYPE_DOUBLE
+	MYSQL_TYPE_NULL
+	MYSQL_TYPE_TIMESTAMP
+	MYSQL_TYPE_LONGLONG
+	MYSQL_TYPE_INT24
+	MYSQL_TYPE_DATE
+	MYSQL_TYPE_TIME
+	MYSQL_TYPE_DATETIME
+	MYSQL_TYPE_YEAR
+	MYSQL_TYPE_NEWDATE
+	MYSQL_TYPE_VARCHAR
+	MYSQL_TYPE_BIT
+)
+
+const (
+	MYSQL_TYPE_NEWDECIMAL byte = iota + 0xf6
+	MYSQL_TYPE_ENUM
+	MYSQL_TYPE_SET
+	MYSQL_TYPE_TINY_BLOB
+	MYSQL_TYPE_MEDIUM_BLOB
+	MYSQL_TYPE_LONG_BLOB
+	MYSQL_TYPE_BLOB
+	MYSQL_TYPE_VAR_STRING
+	MYSQL_TYPE_STRING
+	MYSQL_TYPE_GEOMETRY
+)
+
+const (
+	NOT_NULL_FLAG uint16 = 1 << iota
+	PRI_KEY_FLAG
+	UNIQUE_KEY_FLAG
+	MUlTIPLE_KEY_FLAG
+	BLOB_FLAG
+	UNSIGNED_FLAG
+	ZERO_FILL_FLAG
+	BINARY_FLAG
+	ENUM_FLAG
+	AUTO_INCREMENT_FLAG
+	TIMESTAMP_FLAG
+	SET_FLAG
+
+	PART_KEY_FLAG int = 1 << (14 + iota)
+	NUM_OR_GROUP_FLAG
+	UNIQUE_FLAG
+)
+
+const (
+	AUTH_NAME = "mysql_native_password"
+)
+
+var (
+	TK_ID_INSERT   = 1
+	TK_ID_UPDATE   = 2
+	TK_ID_DELETE   = 3
+	TK_ID_REPLACE  = 4
+	TK_ID_SET      = 5
+	TK_ID_BEGIN    = 6
+	TK_ID_COMMIT   = 7
+	TK_ID_ROLLBACK = 8
+	TK_ID_ADMIN    = 9
+	TK_ID_USE      = 10
+
+	TK_ID_SELECT      = 11
+	TK_ID_START       = 12
+	TK_ID_TRANSACTION = 13
+	TK_ID_SHOW        = 14
+
+	PARSE_TOKEN_MAP = map[string]int{
+		"insert":      TK_ID_INSERT,
+		"update":      TK_ID_UPDATE,
+		"delete":      TK_ID_DELETE,
+		"replace":     TK_ID_REPLACE,
+		"set":         TK_ID_SET,
+		"begin":       TK_ID_BEGIN,
+		"commit":      TK_ID_COMMIT,
+		"rollback":    TK_ID_ROLLBACK,
+		"admin":       TK_ID_ADMIN,
+		"select":      TK_ID_SELECT,
+		"use":         TK_ID_USE,
+		"start":       TK_ID_START,
+		"transaction": TK_ID_TRANSACTION,
+		"show":        TK_ID_SHOW,
+	}
+	// '*'
+	COMMENT_PREFIX uint8 = 42
+	COMMENT_STRING       = "*"
+
+	//
+	TK_STR_FROM = "from"
+	TK_STR_INTO = "into"
+	TK_STR_SET  = "set"
+
+	TK_STR_TRANSACTION    = "transaction"
+	TK_STR_LAST_INSERT_ID = "last_insert_id()"
+	TK_STR_MASTER_HINT    = "*master*"
+
+	SET_KEY_WORDS = map[string]struct{}{
+		"names": struct{}{},
+
+		"character_set_results":           struct{}{},
+		"@@character_set_results":         struct{}{},
+		"@@session.character_set_results": struct{}{},
+
+		"character_set_client":           struct{}{},
+		"@@character_set_client":         struct{}{},
+		"@@session.character_set_client": struct{}{},
+
+		"character_set_connection":           struct{}{},
+		"@@character_set_connection":         struct{}{},
+		"@@session.character_set_connection": struct{}{},
+
+		"autocommit":           struct{}{},
+		"@@autocommit":         struct{}{},
+		"@@session.autocommit": struct{}{},
+	}
+)
+
+const (
+	DONTESCAPE = byte(255)
+)

@@ -1,0 +1,102 @@
+# server listen addr
+bind_ip : 0.0.0.0
+proxy_port : 6051
+admin_port : 16051
+
+# if set log_path, the sql log will write into log_path/sql.log,the system log
+# will write into log_path/sys.log
+#log_path : /opt/saashard/log
+
+# log level[debug|info|warn|error],default error
+log_level : debug
+
+# if set log_sql(on|off) off,the sql log will not output
+log_sql: on
+ 
+# only log the query that take more than slow_log_time ms
+#slow_log_time : 100
+
+# only allow this ip list ip to connect saashard
+#allow_ips: 127.0.0.1
+
+# the charset of saashard, if you don't set this item
+# the default charset of saashard is utf8.
+#proxy_charset: gbk
+
+# data host list
+hosts :
+- 
+    name : host1
+
+    # default max conns for mysql server
+    max_conns_limit : 32
+
+    # all mysql in a node must have the same user and password
+    user :  root 
+    password : root
+
+    # master represents a real mysql master server 
+    master : 192.168.0.124:3306
+
+    # slave represents a real mysql salve server,and the number after '@' is 
+    # read load weight of this slave.
+    slaves : ["192.168.0.124:3304@2", "192.168.0.124:3305@3"]
+    down_after_noalive : 32
+
+- 
+    name : host2
+
+    # default max conns for mysql server
+    max_conns_limit : 32
+
+    # all mysql in a node must have the same user and password
+    user :  root 
+    password : root
+
+    # master represents a real mysql master server 
+    master : 192.168.0.134:3306
+
+    # slaves represents a real mysql salve server,and the number after '@' is 
+    # read load weight of this slave.
+    slaves : ["192.168.0.134:3304@2", "192.168.0.134:3305@3"]
+    down_after_noalive : 32
+
+# data node list
+nodes : 
+- 
+    name : db1_node1
+    host : host1
+    database : db1_0001
+
+- 
+    name : db1_node2
+    host : host1
+    database : db1_0002
+
+- 
+    name : db2_node1
+    host : host2
+    database : db2_node1
+
+- 
+    name : db2_node2
+    host : host2
+    database : db2_0002
+
+# schema defines sharding rules, the db is the sharding table database.
+schemas : 
+- 
+    name : db1
+    user : db1
+    password : 123456
+    # shard
+    shard_key : tenantid
+    shard_type : hash
+    nodes: ["db1_node1", "db1_node2"]
+
+- 
+    name : db2
+    user : db2
+    password : 123456
+    # no shard, only split read and write
+    nodes: ["db2_node1"]
