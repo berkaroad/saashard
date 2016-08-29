@@ -24,4 +24,6 @@ _testmain.go
 *.prof
 
 .vscode
+bin/*
 conf/dev.yaml
+cmd/saashard/debug
