@@ -19,7 +19,7 @@ type Resultset struct {
 	FieldNames map[string]int
 	Values     [][]interface{}
 
-	RowDatas []*RowData
+	Rows []*Row
 }
 
 func (r *Resultset) RowNumber() int {

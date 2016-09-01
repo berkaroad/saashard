@@ -1,4 +1,4 @@
-package server
+package proxy
 
 import (
 	"strings"
@@ -35,11 +35,11 @@ func (c *ClientConn) ShowStatus(sql string) (bool, error) {
 			Decimals:     0}
 
 		if strings.Contains(strings.ToUpper(sql), "'SSL_CIPHER'") {
-			result.RowDatas = make([]*mysql.RowData, 1)
-			rowData := mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("Ssl_cipher"))
-			rowData.AppendStringValue([]byte(""))
-			result.RowDatas[0] = rowData
+			result.Rows = make([]*mysql.Row, 1)
+			row := mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("Ssl_cipher")
+			row.AppendStringValue("")
+			result.Rows[0] = row
 		} else if strings.Contains(strings.ToUpper(sql), "'SSL_CIPHER'") {
 
 		}

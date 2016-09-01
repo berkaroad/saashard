@@ -1,4 +1,4 @@
-package server
+package proxy
 
 import (
 	"strings"
@@ -157,48 +157,39 @@ func (c *ClientConn) ShowIndexes(sql string) (bool, error) {
 			Decimals:     0}
 
 		if strings.HasSuffix(strings.ToUpper(sql), "`KGW2`.`BUY_LIST`") {
-			result.RowDatas = make([]*mysql.RowData, 3)
+			result.Rows = make([]*mysql.Row, 2)
 
-			rowData := mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("buy_list"))
-			rowData.AppendUIntValue(0)
-			rowData.AppendStringValue([]byte("PRIMARY"))
-			rowData.AppendUIntValue(1)
-			rowData.AppendStringValue([]byte("buy_id"))
-			rowData.AppendStringValue([]byte("A"))
-			rowData.AppendUIntValue(1947)
-			rowData.AppendNullValue()
-			rowData.AppendNullValue()
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte("BTREE"))
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte(""))
-			result.RowDatas[0] = rowData
+			row := mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("buy_list")
+			row.AppendUIntValue(0)
+			row.AppendStringValue("PRIMARY")
+			row.AppendUIntValue(1)
+			row.AppendStringValue("buy_id")
+			row.AppendStringValue("A")
+			row.AppendUIntValue(1947)
+			row.AppendNullValue()
+			row.AppendNullValue()
+			row.AppendStringValue("")
+			row.AppendStringValue("BTREE")
+			row.AppendStringValue("")
+			row.AppendStringValue("")
+			result.Rows[0] = row
 
-			rowData = mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("buy_list"))
-			rowData.AppendUIntValue(1)
-			rowData.AppendStringValue([]byte("index3"))
-			rowData.AppendUIntValue(1)
-			rowData.AppendStringValue([]byte("client_id"))
-			rowData.AppendStringValue([]byte("A"))
-			rowData.AppendUIntValue(243)
-			rowData.AppendNullValue()
-			rowData.AppendNullValue()
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte("BTREE"))
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte(""))
-			result.RowDatas[1] = rowData
-
-			rowData = mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("supplier"))
-			rowData.AppendStringValue([]byte("varchar(100)"))
-			rowData.AppendStringValue([]byte("NO"))
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte(""))
-			result.RowDatas[2] = rowData
+			row = mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("buy_list")
+			row.AppendUIntValue(1)
+			row.AppendStringValue("index3")
+			row.AppendUIntValue(1)
+			row.AppendStringValue("client_id")
+			row.AppendStringValue("A")
+			row.AppendUIntValue(243)
+			row.AppendNullValue()
+			row.AppendNullValue()
+			row.AppendStringValue("")
+			row.AppendStringValue("BTREE")
+			row.AppendStringValue("")
+			row.AppendStringValue("")
+			result.Rows[1] = row
 		}
 		return true, c.pkg.WriteResultSet(c.capability, c.status, result)
 	}

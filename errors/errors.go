@@ -74,3 +74,8 @@ type SqlError struct {
 func (e *SqlError) Error() string {
 	return fmt.Sprintf("ERROR %d (%s): %s", e.Code, e.State, e.Message)
 }
+
+// New returns an error that formats as the given text.
+func New(text string) error {
+	return errors.New(text)
+}

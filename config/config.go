@@ -44,12 +44,24 @@ type NodeConfig struct {
 
 // SchemaConfig is a config of schema.
 type SchemaConfig struct {
-	Name      string   `yaml:"name"`
-	User      string   `yaml:"user"`
-	Password  string   `yaml:"password"`
-	ShardKey  string   `yaml:"shard_key"`
-	ShardType string   `yaml:"shard_type"`
-	Nodes     []string `yaml:"nodes"`
+	Name      string        `yaml:"name"`
+	User      string        `yaml:"user"`
+	Password  string        `yaml:"password"`
+	ShardKey  string        `yaml:"shard_key"`
+	ShardType string        `yaml:"shard_type"`
+	Nodes     []string      `yaml:"nodes"`
+	Tables    []TableConfig `yaml:"tables"`
+	Views     []ViewConfig  `yaml:"views"`
+}
+
+// TableConfig is a config of table
+type TableConfig struct {
+	Name string `yaml:"name"`
+}
+
+// ViewConfig is a config of view
+type ViewConfig struct {
+	Name string `yaml:"name"`
 }
 
 // ParseConfigData is to parse config data.

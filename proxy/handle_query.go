@@ -1,4 +1,4 @@
-package server
+package proxy
 
 import (
 	"fmt"
@@ -44,10 +44,10 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 			Flags:        mysql.NOT_NULL_FLAG,
 			Decimals:     31}
 
-		result.RowDatas = make([]*mysql.RowData, 1)
-		rowData := mysql.NewRowData(false, result.Resultset.Fields)
-		rowData.AppendStringValue([]byte(c.user))
-		result.RowDatas[0] = rowData
+		result.Rows = make([]*mysql.Row, 1)
+		row := mysql.NewTextRow(result.Resultset.Fields)
+		row.AppendStringValue(c.user)
+		result.Rows[0] = row
 		return c.pkg.WriteResultSet(c.capability, c.status, result)
 	} else if strings.HasPrefix(strings.ToUpper(sql), "SELECT VERSION()") {
 		result.Resultset = new(mysql.Resultset)
@@ -63,10 +63,10 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 			Flags:        mysql.NOT_NULL_FLAG,
 			Decimals:     31}
 
-		result.RowDatas = make([]*mysql.RowData, 1)
-		rowData := mysql.NewRowData(false, result.Resultset.Fields)
-		rowData.AppendStringValue([]byte(mysql.ServerVersion))
-		result.RowDatas[0] = rowData
+		result.Rows = make([]*mysql.Row, 1)
+		row := mysql.NewTextRow(result.Resultset.Fields)
+		row.AppendStringValue(mysql.ServerVersion)
+		result.Rows[0] = row
 		return c.pkg.WriteResultSet(c.capability, c.status, result)
 	} else if strings.HasPrefix(strings.ToUpper(sql), "SELECT CONNECTION_ID()") {
 		result.Resultset = new(mysql.Resultset)
@@ -82,10 +82,10 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 			Flags:        mysql.NOT_NULL_FLAG | mysql.BINARY_FLAG,
 			Decimals:     0}
 
-		result.RowDatas = make([]*mysql.RowData, 1)
-		rowData := mysql.NewRowData(false, result.Resultset.Fields)
-		rowData.AppendUIntValue(uint64(c.connectionId))
-		result.RowDatas[0] = rowData
+		result.Rows = make([]*mysql.Row, 1)
+		row := mysql.NewTextRow(result.Resultset.Fields)
+		row.AppendUIntValue(uint64(c.connectionId))
+		result.Rows[0] = row
 		return c.pkg.WriteResultSet(c.capability, c.status, result)
 	} else if strings.HasPrefix(strings.ToUpper(sql), "SHOW DATABASE") {
 		result.Resultset = new(mysql.Resultset)
@@ -101,15 +101,17 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 			Flags:        mysql.NOT_NULL_FLAG,
 			Decimals:     0}
 
-		result.RowDatas = make([]*mysql.RowData, 0, len(c.schemas))
+		result.Rows = make([]*mysql.Row, 0, len(c.schemas))
 		for name := range c.schemas {
-			rowData := mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte(name))
-			result.RowDatas = append(result.RowDatas, rowData)
+			row := mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue(name)
+			result.Rows = append(result.Rows, row)
 		}
 
 		return c.pkg.WriteResultSet(c.capability, c.status, result)
-	} else if strings.HasPrefix(strings.ToUpper(sql), "SHOW") || strings.HasPrefix(strings.ToUpper(sql), "SELECT") {
+	} else if strings.HasPrefix(strings.ToUpper(sql), "SHOW") ||
+		strings.HasPrefix(strings.ToUpper(sql), "SELECT") ||
+		strings.HasPrefix(strings.ToUpper(sql), "EXPLAIN") {
 		if isMatched, err := c.ShowVariables(sql); isMatched {
 			return err
 		}

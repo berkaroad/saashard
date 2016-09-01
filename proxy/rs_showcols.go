@@ -1,4 +1,4 @@
-package server
+package proxy
 
 import (
 	"strings"
@@ -79,34 +79,34 @@ func (c *ClientConn) ShowColumns(sql string) (bool, error) {
 			Decimals:     0}
 
 		if strings.HasSuffix(strings.ToUpper(sql), "`KGW2`.`BUY_LIST`") {
-			result.RowDatas = make([]*mysql.RowData, 3)
+			result.Rows = make([]*mysql.Row, 3)
 
-			rowData := mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("buy_id"))
-			rowData.AppendStringValue([]byte("bigint(20)"))
-			rowData.AppendStringValue([]byte("NO"))
-			rowData.AppendStringValue([]byte("PRI"))
-			rowData.AppendNullValue()
-			rowData.AppendStringValue([]byte("auto_increment"))
-			result.RowDatas[0] = rowData
+			row := mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("buy_id")
+			row.AppendStringValue("bigint(20)")
+			row.AppendStringValue("NO")
+			row.AppendStringValue("PRI")
+			row.AppendNullValue()
+			row.AppendStringValue("auto_increment")
+			result.Rows[0] = row
 
-			rowData = mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("client_id"))
-			rowData.AppendStringValue([]byte("int(11)"))
-			rowData.AppendStringValue([]byte("NO"))
-			rowData.AppendStringValue([]byte("MUL"))
-			rowData.AppendNullValue()
-			rowData.AppendStringValue([]byte(""))
-			result.RowDatas[1] = rowData
+			row = mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("client_id")
+			row.AppendStringValue("int(11)")
+			row.AppendStringValue("NO")
+			row.AppendStringValue("MUL")
+			row.AppendNullValue()
+			row.AppendStringValue("")
+			result.Rows[1] = row
 
-			rowData = mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("supplier"))
-			rowData.AppendStringValue([]byte("varchar(100)"))
-			rowData.AppendStringValue([]byte("NO"))
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte(""))
-			result.RowDatas[2] = rowData
+			row = mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("supplier")
+			row.AppendStringValue("varchar(100)")
+			row.AppendStringValue("NO")
+			row.AppendStringValue("")
+			row.AppendStringValue("")
+			row.AppendStringValue("")
+			result.Rows[2] = row
 		}
 		return true, c.pkg.WriteResultSet(c.capability, c.status, result)
 	}
@@ -219,43 +219,43 @@ func (c *ClientConn) ShowFullColumns(sql string) (bool, error) {
 			Decimals:     0}
 
 		if strings.HasSuffix(strings.ToUpper(sql), "`KGW2`.`BUY_LIST`") {
-			result.RowDatas = make([]*mysql.RowData, 3)
+			result.Rows = make([]*mysql.Row, 3)
 
-			rowData := mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("buy_id"))
-			rowData.AppendStringValue([]byte("bigint(20)"))
-			rowData.AppendNullValue()
-			rowData.AppendStringValue([]byte("NO"))
-			rowData.AppendStringValue([]byte("PRI"))
-			rowData.AppendNullValue()
-			rowData.AppendStringValue([]byte("auto_increment"))
-			rowData.AppendStringValue([]byte("select,insert,update,references"))
-			rowData.AppendStringValue([]byte(""))
-			result.RowDatas[0] = rowData
+			row := mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("buy_id")
+			row.AppendStringValue("bigint(20)")
+			row.AppendNullValue()
+			row.AppendStringValue("NO")
+			row.AppendStringValue("PRI")
+			row.AppendNullValue()
+			row.AppendStringValue("auto_increment")
+			row.AppendStringValue("select,insert,update,references")
+			row.AppendStringValue("")
+			result.Rows[0] = row
 
-			rowData = mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("client_id"))
-			rowData.AppendStringValue([]byte("int(11)"))
-			rowData.AppendNullValue()
-			rowData.AppendStringValue([]byte("NO"))
-			rowData.AppendStringValue([]byte("MUL"))
-			rowData.AppendNullValue()
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte("select,insert,update,references"))
-			rowData.AppendStringValue([]byte("租户ID"))
-			result.RowDatas[1] = rowData
+			row = mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("client_id")
+			row.AppendStringValue("int(11)")
+			row.AppendNullValue()
+			row.AppendStringValue("NO")
+			row.AppendStringValue("MUL")
+			row.AppendNullValue()
+			row.AppendStringValue("")
+			row.AppendStringValue("select,insert,update,references")
+			row.AppendStringValue("租户ID")
+			result.Rows[1] = row
 
-			rowData = mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("supplier"))
-			rowData.AppendStringValue([]byte("varchar(100)"))
-			rowData.AppendNullValue()
-			rowData.AppendStringValue([]byte("NO"))
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte(""))
-			rowData.AppendStringValue([]byte("select,insert,update,references"))
-			rowData.AppendStringValue([]byte("供应商"))
-			result.RowDatas[2] = rowData
+			row = mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("supplier")
+			row.AppendStringValue("varchar(100)")
+			row.AppendNullValue()
+			row.AppendStringValue("NO")
+			row.AppendStringValue("")
+			row.AppendStringValue("")
+			row.AppendStringValue("")
+			row.AppendStringValue("select,insert,update,references")
+			row.AppendStringValue("供应商")
+			result.Rows[2] = row
 		}
 		return true, c.pkg.WriteResultSet(c.capability, c.status, result)
 	}

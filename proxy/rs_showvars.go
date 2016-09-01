@@ -1,4 +1,4 @@
-package server
+package proxy
 
 import (
 	"strings"
@@ -36,47 +36,47 @@ func (c *ClientConn) ShowVariables(sql string) (bool, error) {
 			Decimals:     0}
 
 		if strings.HasPrefix(strings.ToUpper(sql), "SHOW GLOBAL VARIABLES") {
-			result.RowDatas = make([]*mysql.RowData, 2)
+			result.Rows = make([]*mysql.Row, 2)
 
-			rowData := mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("auto_increment_increment"))
-			rowData.AppendStringValue([]byte("1"))
-			result.RowDatas[0] = rowData
+			row := mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("auto_increment_increment")
+			row.AppendStringValue("1")
+			result.Rows[0] = row
 
-			rowData = mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("auto_increment_offset"))
-			rowData.AppendStringValue([]byte("1"))
-			result.RowDatas[1] = rowData
+			row = mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("auto_increment_offset")
+			row.AppendStringValue("1")
+			result.Rows[1] = row
 		} else if strings.Contains(strings.ToUpper(sql), "'LOWER_CASE_TABLE_NAMES'") {
-			result.RowDatas = make([]*mysql.RowData, 1)
-			rowData := mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("lower_case_table_names"))
-			rowData.AppendUIntValue(1)
-			result.RowDatas[0] = rowData
+			result.Rows = make([]*mysql.Row, 1)
+			row := mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("lower_case_table_names")
+			row.AppendUIntValue(1)
+			result.Rows[0] = row
 		} else if strings.Contains(strings.ToUpper(sql), "'SQL_MODE'") {
-			result.RowDatas = make([]*mysql.RowData, 1)
-			rowData := mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("sql_mode"))
-			rowData.AppendStringValue([]byte("NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"))
-			result.RowDatas[0] = rowData
+			result.Rows = make([]*mysql.Row, 1)
+			row := mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("sql_mode")
+			row.AppendStringValue("NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION")
+			result.Rows[0] = row
 		} else if strings.Contains(strings.ToUpper(sql), "'VERSION_COMMENT'") {
-			result.RowDatas = make([]*mysql.RowData, 1)
-			rowData := mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("version_comment"))
-			rowData.AppendStringValue([]byte(mysql.SourceInfo))
-			result.RowDatas[0] = rowData
+			result.Rows = make([]*mysql.Row, 1)
+			row := mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("version_comment")
+			row.AppendStringValue(mysql.SourceInfo)
+			result.Rows[0] = row
 		} else if strings.Contains(strings.ToUpper(sql), "'VERSION'") {
-			result.RowDatas = make([]*mysql.RowData, 1)
-			rowData := mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("version"))
-			rowData.AppendStringValue([]byte(mysql.ServerVersion))
-			result.RowDatas[0] = rowData
+			result.Rows = make([]*mysql.Row, 1)
+			row := mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("version")
+			row.AppendStringValue(mysql.ServerVersion)
+			result.Rows[0] = row
 		} else if strings.Contains(strings.ToUpper(sql), "'VERSION_COMPILE_OS'") {
-			result.RowDatas = make([]*mysql.RowData, 1)
-			rowData := mysql.NewRowData(false, result.Resultset.Fields)
-			rowData.AppendStringValue([]byte("version_compile_os"))
-			rowData.AppendStringValue([]byte("debian-linux-gnu"))
-			result.RowDatas[0] = rowData
+			result.Rows = make([]*mysql.Row, 1)
+			row := mysql.NewTextRow(result.Resultset.Fields)
+			row.AppendStringValue("version_compile_os")
+			row.AppendStringValue("debian-linux-gnu")
+			result.Rows[0] = row
 		}
 
 		return true, c.pkg.WriteResultSet(c.capability, c.status, result)

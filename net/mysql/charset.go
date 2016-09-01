@@ -1,9 +1,12 @@
 package mysql
 
-type CollationId uint8
+// https://dev.mysql.com/doc/refman/5.7/en/charset-charsets.html
 
-//charset key is charset name and value is default collation id
-var CharsetIds = map[string]CollationId{
+// CollationID collation Id
+type CollationID uint8
+
+// CharsetIds key is charset name and value is default collation id
+var CharsetIds = map[string]CollationID{
 	"big5":     1,
 	"dec8":     3,
 	"cp850":    4,
@@ -46,7 +49,7 @@ var CharsetIds = map[string]CollationId{
 	"eucjpms":  97,
 }
 
-//charset key is charset name and value is default collation name
+// Charsets key is charset name and value is default collation name
 var Charsets = map[string]string{
 	"big5":     "big5_chinese_ci",
 	"dec8":     "dec8_swedish_ci",
@@ -90,7 +93,8 @@ var Charsets = map[string]string{
 	"eucjpms":  "eucjpms_japanese_ci",
 }
 
-var Collations = map[CollationId]string{
+// Collations key is collation id, value is collation name.
+var Collations = map[CollationID]string{
 	1:   "big5_chinese_ci",
 	2:   "latin2_czech_cs",
 	3:   "dec8_swedish_ci",
@@ -312,7 +316,8 @@ var Collations = map[CollationId]string{
 	247: "utf8mb4_vietnamese_ci",
 }
 
-var CollationNames = map[string]CollationId{
+// CollationNames key is collation name, value is collation id.
+var CollationNames = map[string]CollationID{
 	"big5_chinese_ci":          1,
 	"latin2_czech_cs":          2,
 	"dec8_swedish_ci":          3,
@@ -535,7 +540,10 @@ var CollationNames = map[string]CollationId{
 }
 
 var (
-	DEFAULT_CHARSET                    = "utf8"
-	DEFAULT_COLLATION_ID   CollationId = 33
-	DEFAULT_COLLATION_NAME string      = "utf8_general_ci"
+	// DEFAULT_CHARSET default charset.
+	DEFAULT_CHARSET string = "utf8"
+	// DEFAULT_COLLATION_ID default collation id.
+	DEFAULT_COLLATION_ID CollationID = 33
+	// DEFAULT_COLLATION_NAME default collation name.
+	DEFAULT_COLLATION_NAME string = "utf8_general_ci"
 )

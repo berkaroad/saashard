@@ -1,12 +1,9 @@
-package server
+package proxy
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 	"net"
 	"runtime"
-	"strings"
 	"sync"
 
 	"github.com/berkaroad/saashard/config"
@@ -41,7 +38,7 @@ type ClientConn struct {
 	connectionId uint32
 
 	status    uint16
-	collation mysql.CollationId
+	collation mysql.CollationID
 	charset   string
 
 	user string
@@ -88,13 +85,21 @@ func (c *ClientConn) IsAllowConnect() bool {
 
 // Handshake between client and proxy.
 func (c *ClientConn) Handshake() error {
-	if err := c.writeInitialHandshake(); err != nil {
+	var err error
+	if err = c.pkg.WriteInitialHandshake(c.connectionId, c.salt, mysql.DEFAULT_COLLATION_ID, DEFAULT_CAPABILITY, c.status); err != nil {
 		golog.Error("server", "Handshake", err.Error(),
 			c.connectionId, "msg", "send initial handshake error")
 		return err
 	}
 
-	if err := c.readHandshakeResponse(); err != nil {
+	c.capability, c.collation, c.user, c.db, err = c.pkg.ReadHandshakeResponse(c.proxy.cfg.Schemas[0].Name, c.c.RemoteAddr().String(), c.salt, func(db string) (string, string, error) {
+		schemaConfig := c.proxy.schemas[db]
+		if schemaConfig == nil {
+			return "", "", mysql.NewDefaultError(mysql.ER_BAD_DB_ERROR, c.db)
+		}
+		return schemaConfig.User, schemaConfig.Password, nil
+	})
+	if err != nil {
 		golog.Error("server", "readHandshakeResponse",
 			err.Error(), c.connectionId,
 			"msg", "read Handshake Response error")
@@ -168,122 +173,6 @@ func (c *ClientConn) Close() error {
 	c.c.Close()
 
 	c.closed = true
-
-	return nil
-}
-
-func (c *ClientConn) writeInitialHandshake() error {
-	data := make([]byte, 4, 128)
-
-	//min version 10
-	data = append(data, 10)
-
-	//server version[00]
-	data = append(data, mysql.ServerVersion...)
-	data = append(data, 0)
-
-	//connection id
-	data = append(data, byte(c.connectionId), byte(c.connectionId>>8), byte(c.connectionId>>16), byte(c.connectionId>>24))
-
-	//auth-plugin-data-part-1
-	data = append(data, c.salt[0:8]...)
-
-	//filter [00]
-	data = append(data, 0)
-
-	//capability flag lower 2 bytes, using default capability here
-	data = append(data, byte(DEFAULT_CAPABILITY), byte(DEFAULT_CAPABILITY>>8))
-
-	//charset, utf-8 default
-	data = append(data, uint8(mysql.DEFAULT_COLLATION_ID))
-
-	//status
-	data = append(data, byte(c.status), byte(c.status>>8))
-
-	//below 13 byte may not be used
-	//capability flag upper 2 bytes, using default capability here
-	data = append(data, byte(DEFAULT_CAPABILITY>>16), byte(DEFAULT_CAPABILITY>>24))
-
-	//filter [0x15], for wireshark dump, value is 0x15
-	data = append(data, 0x15)
-
-	//reserved 10 [00]
-	data = append(data, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-
-	//auth-plugin-data-part-2
-	data = append(data, c.salt[8:]...)
-
-	//filter [00]
-	data = append(data, 0)
-
-	return c.pkg.WritePacket(data)
-}
-
-func (c *ClientConn) readHandshakeResponse() error {
-	data, err := c.pkg.ReadPacket()
-
-	if err != nil {
-		return err
-	}
-
-	pos := 0
-
-	//capability
-	c.capability = binary.LittleEndian.Uint32(data[:4])
-	pos += 4
-
-	//skip max packet size
-	pos += 4
-
-	//charset, skip, if you want to use another charset, use set names
-	//c.collation = CollationId(data[pos])
-	pos++
-
-	//skip reserved 23[00]
-	pos += 23
-
-	//user name
-	c.user = string(data[pos : pos+bytes.IndexByte(data[pos:], 0)])
-
-	pos += len(c.user) + 1
-
-	//auth length and auth
-	authLen := int(data[pos])
-	pos++
-
-	auth := data[pos : pos+authLen]
-	pos += authLen
-
-	if c.capability&mysql.CLIENT_CONNECT_WITH_DB > 0 {
-		if len(data[pos:]) == 0 {
-			//if connect with non-name database, use default db
-			c.db = c.proxy.cfg.Schemas[0].Name
-		}
-
-		c.db = string(data[pos : pos+bytes.IndexByte(data[pos:], 0)])
-		pos += len(c.db) + 1
-
-	} else {
-		//if connect without database, use default db
-		c.db = c.proxy.cfg.Schemas[0].Name
-	}
-	c.db = strings.ToLower(c.db)
-
-	schemaConfig := c.proxy.schemas[c.db]
-
-	if schemaConfig == nil {
-		return mysql.NewDefaultError(mysql.ER_BAD_DB_ERROR, c.db)
-	}
-	checkAuth := mysql.CalcPassword(c.salt, []byte(schemaConfig.Password))
-	if c.user != schemaConfig.User || !bytes.Equal(auth, checkAuth) {
-		golog.Error("ClientConn", "readHandshakeResponse", "error", 0,
-			"auth", auth,
-			"checkAuth", checkAuth,
-			"client_user", c.user,
-			"config_set_user", schemaConfig.User,
-			"passworld", schemaConfig.Password)
-		return mysql.NewDefaultError(mysql.ER_ACCESS_DENIED_ERROR, c.user, c.c.RemoteAddr().String(), "Yes")
-	}
 
 	return nil
 }
