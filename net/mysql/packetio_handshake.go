@@ -191,7 +191,7 @@ func (p *PacketIO) WriteAuthHandshake(capability *uint32, user, password, db str
 }
 
 // ReadHandshakeResponse read handshake response
-func (p *PacketIO) ReadHandshakeResponse(defaultSchema, remoteAddr string, salt []byte, getUserPasswordByDb func(db string) (user, password string, err error)) (capability uint32, collationID CollationID, user, db string, err error) {
+func (p *PacketIO) ReadHandshakeResponse(getDefaultSchemaByUser func(user string) (string, error), remoteAddr string, salt []byte, getCredentialsConfigBySchema func(db string) (user, password string, err error)) (capability uint32, collationID CollationID, user, db string, err error) {
 	var data []byte
 	data, err = p.ReadPacket()
 
@@ -230,7 +230,7 @@ func (p *PacketIO) ReadHandshakeResponse(defaultSchema, remoteAddr string, salt 
 	if capability&CLIENT_CONNECT_WITH_DB > 0 {
 		if len(data[pos:]) == 0 {
 			//if connect with non-name database, use default db
-			db = defaultSchema
+			db, err = getDefaultSchemaByUser(user)
 		}
 
 		db = string(data[pos : pos+bytes.IndexByte(data[pos:], 0)])
@@ -238,12 +238,15 @@ func (p *PacketIO) ReadHandshakeResponse(defaultSchema, remoteAddr string, salt 
 
 	} else {
 		//if connect without database, use default db
-		db = defaultSchema
+		db, err = getDefaultSchemaByUser(user)
+	}
+	if err != nil {
+		return
 	}
 	db = strings.ToLower(db)
 
 	var configUser, configPassword string
-	configUser, configPassword, err = getUserPasswordByDb(db)
+	configUser, configPassword, err = getCredentialsConfigBySchema(db)
 	if err != nil {
 		return
 	}

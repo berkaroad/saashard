@@ -15,7 +15,7 @@ func (p *PacketIO) WriteOK(capability uint32, status uint16, r *Result) error {
 	data = append(data, OK_HEADER)
 
 	data = append(data, NumberToLenencInt(r.AffectedRows)...)
-	data = append(data, NumberToLenencInt(r.InsertId)...)
+	data = append(data, NumberToLenencInt(r.InsertID)...)
 
 	if capability&CLIENT_PROTOCOL_41 > 0 {
 		data = append(data, byte(r.Status), byte(r.Status>>8))
@@ -35,7 +35,7 @@ func (p *PacketIO) WriteOKBatch(total []byte, capability uint32, status uint16, 
 	data = append(data, OK_HEADER)
 
 	data = append(data, NumberToLenencInt(r.AffectedRows)...)
-	data = append(data, NumberToLenencInt(r.InsertId)...)
+	data = append(data, NumberToLenencInt(r.InsertID)...)
 
 	if capability&CLIENT_PROTOCOL_41 > 0 {
 		data = append(data, byte(r.Status), byte(r.Status>>8))
@@ -69,7 +69,7 @@ func (p *PacketIO) handleOKPacket(capability uint32, status *uint16, data []byte
 
 	r.AffectedRows, _, n = LenencIntToNumber(data[pos:])
 	pos += n
-	r.InsertId, _, n = LenencIntToNumber(data[pos:])
+	r.InsertID, _, n = LenencIntToNumber(data[pos:])
 	pos += n
 
 	if capability&CLIENT_PROTOCOL_41 > 0 {

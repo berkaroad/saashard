@@ -48,6 +48,8 @@ type Statement interface {
 	SQLNode
 }
 
+func (*Union) IStatement()  {}
+func (*Select) IStatement() {}
 func (*Insert) IStatement() {}
 func (*Update) IStatement() {}
 func (*Delete) IStatement() {}
@@ -61,6 +63,9 @@ type SelectStatement interface {
 	IInsertRows()
 	SQLNode
 }
+
+func (*Select) ISelectStatement() {}
+func (*Union) ISelectStatement()  {}
 
 // Select represents a SELECT statement.
 type Select struct {
@@ -87,16 +92,6 @@ const (
 	AST_SHARE_MODE = " lock in share mode"
 )
 
-// ISelectStatement implement SelectStatement
-func (node *Select) ISelectStatement() {}
-
-// IStatement implement SelectStatement
-func (node *Select) IStatement() {}
-
-// IInsertRows implement SelectStatement
-func (node *Select) IInsertRows() {}
-
-// Format implement SQLNode
 func (node *Select) Format(buf *TrackedBuffer) {
 	buf.Fprintf("select %v%s%v from %v%v%v%v%v%v%s",
 		node.Comments, node.Distinct, node.SelectExprs,
@@ -119,12 +114,6 @@ const (
 	AST_EXCEPT    = "except"
 	AST_INTERSECT = "intersect"
 )
-
-func (node *Union) ISelectStatement() {}
-
-func (node *Union) IStatement() {}
-
-func (node *Union) IInsertRows() {}
 
 func (node *Union) Format(buf *TrackedBuffer) {
 	buf.Fprintf("%v %s %v", node.Left, node.Type, node.Right)
@@ -152,7 +141,9 @@ type InsertRows interface {
 	SQLNode
 }
 
-func (Values) IInsertRows() {}
+func (*Select) IInsertRows() {}
+func (*Union) IInsertRows()  {}
+func (Values) IInsertRows()  {}
 
 // Update represents an UPDATE statement.
 type Update struct {
@@ -185,14 +176,51 @@ func (node *Delete) Format(buf *TrackedBuffer) {
 		node.Table, node.Where, node.OrderBy, node.Limit)
 }
 
+// SetTypeEnum is SetType
+type SetTypeEnum uint8
+
+const (
+	// SetTypeNameValue NameValue
+	SetTypeNameValue SetTypeEnum = iota
+	// SetTypeCharset Charset
+	SetTypeCharset
+	// SetTypeNames Names
+	SetTypeNames
+	// SetTypeTransactionIsolationLevel TransactionIsolationLevel
+	SetTypeTransactionIsolationLevel
+	// SetTypePassword PasswordExpr
+	SetTypePassword
+)
+
 // Set represents a SET statement.
 type Set struct {
-	Comments Comments
-	Exprs    UpdateExprs
+	SetType         SetTypeEnum
+	Comments        Comments
+	Scope           string          // SESSION or GLOBAL
+	NameValueExprs  UpdateExprs     // SetTypeNameValue or SetTypePassword
+	SpaceSplitExprs SpaceSplitExprs // SetTypeCharset or SetTypeNames or SetTypeTransactionIsolationLevel
 }
 
 func (node *Set) Format(buf *TrackedBuffer) {
-	buf.Fprintf("set %v%v", node.Comments, node.Exprs)
+	switch node.SetType {
+	case SetTypeNameValue:
+		if len(node.Scope) == 0 {
+			buf.Fprintf("set %v%v", node.Comments, node.NameValueExprs)
+		} else {
+			buf.Fprintf("set %v%s %v", node.Comments, node.Scope, node.NameValueExprs)
+		}
+
+	case SetTypeCharset:
+		fallthrough
+	case SetTypeNames:
+		fallthrough
+	case SetTypeTransactionIsolationLevel:
+		if len(node.Scope) == 0 {
+			buf.Fprintf("set %v%v", node.Comments, node.SpaceSplitExprs)
+		} else {
+			buf.Fprintf("set %v%s %v", node.Comments, node.Scope, node.SpaceSplitExprs)
+		}
+	}
 }
 
 // DDL represents a CREATE, ALTER, DROP or RENAME statement.
@@ -439,6 +467,30 @@ func (node *Where) Format(buf *TrackedBuffer) {
 	buf.Fprintf(" %s %v", node.Type, node.Expr)
 }
 
+// LikeExpr Expression
+type LikeExpr struct {
+	Expr ValExpr
+}
+
+func (node *LikeExpr) Format(buf *TrackedBuffer) {
+	if node == nil {
+		return
+	}
+	buf.Fprintf(" like %v", node.Expr)
+}
+
+// WhereExpr Expression
+type WhereExpr struct {
+	Expr BoolExpr
+}
+
+func (node *WhereExpr) Format(buf *TrackedBuffer) {
+	if node == nil {
+		return
+	}
+	buf.Fprintf(" where %v", node.Expr)
+}
+
 // Expr represents an expression.
 type Expr interface {
 	IExpr()
@@ -464,6 +516,8 @@ func (*BinaryExpr) IExpr()     {}
 func (*UnaryExpr) IExpr()      {}
 func (*FuncExpr) IExpr()       {}
 func (*CaseExpr) IExpr()       {}
+func (*LikeExpr) IExpr()       {}
+func (*WhereExpr) IExpr()      {}
 
 // BoolExpr represents a boolean expression.
 type BoolExpr interface {
@@ -894,6 +948,27 @@ func (node *UpdateExpr) Format(buf *TrackedBuffer) {
 	buf.Fprintf("%v = %v", node.Name, node.Expr)
 }
 
+// SpaceSplitExprs represents a list of space split expressions.
+type SpaceSplitExprs []*SpaceSplitExpr
+
+func (node SpaceSplitExprs) Format(buf *TrackedBuffer) {
+	var prefix string
+	for _, n := range node {
+		buf.Fprintf("%s%v", prefix, n)
+		prefix = " "
+	}
+}
+
+// SpaceSplitExpr represents an space split expression.
+type SpaceSplitExpr struct {
+	Name string
+	Expr []byte
+}
+
+func (node *SpaceSplitExpr) Format(buf *TrackedBuffer) {
+	buf.Fprintf("%s %s", node.Name, node.Expr)
+}
+
 // OnDup represents an ON DUPLICATE KEY clause.
 type OnDup UpdateExprs
 
@@ -949,10 +1024,11 @@ type SimpleSelect struct {
 	Comments    Comments
 	Distinct    string
 	SelectExprs SelectExprs
+	Limit       *Limit
 }
 
 func (node *SimpleSelect) Format(buf *TrackedBuffer) {
-	buf.Fprintf("select %v%s%v", node.Comments, node.Distinct, node.SelectExprs)
+	buf.Fprintf("select %v%s%v%v", node.Comments, node.Distinct, node.SelectExprs, node.Limit)
 }
 
 func (*SimpleSelect) IStatement()       {}
@@ -980,17 +1056,81 @@ func (node *AdminHelp) Format(buf *TrackedBuffer) {
 	buf.Fprintf("admin help")
 }
 
+type ShowTypeEnum uint8
+
+const (
+	ShowTypeCharset ShowTypeEnum = iota
+	ShowTypeCollation
+	ShowTypeVariables
+	ShowTypeStatus
+	ShowTypeEngines
+	ShowTypeDatabases
+	ShowTypeTables
+	ShowTypeColumns
+	ShowTypeProcedureStatus
+	ShowTypeFunctionStatus
+	ShowTypeIndexes
+)
+
+// Show statement
 type Show struct {
+	Type        ShowTypeEnum
+	Comments    Comments
+	Scope       string // GLOBAL or SESSION
 	Section     string
 	Key         string
-	From        ValExpr
+	From        *TableName
 	LikeOrWhere Expr
 }
 
 func (*Show) IStatement() {}
 
 func (node *Show) Format(buf *TrackedBuffer) {
-	buf.Fprintf("show %s %s %v %v", node.Section, node.Key, node.From, node.LikeOrWhere)
+	switch node.Type {
+	case ShowTypeCharset:
+		fallthrough
+	case ShowTypeDatabases:
+		fallthrough
+	case ShowTypeProcedureStatus:
+		if node.LikeOrWhere == nil {
+			buf.Fprintf("show %v%s", node.Comments, node.Section)
+		} else {
+			buf.Fprintf("show %v%s%v", node.Comments, node.Section, node.LikeOrWhere)
+		}
+
+	case ShowTypeCollation:
+
+	case ShowTypeVariables:
+		fallthrough
+	case ShowTypeStatus:
+		scope := ""
+		if node.Scope != "" {
+			scope = " " + node.Scope
+		}
+		if node.LikeOrWhere == nil {
+			buf.Fprintf("show %v%s%s", node.Comments, scope, node.Section)
+		} else {
+			buf.Fprintf("show %v%s%s%v", node.Comments, scope, node.Section, node.LikeOrWhere)
+		}
+
+	case ShowTypeEngines:
+		buf.Fprintf("show %v%s", node.Comments, node.Section)
+
+	case ShowTypeTables:
+		fallthrough
+	case ShowTypeColumns:
+		fallthrough
+	case ShowTypeIndexes:
+		table := ""
+		if node.From != nil {
+			table = " from " + String(node.From)
+		}
+		if node.LikeOrWhere == nil {
+			buf.Fprintf("show %v%s%s", node.Comments, node.Section, table)
+		} else {
+			buf.Fprintf("show %v%s%s%v", node.Comments, node.Section, table, node.LikeOrWhere)
+		}
+	}
 }
 
 type UseDB struct {

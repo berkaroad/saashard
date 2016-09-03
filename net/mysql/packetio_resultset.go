@@ -66,6 +66,25 @@ func (p *PacketIO) ReadResultSet(capability uint32, status *uint16, binary bool)
 	return p.handleResultsetPacket(capability, status, data, binary)
 }
 
+// WriteFieldList write fieldlist.
+func (p *PacketIO) WriteFieldList(capability uint32, status uint16, fs []*Field) error {
+	var err error
+	total := make([]byte, 0, 1024)
+	data := make([]byte, 4, 512)
+
+	for _, v := range fs {
+		data = data[0:4]
+		data = append(data, v.Dump()...)
+		total, err = p.WritePacketBatch(total, data, false)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = p.WriteEOFBatch(total, capability, status, true)
+	return err
+}
+
 func (p *PacketIO) writeResultSetHeader(total []byte, r *Result) ([]byte, error) {
 	data := make([]byte, 4, 5)
 	data = append(data, byte(r.ColumnNumber()))
@@ -89,7 +108,7 @@ func (p *PacketIO) writeResultSetRowData(total []byte, r *Row) ([]byte, error) {
 func (p *PacketIO) handleResultsetPacket(capability uint32, status *uint16, data []byte, binary bool) (*Result, error) {
 	result := &Result{
 		Status:       0,
-		InsertId:     0,
+		InsertID:     0,
 		AffectedRows: 0,
 
 		Resultset: &Resultset{},

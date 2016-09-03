@@ -62,12 +62,13 @@ var (
 %token LEX_ERROR
 %token <empty> SELECT INSERT UPDATE DELETE FROM WHERE GROUP HAVING ORDER BY LIMIT FOR
 %token <empty> ALL DISTINCT AS EXISTS NULL ASC DESC VALUES INTO DUPLICATE KEY DEFAULT SET LOCK
+%token <empty> SHOW
 %token <bytes> ID STRING NUMBER VALUE_ARG COMMENT
 %token <empty> '(' '~'
 
 %left <empty> UNION MINUS EXCEPT INTERSECT
 %left <empty> ','
-%left <empty> JOIN STRAIGHT_JOIN LEFT RIGHT INNER OUTER CROSS NATURAL USE FORCE
+%left <empty> FULL JOIN STRAIGHT_JOIN LEFT RIGHT INNER OUTER CROSS NATURAL USE FORCE
 %left <empty> ON
 %left <empty> OR
 %left <empty> AND
@@ -87,10 +88,20 @@ var (
 %left <empty> END
 
 // Transaction Tokens
-%token <empty> BEGIN START TRANSACTION COMMIT ROLLBACK
+%token <empty> BEGIN START TRANSACTION COMMIT ROLLBACK ISOLATION LEVEL READ COMMITTED UNCOMMITTED REPEATABLE
 
 // Charset Tokens
-%token <empty> NAMES 
+%token <empty> NAMES CHARSET CHARACTER 
+%token <bytes> ARMSCII8 ASCII BIG5 BINARY CP1250 CP1251 CP1256 CP1257 CP850 CP852 CP866 CP932
+%token <bytes> DEC8 EUCJPMS EUCKR GB2312 GBK GEOSTD8 GREEK HEBREW HP8 KEYBCS2 KOI8R KOI8U
+%token <bytes> LATIN1 LATIN2 LATIN5 LATIN7 MACCE MACROMAN SJIS SWE7 TIS620 UCS2 EJIS
+%token <bytes> UTF16 UTF16LE UTF32 UTF8 UTF8MB4
+
+// Scope Tokens
+%token <bytes> SESSION GLOBAL
+
+%token <empty> VARIABLES STATUS
+%token <empty> DATABASES STORAGE ENGINES TABLES COLUMNS PROCEDURE FUNCTION INDEXES KEYS
 
 // Replace
 %token <empty> REPLACE
@@ -112,6 +123,12 @@ var (
 %type <selStmt> select_statement
 %type <statement> insert_statement update_statement delete_statement set_statement
 %type <statement> create_statement alter_statement rename_statement drop_statement
+%type <statement> begin_statement commit_statement rollback_statement
+%type <statement> replace_statement
+%type <statement> use_statement
+%type <statement> show_statement
+%type <statement> admin_statement
+
 %type <bytes2> comment_opt comment_list
 %type <str> union_op
 %type <str> distinct_opt
@@ -154,15 +171,13 @@ var (
 %type <updateExprs> on_dup_opt
 %type <updateExprs> update_list
 %type <updateExpr> update_expression
+%type <expr> where_or_like_opt
 %type <empty> exists_opt not_exists_opt non_rename_operation to_opt constraint_opt using_opt
 %type <bytes> sql_id
 %type <empty> force_eof
-
-%type <statement> begin_statement commit_statement rollback_statement
-%type <statement> replace_statement
-%type <statement> admin_statement
-%type <statement> use_statement
-
+%type <bytes> charset_words
+%type <bytes> isolation_level
+%type <bytes> scope_opt
 %%
 
 any_command:
@@ -188,13 +203,14 @@ command:
 | commit_statement
 | rollback_statement
 | replace_statement
-| admin_statement
 | use_statement
+| show_statement
+| admin_statement
 
 select_statement:
-  SELECT comment_opt distinct_opt select_expression_list
+  SELECT comment_opt distinct_opt select_expression_list limit_opt
   {
-    $$ = &SimpleSelect{Comments: Comments($2), Distinct: $3, SelectExprs: $4}
+    $$ = &SimpleSelect{Comments: Comments($2), Distinct: $3, SelectExprs: $4, Limit: $5}
   }
 | SELECT comment_opt distinct_opt select_expression_list FROM table_expression_list where_expression_opt group_by_opt having_opt order_by_opt limit_opt lock_opt
   {
@@ -252,26 +268,77 @@ delete_statement:
   }
 
 set_statement:
-  SET comment_opt update_list
-  {
-    $$ = &Set{Comments: Comments($2), Exprs: $3}
-  }
-| SET comment_opt NAMES value_expression 
-  {
-    $$ = &Set{Comments: Comments($2), Exprs: UpdateExprs{&UpdateExpr{Name: &ColName{Name:[]byte("names")}, Expr: $4}}}
-  }
-| SET comment_opt NAMES value_expression COLLATE value_expression
+  SET comment_opt scope_opt update_list
   {
     $$ = &Set{
-	       Comments: Comments($2), 
-	       Exprs: UpdateExprs{
-	            &UpdateExpr{
-	               Name: &ColName{Name:[]byte("names")}, Expr: $4,
-				  },
-				&UpdateExpr{
-	               Name: &ColName{Name:[]byte("collate")}, Expr: $6,
-				  },
+          SetType: SetTypeNameValue,
+          Comments: Comments($2), 
+          Scope:string($3), 
+          NameValueExprs: $4,
+        }
+  }
+| SET comment_opt NAMES STRING 
+  {
+    $$ = &Set{
+          SetType: SetTypeNames, 
+          Comments: Comments($2), 
+          SpaceSplitExprs: SpaceSplitExprs{
+              &SpaceSplitExpr{
+                  Name: "names", Expr: $4,
+              },
+          },
+        }
+  }
+| SET comment_opt NAMES STRING COLLATE STRING
+  {
+    $$ = &Set{
+	        SetType: SetTypeNames, 
+          Comments: Comments($2), 
+	        SpaceSplitExprs: SpaceSplitExprs{
+	            &SpaceSplitExpr{
+	               Name: "names", Expr: $4,
+				      },
+				      &SpaceSplitExpr{
+	               Name: "collate", Expr: $6,
+				      },
 	       },
+	    }
+  }
+| SET comment_opt CHARACTER SET charset_words
+  {
+    $$ = &Set{
+	        SetType: SetTypeCharset, 
+          Comments: Comments($2), 
+	        SpaceSplitExprs: SpaceSplitExprs{
+	            &SpaceSplitExpr{
+	               Name: "character set", Expr: $5,
+				      },
+	        },
+	    }
+  }
+| SET comment_opt CHARSET charset_words
+  {
+    $$ = &Set{
+	        SetType: SetTypeCharset, 
+          Comments: Comments($2), 
+	        SpaceSplitExprs: SpaceSplitExprs{
+	            &SpaceSplitExpr{
+	               Name: "charset", Expr: $4,
+				      },
+	        },
+	    }
+  }
+| SET comment_opt scope_opt TRANSACTION ISOLATION LEVEL isolation_level
+  {
+    $$ = &Set{
+	        SetType: SetTypeTransactionIsolationLevel, 
+          Comments: Comments($2),
+          Scope: string($3),
+	        SpaceSplitExprs: SpaceSplitExprs{
+	            &SpaceSplitExpr{
+	               Name: "transaction isolation level", Expr: $7,
+				      },
+	        },
 	    }
   }
 
@@ -296,16 +363,6 @@ rollback_statement:
   ROLLBACK
   {
     $$ = &Rollback{}
-  }
-
-admin_statement:
-  ADMIN dml_table_expression column_list_opt row_list
-  {
-    $$ = &Admin{Region : $2, Columns : $3,Rows:$4}
-  }
-| ADMIN HELP
-  {
-    $$ = &AdminHelp{}
   }
 
 use_statement:
@@ -363,6 +420,82 @@ drop_statement:
 | DROP VIEW exists_opt sql_id force_eof
   {
     $$ = &DDL{Action: AST_DROP, Table: $4}
+  }
+
+show_statement:
+  SHOW comment_opt CHARACTER SET where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeCharset, Comments : Comments($2), Section : "character set", LikeOrWhere : $5}
+  }
+| SHOW comment_opt CHARSET where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeCharset, Comments : Comments($2), Section : "charset", LikeOrWhere : $4}
+  }
+| SHOW comment_opt scope_opt VARIABLES where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeVariables, Comments : Comments($2), Scope: string($3), Section : "VARIABLES", LikeOrWhere : $5}
+  }
+| SHOW comment_opt scope_opt STATUS where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeStatus, Comments : Comments($2), Scope: string($3), Section : "status", LikeOrWhere : $5}
+  }
+| SHOW comment_opt DATABASES where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeDatabases, Comments : Comments($2), Section : "databases", LikeOrWhere : $4}
+  }
+| SHOW comment_opt TABLES FROM dml_table_expression where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeTables, Comments : Comments($2), Section : "tables", From : $5, LikeOrWhere : $6}
+  }
+| SHOW comment_opt FULL TABLES FROM dml_table_expression where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeTables, Comments : Comments($2), Section : "full tables", From : $6, LikeOrWhere : $7}
+  }
+| SHOW comment_opt COLUMNS FROM dml_table_expression where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeColumns, Comments : Comments($2), Section : "columns", From : $5, LikeOrWhere : $6}
+  }
+| SHOW comment_opt FULL COLUMNS FROM dml_table_expression where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeColumns, Comments : Comments($2), Section : "full columns", From : $6, LikeOrWhere : $7}
+  }
+| SHOW comment_opt PROCEDURE STATUS where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeProcedureStatus, Comments : Comments($2), Section : "full columns", LikeOrWhere : $5}
+  }
+| SHOW comment_opt FUNCTION STATUS where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeFunctionStatus, Comments : Comments($2), Section : "full columns", LikeOrWhere : $5}
+  }
+| SHOW comment_opt INDEX FROM dml_table_expression where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeIndexes, Comments : Comments($2), Section : "index", From : $5, LikeOrWhere : $6}
+  }
+| SHOW comment_opt INDEXES FROM dml_table_expression where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeIndexes, Comments : Comments($2), Section : "indexes", From : $5, LikeOrWhere : $6}
+  }
+| SHOW comment_opt KEYS FROM dml_table_expression where_or_like_opt
+  {
+    $$ = &Show{Type : ShowTypeIndexes, Comments : Comments($2), Section : "keys", From : $5, LikeOrWhere : $6}
+  }
+| SHOW comment_opt ENGINES
+  {
+    $$ = &Show{Type : ShowTypeEngines, Comments : Comments($2), Section : "engines"}
+  }
+| SHOW comment_opt STORAGE ENGINES
+  {
+    $$ = &Show{Type : ShowTypeEngines, Comments : Comments($2), Section : "storage engines"}
+  }
+
+admin_statement:
+  ADMIN dml_table_expression column_list_opt row_list
+  {
+    $$ = &Admin{Region : $2, Columns : $3,Rows:$4}
+  }
+| ADMIN HELP
+  {
+    $$ = &AdminHelp{}
   }
 
 comment_opt:
@@ -1101,3 +1234,112 @@ force_eof:
 {
   ForceEOF(yylex)
 }
+
+charset_words:
+  ARMSCII8
+  { $$ = []byte("armscii8") }
+| ASCII
+  { $$ = []byte("ascii") }
+| BIG5
+  { $$ = []byte("big5") }
+| BINARY
+  { $$ = []byte("binary") }
+| CP1250
+  { $$ = []byte("cp1250") }
+| CP1251
+  { $$ = []byte("cp1251") }
+| CP1256
+  { $$ = []byte("cp1256") }
+| CP1257
+  { $$ = []byte("cp1257") }
+| CP850
+  { $$ = []byte("cp850") }
+| CP852
+  { $$ = []byte("cp852") }
+| CP866
+  { $$ = []byte("cp866") }
+| CP932
+  { $$ = []byte("cp932") }
+| DEC8
+  { $$ = []byte("dec8") }
+| EUCJPMS
+  { $$ = []byte("eucjpms") }
+| EUCKR
+  { $$ = []byte("euckr") }
+| GB2312
+  { $$ = []byte("gb2312") }
+| GBK
+  { $$ = []byte("gbk") }
+| GEOSTD8
+  { $$ = []byte("geostd8") }
+| GREEK
+  { $$ = []byte("greek") }
+| HEBREW
+  { $$ = []byte("hebrew") }
+| HP8
+  { $$ = []byte("hp8") }
+| KEYBCS2
+  { $$ = []byte("keybcs2") }
+| KOI8R
+  { $$ = []byte("koi8r") }
+| KOI8U
+  { $$ = []byte("koi8u") }
+| LATIN1
+  { $$ = []byte("latin1") }
+| LATIN2
+  { $$ = []byte("latin2") }
+| LATIN5
+  { $$ = []byte("latin5") }
+| LATIN7
+  { $$ = []byte("latin7") }
+| MACCE
+  { $$ = []byte("macce") }
+| MACROMAN
+  { $$ = []byte("macroman") }
+| SJIS
+  { $$ = []byte("sjis") }
+| SWE7
+  { $$ = []byte("swe7") }
+| TIS620
+  { $$ = []byte("tis620") }
+| UCS2
+  { $$ = []byte("ucs2") }
+| EJIS
+  { $$ = []byte("ujis") }
+| UTF16
+  { $$ = []byte("utf16") }
+| UTF16LE
+  { $$ = []byte("utf16le") }
+| UTF32
+  { $$ = []byte("utf32") }
+| UTF8
+  { $$ = []byte("utf8") }
+| UTF8MB4
+  { $$ = []byte("utf8mb4") }
+
+
+isolation_level:
+  READ COMMITTED
+  { $$ = []byte("read committed") }
+| READ UNCOMMITTED
+  { $$ = []byte("read uncommitted") }
+| REPEATABLE READ
+  { $$ = []byte("repeatable read") }
+
+scope_opt:
+  { $$ = nil }
+| SESSION
+  { $$ = []byte("session") }
+| GLOBAL
+  { $$ = []byte("global") }
+
+where_or_like_opt:
+  { $$ = nil }
+| LIKE value_expression
+  {
+    $$ = &LikeExpr{Expr:$2}
+  }
+| WHERE boolean_expression
+  {
+    $$ = &WhereExpr{Expr:$2}
+  }

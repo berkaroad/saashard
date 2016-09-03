@@ -11,6 +11,9 @@ run: build
 dev: build
 	./bin/saashard -config conf/dev.yaml
 
+test:
+	go test github.com/berkaroad/saashard/sqlparser
+
 clean:
 	@rm -rf bin
 	@rm -f ./sqlparse/y.output

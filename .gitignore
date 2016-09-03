@@ -28,3 +28,4 @@ _testmain.go
 bin
 conf/dev.yaml
 cmd/saashard/debug
+sqlparser/y.output

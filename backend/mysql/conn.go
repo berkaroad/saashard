@@ -36,6 +36,21 @@ type Conn struct {
 	pkgErr        error
 }
 
+// NewConn new conn.
+func NewConn(addr string, user string, password string, db string) *Conn {
+	c := new(Conn)
+	c.addr = addr
+	c.user = user
+	c.password = password
+	c.db = db
+
+	//use utf8
+	c.collation = mysql.DEFAULT_COLLATION_ID
+	c.charset = mysql.DEFAULT_CHARSET
+
+	return c
+}
+
 // Connect to mysql
 func (c *Conn) Connect(addr string, user string, password string, db string) error {
 	c.addr = addr
@@ -47,11 +62,11 @@ func (c *Conn) Connect(addr string, user string, password string, db string) err
 	c.collation = mysql.DEFAULT_COLLATION_ID
 	c.charset = mysql.DEFAULT_CHARSET
 
-	return c.ReConnect()
+	return c.Reconnect()
 }
 
-// ReConnect reconnect to mysql.
-func (c *Conn) ReConnect() error {
+// Reconnect reconnect to mysql.
+func (c *Conn) Reconnect() error {
 	var err error
 	if c.conn != nil {
 		c.conn.Close()
@@ -151,6 +166,11 @@ func (c *Conn) GetDB() string {
 // GetAddr get addr.
 func (c *Conn) GetAddr() string {
 	return c.addr
+}
+
+// FieldList return field list.
+func (c *Conn) FieldList(table string, wildcard string) ([]*mysql.Field, error) {
+	return c.pkg.FieldList(c.capability, table, wildcard)
 }
 
 // Execute command.

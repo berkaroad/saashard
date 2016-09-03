@@ -2,11 +2,18 @@ package backend
 
 import "github.com/berkaroad/saashard/config"
 
-// PhysicalDBNode is data node.
-type PhysicalDBNode struct {
+// DataNode is a data node.
+type DataNode struct {
+	Name     string
+	Database string
+	DataHost *DataHost
 }
 
-func NewPhysicalDBNode(nodeCfg config.NodeConfig) *PhysicalDBNode {
-	n := &PhysicalDBNode{}
+// NewDataNode new node instance.
+func NewDataNode(nodeCfg config.NodeConfig, dataHost *DataHost) *DataNode {
+	n := new(DataNode)
+	n.Name = nodeCfg.Name
+	n.Database = nodeCfg.Database
+	n.DataHost = dataHost
 	return n
 }

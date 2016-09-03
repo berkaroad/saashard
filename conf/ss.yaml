@@ -28,8 +28,8 @@ hosts :
 - 
     name : host1
 
-    # default max conns for mysql server
-    max_conns_limit : 32
+    # default max conn num for mysql server
+    max_conn_num : 100
 
     # all mysql in a node must have the same user and password
     user :  root 
@@ -41,13 +41,13 @@ hosts :
     # slave represents a real mysql salve server,and the number after '@' is 
     # read load weight of this slave.
     slaves : ["192.168.0.124:3304@2", "192.168.0.124:3305@3"]
-    down_after_noalive : 32
+    down_after_noalive : 30
 
 - 
     name : host2
 
-    # default max conns for mysql server
-    max_conns_limit : 32
+    # default max conn num for mysql server
+    max_conn_num : 100
 
     # all mysql in a node must have the same user and password
     user :  root 
@@ -59,7 +59,7 @@ hosts :
     # slaves represents a real mysql salve server,and the number after '@' is 
     # read load weight of this slave.
     slaves : ["192.168.0.134:3304@2", "192.168.0.134:3305@3"]
-    down_after_noalive : 32
+    down_after_noalive : 30
 
 # data node list
 nodes : 

@@ -27,7 +27,7 @@ type Config struct {
 // HostConfig is a config of data host.
 type HostConfig struct {
 	Name             string   `yaml:"name"`
-	MaxConnNum       int      `yaml:"max_conns_limit"`
+	MaxConnNum       int      `yaml:"max_conn_num"`
 	DownAfterNoAlive int      `yaml:"down_after_noalive"`
 	User             string   `yaml:"user"`
 	Password         string   `yaml:"password"`

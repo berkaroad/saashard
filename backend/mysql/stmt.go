@@ -1,6 +1,8 @@
 package mysql
 
-import "github.com/berkaroad/saashard/net/mysql"
+import (
+	"github.com/berkaroad/saashard/net/mysql"
+)
 
 type Stmt struct {
 	conn  *Conn

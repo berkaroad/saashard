@@ -15,6 +15,8 @@ select f1,f2,f3 into t2 from t1
 ## Code Structure
 
 ```
+|admin |
+|
 |backend |
 |--------|mysql |
 |
@@ -28,9 +30,11 @@ select f1,f2,f3 into t2 from t1
 |net |
 |----|mysql |
 |
+|proxy |
+|
+|route |
+|
 |server |
-|-------|admin |
-|-------|proxy |
 |
 |sqlparser |
 |----------|sqltypes |

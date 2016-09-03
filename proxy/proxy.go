@@ -16,13 +16,22 @@ import (
 	"github.com/berkaroad/saashard/utils/golog"
 )
 
+var (
+	// DEFAULT_CAPABILITY default client capability.
+	DEFAULT_CAPABILITY uint32 = mysql.CLIENT_LONG_PASSWORD | mysql.CLIENT_LONG_FLAG |
+		mysql.CLIENT_CONNECT_WITH_DB | mysql.CLIENT_PROTOCOL_41 |
+		mysql.CLIENT_TRANSACTIONS | mysql.CLIENT_SECURE_CONNECTION
+
+	baseConnID uint32 = 10000
+)
+
 // Server proxy daemon
 type Server struct {
 	cfg     *config.Config
 	bindIP  net.IP
 	port    int
-	hosts   map[string]*backend.PhysicalDBPool
-	nodes   map[string]*backend.PhysicalDBNode
+	hosts   map[string]*backend.DataHost
+	nodes   map[string]*backend.DataNode
 	schemas map[string]*config.SchemaConfig
 
 	logSQLIndex      int32
@@ -44,8 +53,8 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	p.bindIP = net.ParseIP(cfg.BindIP)
 	p.port = cfg.ProxyPort
 
-	p.hosts = make(map[string]*backend.PhysicalDBPool)
-	p.nodes = make(map[string]*backend.PhysicalDBNode)
+	p.hosts = make(map[string]*backend.DataHost)
+	p.nodes = make(map[string]*backend.DataNode)
 	p.schemas = make(map[string]*config.SchemaConfig)
 
 	p.counter = new(statistic.Counter)
@@ -176,7 +185,7 @@ func (p *Server) newClientConn(co net.Conn) *ClientConn {
 
 	c.pkg.Sequence = 0
 
-	c.connectionId = atomic.AddUint32(&baseConnId, 1)
+	c.connectionID = atomic.AddUint32(&baseConnID, 1)
 
 	c.status = mysql.SERVER_STATUS_AUTOCOMMIT
 
@@ -189,7 +198,7 @@ func (p *Server) newClientConn(co net.Conn) *ClientConn {
 	c.charset = mysql.DEFAULT_CHARSET
 	c.collation = mysql.DEFAULT_COLLATION_ID
 
-	c.stmtId = 0
+	c.stmtID = 0
 	// c.stmts = make(map[uint32]*Stmt)
 
 	return c
@@ -223,9 +232,9 @@ func (p *Server) parseHosts() error {
 		return errors.ErrNoDataHost
 	}
 	for _, hostConfig := range cfg.Hosts {
-		host := hostConfig
-		if p.hosts[host.Name] == nil {
-			p.hosts[host.Name] = backend.NewPhysicalDBPool(host)
+		hostCfg := hostConfig
+		if p.hosts[hostCfg.Name] == nil {
+			p.hosts[hostCfg.Name] = backend.NewDataHost(hostCfg)
 		}
 	}
 	return nil
@@ -237,10 +246,10 @@ func (p *Server) parseNodes() error {
 		return errors.ErrNoDataNode
 	}
 	for _, nodeConfig := range cfg.Nodes {
-		node := nodeConfig
-		if p.nodes[node.Name] == nil {
-			if p.hosts[node.Host] != nil {
-				p.nodes[node.Name] = backend.NewPhysicalDBNode(node)
+		nodeCfg := nodeConfig
+		if p.nodes[nodeCfg.Name] == nil {
+			if host, ok := p.hosts[nodeCfg.Host]; ok {
+				p.nodes[nodeCfg.Name] = backend.NewDataNode(nodeCfg, host)
 			} else {
 				return errors.ErrNoDataHost
 			}

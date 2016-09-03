@@ -6,19 +6,11 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/berkaroad/saashard/backend"
 	"github.com/berkaroad/saashard/config"
 	"github.com/berkaroad/saashard/errors"
 	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/utils/golog"
-)
-
-var (
-	// DEFAULT_CAPABILITY default client capability.
-	DEFAULT_CAPABILITY uint32 = mysql.CLIENT_LONG_PASSWORD | mysql.CLIENT_LONG_FLAG |
-		mysql.CLIENT_CONNECT_WITH_DB | mysql.CLIENT_PROTOCOL_41 |
-		mysql.CLIENT_TRANSACTIONS | mysql.CLIENT_SECURE_CONNECTION
-
-	baseConnId uint32 = 10000
 )
 
 // ClientConn client <-> proxy
@@ -35,7 +27,7 @@ type ClientConn struct {
 
 	capability uint32
 
-	connectionId uint32
+	connectionID uint32
 
 	status    uint16
 	collation mysql.CollationID
@@ -48,14 +40,14 @@ type ClientConn struct {
 
 	schemas map[string]*config.SchemaConfig
 
-	// txConns map[*backend.Node]*backend.BackendConn
+	txConns map[*backend.DataNode]backend.Connection
 
 	closed bool
 
-	lastInsertId int64
+	lastInsertID int64
 	affectedRows int64
 
-	stmtId uint32
+	stmtID uint32
 
 	// stmts map[uint32]*Stmt //prepare相关,client端到proxy的stmt
 }
@@ -86,33 +78,47 @@ func (c *ClientConn) IsAllowConnect() bool {
 // Handshake between client and proxy.
 func (c *ClientConn) Handshake() error {
 	var err error
-	if err = c.pkg.WriteInitialHandshake(c.connectionId, c.salt, mysql.DEFAULT_COLLATION_ID, DEFAULT_CAPABILITY, c.status); err != nil {
+	if err = c.pkg.WriteInitialHandshake(c.connectionID, c.salt, mysql.DEFAULT_COLLATION_ID, DEFAULT_CAPABILITY, c.status); err != nil {
 		golog.Error("server", "Handshake", err.Error(),
-			c.connectionId, "msg", "send initial handshake error")
+			c.connectionID, "msg", "send initial handshake error")
 		return err
 	}
 
-	c.capability, c.collation, c.user, c.db, err = c.pkg.ReadHandshakeResponse(c.proxy.cfg.Schemas[0].Name, c.c.RemoteAddr().String(), c.salt, func(db string) (string, string, error) {
-		schemaConfig := c.proxy.schemas[db]
+	getDefaultSchemaByUser := func(user string) (string, error) {
+		c.schemas = c.proxy.getSchemasByUser(user)
+		if len(c.schemas) == 0 {
+			return "", errors.ErrNoSchema
+		}
+
+		var name string
+		for name = range c.schemas {
+			break
+		}
+		return name, nil
+	}
+	getCredentialsConfigBySchema := func(schema string) (string, string, error) {
+		schemaConfig := c.proxy.schemas[schema]
 		if schemaConfig == nil {
 			return "", "", mysql.NewDefaultError(mysql.ER_BAD_DB_ERROR, c.db)
 		}
 		return schemaConfig.User, schemaConfig.Password, nil
-	})
+	}
+	c.capability, c.collation, c.user, c.db, err = c.pkg.ReadHandshakeResponse(getDefaultSchemaByUser, c.c.RemoteAddr().String(), c.salt, getCredentialsConfigBySchema)
 	if err != nil {
 		golog.Error("server", "readHandshakeResponse",
-			err.Error(), c.connectionId,
+			err.Error(), c.connectionID,
 			"msg", "read Handshake Response error")
 
 		c.pkg.WriteError(c.capability, err)
 
 		return err
 	}
+	c.schemas = c.proxy.getSchemasByUser(c.user)
 
 	if err := c.pkg.WriteOK(c.capability, c.status, nil); err != nil {
 		golog.Error("server", "readHandshakeResponse",
 			"write ok fail",
-			c.connectionId, "error", err.Error())
+			c.connectionID, "error", err.Error())
 		return err
 	}
 
@@ -148,7 +154,7 @@ func (c *ClientConn) Run() {
 		if err := c.dispatch(data); err != nil {
 			c.proxy.counter.IncrErrLogTotal()
 			golog.Error("server", "Run",
-				err.Error(), c.connectionId,
+				err.Error(), c.connectionID,
 			)
 			c.pkg.WriteError(c.capability, err)
 			if err == errors.ErrBadConn {
@@ -192,7 +198,7 @@ func (c *ClientConn) dispatch(data []byte) error {
 	case mysql.COM_PING:
 		return c.pkg.WriteOK(c.capability, c.status, nil)
 	case mysql.COM_INIT_DB:
-		// return c.handleUseDB(hack.String(data))
+		return c.handleInitDB(string(data))
 	case mysql.COM_FIELD_LIST:
 		// return c.handleFieldList(data)
 	case mysql.COM_STMT_PREPARE:
@@ -214,4 +220,12 @@ func (c *ClientConn) dispatch(data []byte) error {
 	}
 
 	return nil
+}
+func (c *ClientConn) isInTransaction() bool {
+	return c.status&mysql.SERVER_STATUS_IN_TRANS > 0 ||
+		!c.isAutoCommit()
+}
+
+func (c *ClientConn) isAutoCommit() bool {
+	return c.status&mysql.SERVER_STATUS_AUTOCOMMIT > 0
 }

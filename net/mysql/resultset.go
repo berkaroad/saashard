@@ -5,15 +5,15 @@ import (
 	"strconv"
 )
 
+// Result is query's result
 type Result struct {
-	Status uint16
-
-	InsertId     uint64
+	Status       uint16
+	InsertID     uint64
 	AffectedRows uint64
-
 	*Resultset
 }
 
+// Resultset is result set of result.
 type Resultset struct {
 	Fields     []*Field
 	FieldNames map[string]int
@@ -22,14 +22,17 @@ type Resultset struct {
 	Rows []*Row
 }
 
+// RowNumber row number
 func (r *Resultset) RowNumber() int {
 	return len(r.Values)
 }
 
+// ColumnNumber column number
 func (r *Resultset) ColumnNumber() int {
 	return len(r.Fields)
 }
 
+// GetValue get value
 func (r *Resultset) GetValue(row, column int) (interface{}, error) {
 	if row >= len(r.Values) || row < 0 {
 		return nil, fmt.Errorf("invalid row index %d", row)
@@ -42,39 +45,44 @@ func (r *Resultset) GetValue(row, column int) (interface{}, error) {
 	return r.Values[row][column], nil
 }
 
-func (r *Resultset) NameIndex(name string) (int, error) {
+// GetIndexByName get index by name.
+func (r *Resultset) GetIndexByName(name string) (int, error) {
 	if column, ok := r.FieldNames[name]; ok {
 		return column, nil
-	} else {
-		return 0, fmt.Errorf("invalid field name %s", name)
 	}
+	return 0, fmt.Errorf("invalid field name %s", name)
 }
 
+// GetValueByName get value by name.
 func (r *Resultset) GetValueByName(row int, name string) (interface{}, error) {
-	if column, err := r.NameIndex(name); err != nil {
+	var column int
+	var err error
+	if column, err = r.GetIndexByName(name); err != nil {
 		return nil, err
-	} else {
-		return r.GetValue(row, column)
 	}
+	return r.GetValue(row, column)
 }
 
+// IsNull is null.
 func (r *Resultset) IsNull(row, column int) (bool, error) {
 	d, err := r.GetValue(row, column)
 	if err != nil {
 		return false, err
 	}
-
 	return d == nil, nil
 }
 
+// IsNullByName is the column null.
 func (r *Resultset) IsNullByName(row int, name string) (bool, error) {
-	if column, err := r.NameIndex(name); err != nil {
+	var column int
+	var err error
+	if column, err = r.GetIndexByName(name); err != nil {
 		return false, err
-	} else {
-		return r.IsNull(row, column)
 	}
+	return r.IsNull(row, column)
 }
 
+// GetUint get value as uint.
 func (r *Resultset) GetUint(row, column int) (uint64, error) {
 	d, err := r.GetValue(row, column)
 	if err != nil {
@@ -99,22 +107,16 @@ func (r *Resultset) GetUint(row, column int) (uint64, error) {
 	}
 }
 
+// GetUintByName get value as uint.
 func (r *Resultset) GetUintByName(row int, name string) (uint64, error) {
-	if column, err := r.NameIndex(name); err != nil {
+	if column, err := r.GetIndexByName(name); err != nil {
 		return 0, err
 	} else {
 		return r.GetUint(row, column)
 	}
 }
 
-func (r *Resultset) GetIntByName(row int, name string) (int64, error) {
-	if column, err := r.NameIndex(name); err != nil {
-		return 0, err
-	} else {
-		return r.GetInt(row, column)
-	}
-}
-
+// GetInt get value as int.
 func (r *Resultset) GetInt(row, column int) (int64, error) {
 	d, err := r.GetValue(row, column)
 	if err != nil {
@@ -139,6 +141,16 @@ func (r *Resultset) GetInt(row, column int) (int64, error) {
 	}
 }
 
+// GetIntByName get value as int.
+func (r *Resultset) GetIntByName(row int, name string) (int64, error) {
+	if column, err := r.GetIndexByName(name); err != nil {
+		return 0, err
+	} else {
+		return r.GetInt(row, column)
+	}
+}
+
+// GetFloat get value as float.
 func (r *Resultset) GetFloat(row, column int) (float64, error) {
 	d, err := r.GetValue(row, column)
 	if err != nil {
@@ -163,14 +175,16 @@ func (r *Resultset) GetFloat(row, column int) (float64, error) {
 	}
 }
 
+// GetFloatByName get value as float.
 func (r *Resultset) GetFloatByName(row int, name string) (float64, error) {
-	if column, err := r.NameIndex(name); err != nil {
+	if column, err := r.GetIndexByName(name); err != nil {
 		return 0, err
 	} else {
 		return r.GetFloat(row, column)
 	}
 }
 
+// GetString get value as string.
 func (r *Resultset) GetString(row, column int) (string, error) {
 	d, err := r.GetValue(row, column)
 	if err != nil {
@@ -195,8 +209,9 @@ func (r *Resultset) GetString(row, column int) (string, error) {
 	}
 }
 
+// GetStringByName get value as string.
 func (r *Resultset) GetStringByName(row int, name string) (string, error) {
-	if column, err := r.NameIndex(name); err != nil {
+	if column, err := r.GetIndexByName(name); err != nil {
 		return "", err
 	} else {
 		return r.GetString(row, column)

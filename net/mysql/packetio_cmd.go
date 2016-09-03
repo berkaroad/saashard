@@ -80,6 +80,12 @@ func (p *PacketIO) WriteCommandStrStr(command byte, arg1 string, arg2 string) er
 	return p.WritePacket(data)
 }
 
+// Sleep use command COM_SLEEP
+//
+
+// Quit use command COM_QUIT
+//
+
 // InitDB use command COM_INIT_DB
 func (p *PacketIO) InitDB(capability uint32, status *uint16, dbName string) error {
 	if err := p.WriteCommandStr(COM_INIT_DB, dbName); err != nil {
@@ -147,6 +153,33 @@ func (p *PacketIO) FieldList(capability uint32, table string, wildcard string) (
 	}
 }
 
+// CreateDB use command COM_CREATE_DB
+//
+
+// DropDB use command COM_DROP_DB
+//
+
+// Refresh use command COM_REFRESH
+//
+
+// Shutdown use command COM_SHUTDOWN
+//
+
+// Statistics use command COM_STATISTICS
+//
+
+// ProcessInfo use command COM_PROCESS_INFO
+//
+
+// Connect use command COM_CONNECT
+//
+
+// ProcessKill use command COM_PROCESS_KILL
+//
+
+// Debug use command COM_DEBUG
+//
+
 // Ping use command COM_PING
 func (p *PacketIO) Ping(capability uint32, status *uint16) error {
 	if err := p.WriteCommand(COM_PING); err != nil {
@@ -159,6 +192,27 @@ func (p *PacketIO) Ping(capability uint32, status *uint16) error {
 
 	return nil
 }
+
+// Time use command COM_TIME
+//
+
+// DelayedInsert use command COM_DELAYED_INSERT
+//
+
+// ChangeUser use command COM_CHANGE_USER
+//
+
+// BinlogDump use command COM_BINLOG_DUMP
+//
+
+// TableDump use command COM_TABLE_DUMP
+//
+
+// ConnectOut use command COM_CONNECT_OUT
+//
+
+// RegisterSlave use command COM_REGISTER_SLAVE
+//
 
 // StmtPrepare use command COM_STMT_PREPARE
 func (p *PacketIO) StmtPrepare(capability uint32, query string) (stmtID uint32, columnNumber, paramNumber int, err error) {
@@ -325,6 +379,9 @@ func (p *PacketIO) StmtExecute(stmtID uint32, args ...interface{}) error {
 	return p.WritePacket(data)
 }
 
+// StmtSendLongData use command COM_STMT_SEND_LONG_DATA
+//
+
 // StmtClose use command COM_STMT_CLOSE
 func (p *PacketIO) StmtClose(stmtID uint32) error {
 	if err := p.WriteCommandUint32(COM_STMT_CLOSE, stmtID); err != nil {
@@ -332,3 +389,21 @@ func (p *PacketIO) StmtClose(stmtID uint32) error {
 	}
 	return nil
 }
+
+// StmtReset use command COM_STMT_RESET
+//
+
+// SetOption use command COM_SET_OPTION
+//
+
+// StmtFetch use command COM_STMT_FETCH
+//
+
+// Daemon use command COM_DAEMON
+//
+
+// BinlogDumpGTID use command COM_BINLOG_DUMP_GTID
+//
+
+// ResetConnection use command COM_RESET_CONNECTION
+//
