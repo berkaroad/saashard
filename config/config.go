@@ -22,6 +22,22 @@ type Config struct {
 	Hosts   []HostConfig   `yaml:"hosts"`
 	Nodes   []NodeConfig   `yaml:"nodes"`
 	Schemas []SchemaConfig `yaml:"schemas"`
+
+	nodes map[string]*NodeConfig
+}
+
+// GetNodes from Nodes
+func (config *Config) GetNodes() map[string]*NodeConfig {
+	if len(config.nodes) == 0 && len(config.Nodes) > 0 {
+		config.nodes = make(map[string]*NodeConfig)
+		for _, nodeConfig := range config.Nodes {
+			node := nodeConfig
+			if _, ok := config.nodes[node.Name]; !ok {
+				config.nodes[node.Name] = &node
+			}
+		}
+	}
+	return config.nodes
 }
 
 // HostConfig is a config of data host.
@@ -51,16 +67,26 @@ type SchemaConfig struct {
 	ShardType string        `yaml:"shard_type"`
 	Nodes     []string      `yaml:"nodes"`
 	Tables    []TableConfig `yaml:"tables"`
-	Views     []ViewConfig  `yaml:"views"`
+
+	tables map[string]*TableConfig
+}
+
+// GetTables from Tables
+func (schema *SchemaConfig) GetTables() map[string]*TableConfig {
+	if len(schema.tables) == 0 && len(schema.Tables) > 0 {
+		schema.tables = make(map[string]*TableConfig)
+		for _, tableConfig := range schema.Tables {
+			table := tableConfig
+			if _, ok := schema.tables[table.Name]; !ok {
+				schema.tables[table.Name] = &table
+			}
+		}
+	}
+	return schema.tables
 }
 
 // TableConfig is a config of table
 type TableConfig struct {
-	Name string `yaml:"name"`
-}
-
-// ViewConfig is a config of view
-type ViewConfig struct {
 	Name string `yaml:"name"`
 }
 

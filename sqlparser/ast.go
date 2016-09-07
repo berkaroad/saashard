@@ -22,6 +22,7 @@ import (
 // Parse parses the sql and returns a Statement, which
 // is the AST representation of the query.
 func Parse(sql string) (Statement, error) {
+	// yyDebug = 4
 	tokenizer := NewStringTokenizer(sql)
 	if yyParse(tokenizer) != 0 {
 		return nil, errors.New(tokenizer.LastError)
@@ -48,92 +49,7 @@ type Statement interface {
 	SQLNode
 }
 
-func (*Union) IStatement()  {}
-func (*Select) IStatement() {}
-func (*Insert) IStatement() {}
-func (*Update) IStatement() {}
-func (*Delete) IStatement() {}
-func (*Set) IStatement()    {}
-func (*DDL) IStatement()    {}
-
-// SelectStatement any SELECT statement.
-type SelectStatement interface {
-	ISelectStatement()
-	IStatement()
-	IInsertRows()
-	SQLNode
-}
-
-func (*Select) ISelectStatement() {}
-func (*Union) ISelectStatement()  {}
-
-// Select represents a SELECT statement.
-type Select struct {
-	Comments    Comments
-	Distinct    string
-	SelectExprs SelectExprs
-	From        TableExprs
-	Where       *Where
-	GroupBy     GroupBy
-	Having      *Where
-	OrderBy     OrderBy
-	Limit       *Limit
-	Lock        string
-}
-
-// Select.Distinct
-const (
-	AST_DISTINCT = "distinct "
-)
-
-// Select.Lock
-const (
-	AST_FOR_UPDATE = " for update"
-	AST_SHARE_MODE = " lock in share mode"
-)
-
-func (node *Select) Format(buf *TrackedBuffer) {
-	buf.Fprintf("select %v%s%v from %v%v%v%v%v%v%s",
-		node.Comments, node.Distinct, node.SelectExprs,
-		node.From, node.Where,
-		node.GroupBy, node.Having, node.OrderBy,
-		node.Limit, node.Lock)
-}
-
-// Union represents a UNION statement.
-type Union struct {
-	Type        string
-	Left, Right SelectStatement
-}
-
-// Union.Type
-const (
-	AST_UNION     = "union"
-	AST_UNION_ALL = "union all"
-	AST_SET_MINUS = "minus"
-	AST_EXCEPT    = "except"
-	AST_INTERSECT = "intersect"
-)
-
-func (node *Union) Format(buf *TrackedBuffer) {
-	buf.Fprintf("%v %s %v", node.Left, node.Type, node.Right)
-}
-
-// Insert represents an INSERT statement.
-type Insert struct {
-	Comments Comments
-	Ignore   string
-	Table    *TableName
-	Columns  Columns
-	Rows     InsertRows
-	OnDup    OnDup
-}
-
-func (node *Insert) Format(buf *TrackedBuffer) {
-	buf.Fprintf("insert %v%s into %v%v %v%v",
-		node.Comments, node.Ignore,
-		node.Table, node.Columns, node.Rows, node.OnDup)
-}
+func (*DDL) IStatement() {}
 
 // InsertRows represents the rows for an INSERT statement.
 type InsertRows interface {
@@ -141,87 +57,7 @@ type InsertRows interface {
 	SQLNode
 }
 
-func (*Select) IInsertRows() {}
-func (*Union) IInsertRows()  {}
-func (Values) IInsertRows()  {}
-
-// Update represents an UPDATE statement.
-type Update struct {
-	Comments Comments
-	Table    *TableName
-	Exprs    UpdateExprs
-	Where    *Where
-	OrderBy  OrderBy
-	Limit    *Limit
-}
-
-func (node *Update) Format(buf *TrackedBuffer) {
-	buf.Fprintf("update %v%v set %v%v%v%v",
-		node.Comments, node.Table,
-		node.Exprs, node.Where, node.OrderBy, node.Limit)
-}
-
-// Delete represents a DELETE statement.
-type Delete struct {
-	Comments Comments
-	Table    *TableName
-	Where    *Where
-	OrderBy  OrderBy
-	Limit    *Limit
-}
-
-func (node *Delete) Format(buf *TrackedBuffer) {
-	buf.Fprintf("delete %vfrom %v%v%v%v",
-		node.Comments,
-		node.Table, node.Where, node.OrderBy, node.Limit)
-}
-
-// SetTypeEnum is SetType
-type SetTypeEnum uint8
-
-const (
-	// SetTypeNameValue NameValue
-	SetTypeNameValue SetTypeEnum = iota
-	// SetTypeCharset Charset
-	SetTypeCharset
-	// SetTypeNames Names
-	SetTypeNames
-	// SetTypeTransactionIsolationLevel TransactionIsolationLevel
-	SetTypeTransactionIsolationLevel
-	// SetTypePassword PasswordExpr
-	SetTypePassword
-)
-
-// Set represents a SET statement.
-type Set struct {
-	SetType         SetTypeEnum
-	Comments        Comments
-	Scope           string          // SESSION or GLOBAL
-	NameValueExprs  UpdateExprs     // SetTypeNameValue or SetTypePassword
-	SpaceSplitExprs SpaceSplitExprs // SetTypeCharset or SetTypeNames or SetTypeTransactionIsolationLevel
-}
-
-func (node *Set) Format(buf *TrackedBuffer) {
-	switch node.SetType {
-	case SetTypeNameValue:
-		if len(node.Scope) == 0 {
-			buf.Fprintf("set %v%v", node.Comments, node.NameValueExprs)
-		} else {
-			buf.Fprintf("set %v%s %v", node.Comments, node.Scope, node.NameValueExprs)
-		}
-
-	case SetTypeCharset:
-		fallthrough
-	case SetTypeNames:
-		fallthrough
-	case SetTypeTransactionIsolationLevel:
-		if len(node.Scope) == 0 {
-			buf.Fprintf("set %v%v", node.Comments, node.SpaceSplitExprs)
-		} else {
-			buf.Fprintf("set %v%s %v", node.Comments, node.Scope, node.SpaceSplitExprs)
-		}
-	}
-}
+func (Values) IInsertRows() {}
 
 // DDL represents a CREATE, ALTER, DROP or RENAME statement.
 // Table is set for AST_ALTER, AST_DROP, AST_RENAME.
@@ -701,7 +537,18 @@ func escape(buf *TrackedBuffer, name []byte) {
 	if _, ok := keywords[string(name)]; ok {
 		buf.Fprintf("`%s`", name)
 	} else {
-		buf.Fprintf("%s", name)
+		needQuota := false
+		for _, ch := range name {
+			if !isLetter(uint16(ch)) && !isDigit(uint16(ch)) {
+				needQuota = true
+				break
+			}
+		}
+		if needQuota {
+			buf.Fprintf("`%s`", name)
+		} else {
+			buf.Fprintf("%s", name)
+		}
 	}
 }
 
@@ -977,168 +824,4 @@ func (node OnDup) Format(buf *TrackedBuffer) {
 		return
 	}
 	buf.Fprintf(" on duplicate key update %v", UpdateExprs(node))
-}
-
-func (*Begin) IStatement()    {}
-func (*Commit) IStatement()   {}
-func (*Rollback) IStatement() {}
-
-type Begin struct {
-}
-
-func (node *Begin) Format(buf *TrackedBuffer) {
-	buf.Fprintf("begin")
-}
-
-type Commit struct {
-}
-
-func (node *Commit) Format(buf *TrackedBuffer) {
-	buf.Fprintf("commit")
-}
-
-type Rollback struct {
-}
-
-func (node *Rollback) Format(buf *TrackedBuffer) {
-	buf.Fprintf("rollback")
-}
-
-// Replace represents an REPLACE statement.
-type Replace struct {
-	Comments Comments
-	Table    *TableName
-	Columns  Columns
-	Rows     InsertRows
-}
-
-func (node *Replace) Format(buf *TrackedBuffer) {
-	buf.Fprintf("replace %vinto %v%v %v",
-		node.Comments,
-		node.Table, node.Columns, node.Rows)
-}
-
-func (*Replace) IStatement() {}
-
-type SimpleSelect struct {
-	Comments    Comments
-	Distinct    string
-	SelectExprs SelectExprs
-	Limit       *Limit
-}
-
-func (node *SimpleSelect) Format(buf *TrackedBuffer) {
-	buf.Fprintf("select %v%s%v%v", node.Comments, node.Distinct, node.SelectExprs, node.Limit)
-}
-
-func (*SimpleSelect) IStatement()       {}
-func (*SimpleSelect) ISelectStatement() {}
-func (*SimpleSelect) IInsertRows()      {}
-
-type Admin struct {
-	Region  *TableName
-	Columns Columns
-	Rows    InsertRows
-}
-
-func (*Admin) IStatement() {}
-
-func (node *Admin) Format(buf *TrackedBuffer) {
-	buf.Fprintf("admin %v%v %v", node.Region, node.Columns, node.Rows)
-}
-
-type AdminHelp struct {
-}
-
-func (*AdminHelp) IStatement() {}
-
-func (node *AdminHelp) Format(buf *TrackedBuffer) {
-	buf.Fprintf("admin help")
-}
-
-type ShowTypeEnum uint8
-
-const (
-	ShowTypeCharset ShowTypeEnum = iota
-	ShowTypeCollation
-	ShowTypeVariables
-	ShowTypeStatus
-	ShowTypeEngines
-	ShowTypeDatabases
-	ShowTypeTables
-	ShowTypeColumns
-	ShowTypeProcedureStatus
-	ShowTypeFunctionStatus
-	ShowTypeIndexes
-)
-
-// Show statement
-type Show struct {
-	Type        ShowTypeEnum
-	Comments    Comments
-	Scope       string // GLOBAL or SESSION
-	Section     string
-	Key         string
-	From        *TableName
-	LikeOrWhere Expr
-}
-
-func (*Show) IStatement() {}
-
-func (node *Show) Format(buf *TrackedBuffer) {
-	switch node.Type {
-	case ShowTypeCharset:
-		fallthrough
-	case ShowTypeDatabases:
-		fallthrough
-	case ShowTypeProcedureStatus:
-		if node.LikeOrWhere == nil {
-			buf.Fprintf("show %v%s", node.Comments, node.Section)
-		} else {
-			buf.Fprintf("show %v%s%v", node.Comments, node.Section, node.LikeOrWhere)
-		}
-
-	case ShowTypeCollation:
-
-	case ShowTypeVariables:
-		fallthrough
-	case ShowTypeStatus:
-		scope := ""
-		if node.Scope != "" {
-			scope = " " + node.Scope
-		}
-		if node.LikeOrWhere == nil {
-			buf.Fprintf("show %v%s%s", node.Comments, scope, node.Section)
-		} else {
-			buf.Fprintf("show %v%s%s%v", node.Comments, scope, node.Section, node.LikeOrWhere)
-		}
-
-	case ShowTypeEngines:
-		buf.Fprintf("show %v%s", node.Comments, node.Section)
-
-	case ShowTypeTables:
-		fallthrough
-	case ShowTypeColumns:
-		fallthrough
-	case ShowTypeIndexes:
-		table := ""
-		if node.From != nil {
-			table = " from " + String(node.From)
-		}
-		if node.LikeOrWhere == nil {
-			buf.Fprintf("show %v%s%s", node.Comments, node.Section, table)
-		} else {
-			buf.Fprintf("show %v%s%s%v", node.Comments, node.Section, table, node.LikeOrWhere)
-		}
-	}
-}
-
-type UseDB struct {
-	DB string
-}
-
-func (*UseDB) IStatement() {}
-
-func (node *UseDB) Format(buf *TrackedBuffer) {
-	buf.Fprintf("use %s", node.DB)
 }

@@ -84,7 +84,16 @@ func (p *PacketIO) WriteCommandStrStr(command byte, arg1 string, arg2 string) er
 //
 
 // Quit use command COM_QUIT
-//
+func (p *PacketIO) Quit(capability uint32, status *uint16) error {
+	if err := p.WriteCommand(COM_QUIT); err != nil {
+		return err
+	}
+
+	if _, err := p.ReadOK(capability, status); err != nil {
+		return err
+	}
+	return nil
+}
 
 // InitDB use command COM_INIT_DB
 func (p *PacketIO) InitDB(capability uint32, status *uint16, dbName string) error {
@@ -162,8 +171,29 @@ func (p *PacketIO) FieldList(capability uint32, table string, wildcard string) (
 // Refresh use command COM_REFRESH
 //
 
-// Shutdown use command COM_SHUTDOWN
-//
+// Shutdown use command COM_SHUTDOWN -> SHUTDOWN_DEFAULT
+func (p *PacketIO) Shutdown(capability uint32, status *uint16) (*Result, error) {
+	var result *Result
+	var err error
+	if err := p.WriteCommandBuf(COM_SHUTDOWN, []byte{SHUTDOWN_DEFAULT}); err != nil {
+		return nil, err
+	}
+	result, err = p.ReadOK(capability, status)
+
+	return result, err
+}
+
+// KillConnection use command COM_SHUTDOWN -> KILL_CONNECTION
+func (p *PacketIO) KillConnection(capability uint32, status *uint16) (*Result, error) {
+	var result *Result
+	var err error
+	if err := p.WriteCommandBuf(COM_SHUTDOWN, []byte{KILL_CONNECTION}); err != nil {
+		return nil, err
+	}
+	result, err = p.ReadOK(capability, status)
+
+	return result, err
+}
 
 // Statistics use command COM_STATISTICS
 //

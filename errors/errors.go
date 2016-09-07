@@ -16,6 +16,11 @@ var (
 	ErrNoDataHost = errors.New("no data host")
 	ErrNoDataNode = errors.New("no data node")
 	ErrNoSchema   = errors.New("no schema")
+	ErrNoTable    = errors.New("no table")
+
+	ErrSchemaNotExists      = errors.New("schema not exists")
+	ErrDatabaseNotExists    = errors.New("database not exists")
+	ErrTableOrViewNotExists = errors.New("table or view not exists")
 
 	ErrMasterDown    = errors.New("master is down")
 	ErrSlaveDown     = errors.New("slave is down")

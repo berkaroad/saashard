@@ -126,6 +126,7 @@ func (c *Conn) Reconnect() error {
 // Close conn
 func (c *Conn) Close() error {
 	if c.conn != nil {
+		c.pkg.Quit(c.capability, &(c.status))
 		c.conn.Close()
 		c.conn = nil
 		c.salt = nil
@@ -166,6 +167,11 @@ func (c *Conn) GetDB() string {
 // GetAddr get addr.
 func (c *Conn) GetAddr() string {
 	return c.addr
+}
+
+// Query command.
+func (c *Conn) Query(query string) (*mysql.Result, error) {
+	return c.pkg.Query(c.capability, &(c.status), query)
 }
 
 // FieldList return field list.

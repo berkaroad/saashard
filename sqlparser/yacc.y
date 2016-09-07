@@ -28,6 +28,8 @@ var (
   empty       struct{}
   statement   Statement
   selStmt     SelectStatement
+  setStmt     SetStatement
+  showStmt    ShowStatement
   byt         byte
   bytes       []byte
   bytes2      [][]byte
@@ -62,7 +64,7 @@ var (
 %token LEX_ERROR
 %token <empty> SELECT INSERT UPDATE DELETE FROM WHERE GROUP HAVING ORDER BY LIMIT FOR
 %token <empty> ALL DISTINCT AS EXISTS NULL ASC DESC VALUES INTO DUPLICATE KEY DEFAULT SET LOCK
-%token <empty> SHOW
+%token <empty> SHOW EXPLAIN
 %token <bytes> ID STRING NUMBER VALUE_ARG COMMENT
 %token <empty> '(' '~'
 
@@ -88,10 +90,10 @@ var (
 %left <empty> END
 
 // Transaction Tokens
-%token <empty> BEGIN START TRANSACTION COMMIT ROLLBACK ISOLATION LEVEL READ COMMITTED UNCOMMITTED REPEATABLE
+%token <empty> BEGIN START TRANSACTION COMMIT ROLLBACK ISOLATION LEVEL READ COMMITTED UNCOMMITTED REPEATABLE SERIALIZABLE
 
 // Charset Tokens
-%token <empty> NAMES CHARSET CHARACTER 
+%token <empty> NAMES CHARSET CHARACTER COLLATION
 %token <bytes> ARMSCII8 ASCII BIG5 BINARY CP1250 CP1251 CP1256 CP1257 CP850 CP852 CP866 CP932
 %token <bytes> DEC8 EUCJPMS EUCKR GB2312 GBK GEOSTD8 GREEK HEBREW HP8 KEYBCS2 KOI8R KOI8U
 %token <bytes> LATIN1 LATIN2 LATIN5 LATIN7 MACCE MACROMAN SJIS SWE7 TIS620 UCS2 EJIS
@@ -101,7 +103,10 @@ var (
 %token <bytes> SESSION GLOBAL
 
 %token <empty> VARIABLES STATUS
-%token <empty> DATABASES STORAGE ENGINES TABLES COLUMNS PROCEDURE FUNCTION INDEXES KEYS
+%token <empty> DATABASES SCHEMAS DATABASE
+%token <empty> STORAGE ENGINES
+%token <empty> TABLES COLUMNS PROCEDURE FUNCTION INDEXES KEYS TRIGGER TRIGGERS
+%token <empty> PLUGINS PROCESSLIST
 
 // Replace
 %token <empty> REPLACE
@@ -121,13 +126,12 @@ var (
 
 %type <statement> command
 %type <selStmt> select_statement
-%type <statement> insert_statement update_statement delete_statement set_statement
+%type <setStmt> set_statement
+%type <showStmt> show_statement
+%type <statement> insert_statement update_statement delete_statement replace_statement
 %type <statement> create_statement alter_statement rename_statement drop_statement
-%type <statement> begin_statement commit_statement rollback_statement
-%type <statement> replace_statement
-%type <statement> use_statement
-%type <statement> show_statement
-%type <statement> admin_statement
+%type <statement> begin_statement commit_statement rollback_statement 
+%type <statement> use_statement explain_statement admin_statement
 
 %type <bytes2> comment_opt comment_list
 %type <str> union_op
@@ -188,13 +192,16 @@ any_command:
 
 command:
   select_statement
-  {
-    $$ = $1
-  }
+  { $$ = $1 }
+| set_statement
+  { $$ = $1 }
+| show_statement
+  { $$ = $1 }
 | insert_statement
 | update_statement
 | delete_statement
-| set_statement
+| replace_statement
+| explain_statement
 | create_statement
 | alter_statement
 | rename_statement
@@ -202,10 +209,10 @@ command:
 | begin_statement
 | commit_statement
 | rollback_statement
-| replace_statement
 | use_statement
-| show_statement
 | admin_statement
+| comment_list
+  { $$ = nil }
 
 select_statement:
   SELECT comment_opt distinct_opt select_expression_list limit_opt
@@ -220,7 +227,6 @@ select_statement:
   {
     $$ = &Union{Type: $2, Left: $1, Right: $3}
   }
-
 
 insert_statement:
   INSERT comment_opt ignore_opt INTO dml_table_expression column_list_opt row_list on_dup_opt
@@ -254,7 +260,6 @@ replace_statement:
     $$ = &Replace{Comments: Comments($2), Table: $4, Columns: cols, Rows: Values{vals}}
   }
 
-
 update_statement:
   UPDATE comment_opt dml_table_expression SET update_list where_expression_opt order_by_opt limit_opt
   {
@@ -267,78 +272,72 @@ delete_statement:
     $$ = &Delete{Comments: Comments($2), Table: $4, Where: NewWhere(AST_WHERE, $5), OrderBy: $6, Limit: $7}
   }
 
+explain_statement:
+  EXPLAIN select_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
+| EXPLAIN insert_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
+| EXPLAIN update_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
+| EXPLAIN replace_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
+| EXPLAIN delete_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
+
 set_statement:
   SET comment_opt scope_opt update_list
   {
-    $$ = &Set{
-          SetType: SetTypeNameValue,
+    $$ = &SetVariable{
           Comments: Comments($2), 
           Scope:string($3), 
-          NameValueExprs: $4,
+          Exprs: $4,
         }
-  }
-| SET comment_opt NAMES STRING 
-  {
-    $$ = &Set{
-          SetType: SetTypeNames, 
-          Comments: Comments($2), 
-          SpaceSplitExprs: SpaceSplitExprs{
-              &SpaceSplitExpr{
-                  Name: "names", Expr: $4,
-              },
-          },
-        }
-  }
-| SET comment_opt NAMES STRING COLLATE STRING
-  {
-    $$ = &Set{
-	        SetType: SetTypeNames, 
-          Comments: Comments($2), 
-	        SpaceSplitExprs: SpaceSplitExprs{
-	            &SpaceSplitExpr{
-	               Name: "names", Expr: $4,
-				      },
-				      &SpaceSplitExpr{
-	               Name: "collate", Expr: $6,
-				      },
-	       },
-	    }
   }
 | SET comment_opt CHARACTER SET charset_words
   {
-    $$ = &Set{
-	        SetType: SetTypeCharset, 
-          Comments: Comments($2), 
-	        SpaceSplitExprs: SpaceSplitExprs{
-	            &SpaceSplitExpr{
-	               Name: "character set", Expr: $5,
-				      },
-	        },
+    $$ = &SetCharset{
+	        Comments: Comments($2), 
+	        Charset: string($5),
 	    }
   }
 | SET comment_opt CHARSET charset_words
   {
-    $$ = &Set{
-	        SetType: SetTypeCharset, 
+    $$ = &SetCharset{
+	        Comments: Comments($2), 
+	        Charset: string($4),
+	    }
+  }
+| SET comment_opt NAMES charset_words 
+  {
+    $$ = &SetNames{
           Comments: Comments($2), 
-	        SpaceSplitExprs: SpaceSplitExprs{
-	            &SpaceSplitExpr{
-	               Name: "charset", Expr: $4,
-				      },
-	        },
+          Names: string($4),
+        }
+  }
+| SET comment_opt NAMES charset_words COLLATE STRING
+  {
+    $$ = &SetNames{
+	        Comments: Comments($2), 
+	        Names: string($4),
+          Collate: string($6),
 	    }
   }
 | SET comment_opt scope_opt TRANSACTION ISOLATION LEVEL isolation_level
   {
-    $$ = &Set{
-	        SetType: SetTypeTransactionIsolationLevel, 
-          Comments: Comments($2),
+    $$ = &SetTransactionIsolationLevel{
+	        Comments: Comments($2),
           Scope: string($3),
-	        SpaceSplitExprs: SpaceSplitExprs{
-	            &SpaceSplitExpr{
-	               Name: "transaction isolation level", Expr: $7,
-				      },
-	        },
+	        IsolationLevel: string($7),
 	    }
   }
 
@@ -351,7 +350,6 @@ begin_statement:
   {
     $$ = &Begin{}
   }
-
 
 commit_statement:
   COMMIT
@@ -425,78 +423,130 @@ drop_statement:
 show_statement:
   SHOW comment_opt CHARACTER SET where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeCharset, Comments : Comments($2), Section : "character set", LikeOrWhere : $5}
+    $$ = &ShowCharset{Comments : Comments($2), LikeOrWhere : $5}
   }
 | SHOW comment_opt CHARSET where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeCharset, Comments : Comments($2), Section : "charset", LikeOrWhere : $4}
+    $$ = &ShowCharset{Comments : Comments($2), LikeOrWhere : $4}
+  }
+| SHOW comment_opt COLLATION where_or_like_opt
+  {
+    $$ = &ShowCollation{Comments : Comments($2), LikeOrWhere : $4}
   }
 | SHOW comment_opt scope_opt VARIABLES where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeVariables, Comments : Comments($2), Scope: string($3), Section : "VARIABLES", LikeOrWhere : $5}
+    $$ = &ShowVariables{Comments : Comments($2), Scope: string($3), LikeOrWhere : $5}
   }
 | SHOW comment_opt scope_opt STATUS where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeStatus, Comments : Comments($2), Scope: string($3), Section : "status", LikeOrWhere : $5}
+    $$ = &ShowStatus{Comments : Comments($2), Scope: string($3), LikeOrWhere : $5}
   }
 | SHOW comment_opt DATABASES where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeDatabases, Comments : Comments($2), Section : "databases", LikeOrWhere : $4}
+    $$ = &ShowDatabases{Comments : Comments($2), LikeOrWhere : $4}
+  }
+| SHOW comment_opt SCHEMAS where_or_like_opt
+  {
+    $$ = &ShowDatabases{Comments : Comments($2), LikeOrWhere : $4}
+  }
+| SHOW comment_opt TABLES where_or_like_opt
+  {
+    $$ = &ShowTables{Comments : Comments($2), LikeOrWhere : $4}
   }
 | SHOW comment_opt TABLES FROM dml_table_expression where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeTables, Comments : Comments($2), Section : "tables", From : $5, LikeOrWhere : $6}
+    $$ = &ShowTables{Comments : Comments($2), From : $5, LikeOrWhere : $6}
+  }
+| SHOW comment_opt FULL TABLES where_or_like_opt
+  {
+    $$ = &ShowFullTables{Comments : Comments($2), LikeOrWhere : $5}
   }
 | SHOW comment_opt FULL TABLES FROM dml_table_expression where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeTables, Comments : Comments($2), Section : "full tables", From : $6, LikeOrWhere : $7}
+    $$ = &ShowFullTables{Comments : Comments($2), From : $6, LikeOrWhere : $7}
   }
 | SHOW comment_opt COLUMNS FROM dml_table_expression where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeColumns, Comments : Comments($2), Section : "columns", From : $5, LikeOrWhere : $6}
+    $$ = &ShowColumns{Comments : Comments($2), From : $5, LikeOrWhere : $6}
   }
 | SHOW comment_opt FULL COLUMNS FROM dml_table_expression where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeColumns, Comments : Comments($2), Section : "full columns", From : $6, LikeOrWhere : $7}
+    $$ = &ShowFullColumns{Comments : Comments($2), From : $6, LikeOrWhere : $7}
   }
 | SHOW comment_opt PROCEDURE STATUS where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeProcedureStatus, Comments : Comments($2), Section : "full columns", LikeOrWhere : $5}
+    $$ = &ShowProcedureStatus{Comments : Comments($2), LikeOrWhere : $5}
   }
 | SHOW comment_opt FUNCTION STATUS where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeFunctionStatus, Comments : Comments($2), Section : "full columns", LikeOrWhere : $5}
+    $$ = &ShowFunctionStatus{Comments : Comments($2), LikeOrWhere : $5}
   }
-| SHOW comment_opt INDEX FROM dml_table_expression where_or_like_opt
+| SHOW comment_opt INDEX FROM dml_table_expression where_expression_opt
   {
-    $$ = &Show{Type : ShowTypeIndexes, Comments : Comments($2), Section : "index", From : $5, LikeOrWhere : $6}
+    $$ = &ShowIndex{Comments : Comments($2), From : $5, Where : $6}
   }
-| SHOW comment_opt INDEXES FROM dml_table_expression where_or_like_opt
+| SHOW comment_opt INDEXES FROM dml_table_expression where_expression_opt
   {
-    $$ = &Show{Type : ShowTypeIndexes, Comments : Comments($2), Section : "indexes", From : $5, LikeOrWhere : $6}
+    $$ = &ShowIndex{Comments : Comments($2), From : $5, Where : $6}
   }
-| SHOW comment_opt KEYS FROM dml_table_expression where_or_like_opt
+| SHOW comment_opt KEYS FROM dml_table_expression where_expression_opt
   {
-    $$ = &Show{Type : ShowTypeIndexes, Comments : Comments($2), Section : "keys", From : $5, LikeOrWhere : $6}
+    $$ = &ShowIndex{Comments : Comments($2), From : $5, Where : $6}
   }
-| SHOW comment_opt ENGINES
+| SHOW comment_opt TRIGGERS FROM dml_table_expression where_or_like_opt
   {
-    $$ = &Show{Type : ShowTypeEngines, Comments : Comments($2), Section : "engines"}
+    $$ = &ShowTriggers{Comments : Comments($2), From : $5, LikeOrWhere : $6}
   }
-| SHOW comment_opt STORAGE ENGINES
+| SHOW comment_opt CREATE DATABASE dml_table_expression
   {
-    $$ = &Show{Type : ShowTypeEngines, Comments : Comments($2), Section : "storage engines"}
+    $$ = &ShowCreateDatabase{Comments : Comments($2), Name : $5}
+  }
+| SHOW comment_opt CREATE TABLE dml_table_expression
+  {
+    $$ = &ShowCreateTable{Comments : Comments($2), Name : $5}
+  }
+| SHOW comment_opt CREATE VIEW dml_table_expression
+  {
+    $$ = &ShowCreateView{Comments : Comments($2), Name : $5}
+  }
+| SHOW comment_opt CREATE PROCEDURE dml_table_expression
+  {
+    $$ = &ShowCreateProcedure{Comments : Comments($2), Name : $5}
+  }
+| SHOW comment_opt CREATE FUNCTION dml_table_expression
+  {
+    $$ = &ShowCreateFunction{Comments : Comments($2), Name : $5}
+  }
+| SHOW comment_opt CREATE TRIGGER dml_table_expression
+  {
+    $$ = &ShowCreateTrigger{Comments : Comments($2), Name : $5}
+  }
+| SHOW comment_opt PROCESSLIST
+  {
+    $$ = &ShowProcessList{Comments : Comments($2)}
+  }
+| SHOW comment_opt FULL PROCESSLIST
+  {
+    $$ = &ShowFullProcessList{Comments : Comments($2)}
+  }
+| SHOW ENGINES
+  {
+    $$ = &ShowEngines{}
+  }
+| SHOW STORAGE ENGINES
+  {
+    $$ = &ShowEngines{}
+  }
+| SHOW PLUGINS
+  {
+    $$ = &ShowPlugins{}
   }
 
 admin_statement:
-  ADMIN dml_table_expression column_list_opt row_list
-  {
-    $$ = &Admin{Region : $2, Columns : $3,Rows:$4}
-  }
+  ADMIN
+  { $$ = nil }
 | ADMIN HELP
-  {
-    $$ = &AdminHelp{}
-  }
+  { $$ = nil }
 
 comment_opt:
   {
@@ -1317,7 +1367,6 @@ charset_words:
 | UTF8MB4
   { $$ = []byte("utf8mb4") }
 
-
 isolation_level:
   READ COMMITTED
   { $$ = []byte("read committed") }
@@ -1325,6 +1374,8 @@ isolation_level:
   { $$ = []byte("read uncommitted") }
 | REPEATABLE READ
   { $$ = []byte("repeatable read") }
+| SERIALIZABLE
+  { $$ = []byte("serializable") }
 
 scope_opt:
   { $$ = nil }

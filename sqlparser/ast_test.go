@@ -5,21 +5,22 @@ import "testing"
 func TestParseSelect(t *testing.T) {
 	var sql string
 	sql = "SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED"
-	sql = "set charset utf8"
-	sql = "set CHARACTER SET utf32"
+	// sql = "set charset utf8"
+	// sql = "set CHARACTER SET utf32"
 
-	sql = "SHOW cHarset"
-	sql = "SHOW CHARACTER SET"
-	sql = "SHOW CHARACTER SET where Charset = 'utf8'"
-	sql = "SHOW SESSION VARIABLES LIKE 'lower_case_table_names'"
-	sql = "show session status"
-	sql = "SHOW Databases"
-	sql = "show tables from `t1`"
-	sql = "show full tables from `t1`.`t2`"
-	sql = "show columns from t1"
-	sql = "show full columns from t1"
-	sql = "show procedure status"
-	sql = "show function status"
+	// sql = "SHOW cHarset"
+	// sql = "SHOW CHARACTER SET"
+	// sql = "SHOW CHARACTER SET where Charset = 'utf8'"
+	// sql = "SHOW SESSION VARIABLES LIKE 'lower_case_table_names'"
+	// sql = "show session status"
+	// sql = "SHOW Databases"
+	// sql = "show tables from `t1`"
+	// sql = "show full tables from `t1`.`t2`"
+	// sql = "show columns from t1"
+	// sql = "show full columns from t1"
+	// sql = "show procedure status"
+	// sql = "show function status"
+	// sql = "SHOW TRIGGERS FROM `kgw2` WHERE `Table` = 'buy_list'"
 
 	// sql = "select version()"
 	// sql = "select version() limit 0,100"
@@ -29,12 +30,19 @@ func TestParseSelect(t *testing.T) {
 	// sql = "select (case t1.f1 when '0' then 'hello' else 'world' end) f1 from t1"
 	// sql = "select (case when t1.f1='0' then 'hello' else 'world' end) f1 from t1"
 
-	t.Log(sql)
+	// sql = "UPDATE `buy_list` SET `status_id`=5 WHERE `buy_id`=1"
 
+	// sql = "explain select * from `kgw2`.`buy_list`"
+
+	t.Log(sql)
 	if stmt, err := Parse(sql); err != nil {
 		t.Error(err)
 	} else {
 		t.Log(String(stmt))
+		switch v := stmt.(type) {
+		case *Update:
+			t.Log("Update statement", String(v.Where.Expr))
+		}
 		t.Fail()
 	}
 

@@ -35,3 +35,15 @@ const (
 	COM_BINLOG_DUMP_GTID
 	COM_RESET_CONNECTION
 )
+
+// Shutdown subcommand
+const (
+	SHUTDOWN_DEFAULT byte = iota
+	SHUTDOWN_WAIT_CONNECTIONS
+	SHUTDOWN_WAIT_TRANSACTIONS
+	SHUTDOWN_WAIT_UPDATES          byte = 0x08
+	SHUTDOWN_WAIT_ALL_BUFFERS      byte = 0x10
+	SHUTDOWN_WAIT_CRITICAL_BUFFERS byte = 0x11
+	KILL_QUERY                     byte = 0xfe
+	KILL_CONNECTION                byte = 0xff
+)

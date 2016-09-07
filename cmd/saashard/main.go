@@ -40,7 +40,7 @@ const banner string = `
 func main() {
 	fmt.Print(banner)
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	fmt.Println("cup num=", runtime.NumCPU())
+
 	flag.Parse()
 	fmt.Printf("Git commit:%s\n", saashard.Version)
 	fmt.Printf("Build time:%s\n", saashard.Compile)
