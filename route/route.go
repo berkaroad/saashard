@@ -138,10 +138,14 @@ func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err 
 		plan, err = r.buildShowProcessListPlan(v)
 	case *sqlparser.ShowFullProcessList:
 		plan, err = r.buildShowFullProcessListPlan(v)
+	case *sqlparser.ShowSlaveStatus:
+		plan, err = r.buildShowSlaveStatusPlan(v)
 	case *sqlparser.ShowVariables:
 		plan, err = r.buildShowVariablesPlan(v)
 	case *sqlparser.ShowStatus:
 		plan, err = r.buildShowStatusPlan(v)
+	case *sqlparser.ShowDatabases:
+		plan, err = r.buildShowDatabasesPlan(v)
 	case *sqlparser.ShowTables:
 		plan, err = r.buildShowTablesPlan(v)
 	case *sqlparser.ShowFullTables:

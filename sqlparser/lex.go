@@ -143,6 +143,7 @@ var keywords = map[string]int{
 	"keys":        KEYS,
 	"triggers":    TRIGGERS,
 	"trigger":     TRIGGER,
+	"slave":       SLAVE,
 
 	"session": SESSION,
 	"global":  GLOBAL,

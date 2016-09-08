@@ -35,6 +35,8 @@ func TestParseSelect(t *testing.T) {
 	// sql = "explain select * from `kgw2`.`buy_list`"
 	sql = "select version()"
 	sql = "select database()"
+
+	sql = "show slave status"
 	t.Log(sql)
 	if stmt, err := Parse(sql); err != nil {
 		t.Error(err)

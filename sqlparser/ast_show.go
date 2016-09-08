@@ -417,3 +417,15 @@ func (node *ShowFullProcessList) Format(buf *TrackedBuffer) {
 
 func (node *ShowFullProcessList) IStatement()     {}
 func (node *ShowFullProcessList) IShowStatement() {}
+
+// ShowSlaveStatus statement
+type ShowSlaveStatus struct {
+	Comments Comments
+}
+
+func (node *ShowSlaveStatus) Format(buf *TrackedBuffer) {
+	buf.Fprintf("show %v slave status", node.Comments)
+}
+
+func (node *ShowSlaveStatus) IStatement()     {}
+func (node *ShowSlaveStatus) IShowStatement() {}

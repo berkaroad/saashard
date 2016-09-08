@@ -86,6 +86,18 @@ func (r *Router) buildShowFullProcessListPlan(statement *sqlparser.ShowFullProce
 	return plan, nil
 }
 
+func (r *Router) buildShowSlaveStatusPlan(statement *sqlparser.ShowSlaveStatus) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	plan := new(normalPlan)
+
+	plan.DataNode = schemaConfig.Nodes[0]
+	plan.IsSlave = true
+	plan.Statement = statement
+	plan.anyNode = true
+
+	return plan, nil
+}
+
 func (r *Router) buildShowVariablesPlan(statement *sqlparser.ShowVariables) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
@@ -155,7 +167,7 @@ func (r *Router) buildShowStatusPlan(statement *sqlparser.ShowStatus) (*normalPl
 	return plan, nil
 }
 
-func (r *Router) buildShowDatabasesPlan(statement *sqlparser.ShowTables) (*normalPlan, error) {
+func (r *Router) buildShowDatabasesPlan(statement *sqlparser.ShowDatabases) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 

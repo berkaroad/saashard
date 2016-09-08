@@ -106,7 +106,7 @@ var (
 %token <empty> DATABASES SCHEMAS DATABASE
 %token <empty> STORAGE ENGINES
 %token <empty> TABLES COLUMNS PROCEDURE FUNCTION INDEXES KEYS TRIGGER TRIGGERS
-%token <empty> PLUGINS PROCESSLIST
+%token <empty> PLUGINS PROCESSLIST SLAVE
 
 // Replace
 %token <empty> REPLACE
@@ -530,6 +530,10 @@ show_statement:
 | SHOW comment_opt FULL PROCESSLIST
   {
     $$ = &ShowFullProcessList{Comments : Comments($2)}
+  }
+| SHOW comment_opt SLAVE STATUS
+  {
+    $$ = &ShowSlaveStatus{Comments : Comments($2)}
   }
 | SHOW ENGINES
   {
