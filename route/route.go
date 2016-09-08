@@ -12,8 +12,12 @@ import (
 var sysDBMapping = map[string]string{
 	"mysql": "mysql"}
 
-// Plan execute plain.
-type Plan struct {
+// Plan to execute.
+type Plan interface {
+	Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result, dataNode string, isSlave bool) error) error
+}
+
+type normalPlan struct {
 	Statement sqlparser.Statement
 	DataNode  string
 	IsSlave   bool          // Execute at slave or master.
@@ -21,13 +25,29 @@ type Plan struct {
 	anyNode   bool          // Can execute at any node or not.
 }
 
-// MergedPlan from plan array.
-type MergedPlan struct {
+// Execute the plan
+func (plan *normalPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result, dataNode string, isSlave bool) error) error {
+	if executor != nil {
+		return executor([]sqlparser.Statement{plan.Statement}, []*mysql.Result{plan.Result}, plan.DataNode, plan.IsSlave)
+	}
+	return nil
+}
+
+// mergedPlan from plan array.
+type mergedPlan struct {
 	Statements []sqlparser.Statement
 	Results    []*mysql.Result
 	DataNode   string
 	IsSlave    bool // Execute at slave or master.
 	anyNode    bool // Can execute at any node or not.
+}
+
+// Execute the plan
+func (plan *mergedPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result, dataNode string, isSlave bool) error) error {
+	if executor != nil {
+		return executor(plan.Statements, plan.Results, plan.DataNode, plan.IsSlave)
+	}
+	return nil
 }
 
 // Router used to build plan.
@@ -52,29 +72,30 @@ func NewRouter(schemaName string, schemas map[string]*config.SchemaConfig, nodes
 }
 
 // BuildMergedPlan to merge from plan array.
-func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan *MergedPlan, err error) {
+func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan Plan, err error) {
 	if len(statements) == 0 {
 		return nil, errors.ErrNoPlan
 	}
-	plans := make([]*Plan, len(statements))
+	plans := make([]*normalPlan, len(statements))
 	for i, stmt := range statements {
 		statement := stmt
-		plans[i], err = r.BuildPlan(statement)
+		var thePlan Plan
+		thePlan, err = r.BuildNormalPlan(statement)
 		if err != nil {
 			return
 		}
+		plans[i] = thePlan.(*normalPlan)
 	}
 	planCount := len(plans)
-	mergedPlan := new(MergedPlan)
+	mergedPlan := new(mergedPlan)
 	mergedPlan.Statements = make([]sqlparser.Statement, planCount)
 	mergedPlan.Results = make([]*mysql.Result, planCount)
-	mergedPlan.DataNode = plans[0].DataNode
-	mergedPlan.IsSlave = plans[0].IsSlave
-	mergedPlan.anyNode = plans[0].anyNode
-	if plans[0].Result != nil {
-		mergedPlan.Results[0] = plans[0].Result
-	}
-	mergedPlan.Statements[0] = plans[0].Statement
+	firstNormalPlan := plans[0]
+	mergedPlan.DataNode = firstNormalPlan.DataNode
+	mergedPlan.IsSlave = firstNormalPlan.IsSlave
+	mergedPlan.anyNode = firstNormalPlan.anyNode
+	mergedPlan.Results[0] = firstNormalPlan.Result
+	mergedPlan.Statements[0] = firstNormalPlan.Statement
 
 	if planCount > 1 {
 		for i, currentPlan := range plans[1:] {
@@ -101,8 +122,8 @@ func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan *Merge
 	return mergedPlan, nil
 }
 
-// BuildPlan to build plan
-func (r *Router) BuildPlan(statement sqlparser.Statement) (plan *Plan, err error) {
+// BuildNormalPlan to build plan
+func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err error) {
 	originalSQL := sqlparser.String(statement)
 	planSQL := originalSQL
 	switch v := statement.(type) {

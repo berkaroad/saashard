@@ -31,9 +31,20 @@ var variableValueField = &mysql.Field{Schema: []byte("information_schema"),
 	Flags:        mysql.NOT_NULL_FLAG,
 	Decimals:     0}
 
-func (r *Router) buildShowEnginesPlan(statement *sqlparser.ShowEngines) (*Plan, error) {
+var schemataDatabaseField = &mysql.Field{Schema: []byte("information_schema"),
+	Table:        []byte("SCHEMATA"),
+	OrgTable:     []byte("SCHEMATA"),
+	Name:         []byte("Database"),
+	OrgName:      []byte("SCHEMA_NAME"),
+	Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
+	ColumnLength: 192,
+	ColumnType:   mysql.MYSQL_TYPE_VAR_STRING,
+	Flags:        mysql.NOT_NULL_FLAG,
+	Decimals:     0}
+
+func (r *Router) buildShowEnginesPlan(statement *sqlparser.ShowEngines) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
@@ -42,9 +53,9 @@ func (r *Router) buildShowEnginesPlan(statement *sqlparser.ShowEngines) (*Plan, 
 	return plan, nil
 }
 
-func (r *Router) buildShowPluginsPlan(statement *sqlparser.ShowPlugins) (*Plan, error) {
+func (r *Router) buildShowPluginsPlan(statement *sqlparser.ShowPlugins) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
@@ -53,9 +64,9 @@ func (r *Router) buildShowPluginsPlan(statement *sqlparser.ShowPlugins) (*Plan, 
 	return plan, nil
 }
 
-func (r *Router) buildShowProcessListPlan(statement *sqlparser.ShowProcessList) (*Plan, error) {
+func (r *Router) buildShowProcessListPlan(statement *sqlparser.ShowProcessList) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
@@ -64,9 +75,9 @@ func (r *Router) buildShowProcessListPlan(statement *sqlparser.ShowProcessList) 
 	return plan, nil
 }
 
-func (r *Router) buildShowFullProcessListPlan(statement *sqlparser.ShowFullProcessList) (*Plan, error) {
+func (r *Router) buildShowFullProcessListPlan(statement *sqlparser.ShowFullProcessList) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
@@ -75,9 +86,9 @@ func (r *Router) buildShowFullProcessListPlan(statement *sqlparser.ShowFullProce
 	return plan, nil
 }
 
-func (r *Router) buildShowVariablesPlan(statement *sqlparser.ShowVariables) (*Plan, error) {
+func (r *Router) buildShowVariablesPlan(statement *sqlparser.ShowVariables) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
@@ -134,9 +145,9 @@ func (r *Router) buildShowVariablesPlan(statement *sqlparser.ShowVariables) (*Pl
 	return plan, nil
 }
 
-func (r *Router) buildShowStatusPlan(statement *sqlparser.ShowStatus) (*Plan, error) {
+func (r *Router) buildShowStatusPlan(statement *sqlparser.ShowStatus) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
@@ -144,7 +155,32 @@ func (r *Router) buildShowStatusPlan(statement *sqlparser.ShowStatus) (*Plan, er
 	return plan, nil
 }
 
-func (r *Router) buildShowTablesPlan(statement *sqlparser.ShowTables) (*Plan, error) {
+func (r *Router) buildShowDatabasesPlan(statement *sqlparser.ShowTables) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	plan := new(normalPlan)
+
+	plan.DataNode = schemaConfig.Nodes[0]
+	plan.IsSlave = true
+	plan.Statement = statement
+	plan.anyNode = true
+
+	result := new(mysql.Result)
+	result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
+	result.Resultset = new(mysql.Resultset)
+	result.Resultset.Fields = make([]*mysql.Field, 1)
+	result.Resultset.Fields[0] = schemataDatabaseField
+
+	result.Rows = make([]*mysql.Row, 0, len(r.Schemas))
+	for name := range r.Schemas {
+		row := mysql.NewTextRow(result.Resultset.Fields)
+		row.AppendStringValue(name)
+		result.Rows = append(result.Rows, row)
+	}
+	plan.Result = result
+	return plan, nil
+}
+
+func (r *Router) buildShowTablesPlan(statement *sqlparser.ShowTables) (*normalPlan, error) {
 	db := ""
 	if statement.From != nil {
 		db = string(statement.From.Name)
@@ -159,7 +195,7 @@ func (r *Router) buildShowTablesPlan(statement *sqlparser.ShowTables) (*Plan, er
 		return nil, errors.ErrDatabaseNotExists
 	}
 
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
@@ -191,7 +227,7 @@ func (r *Router) buildShowTablesPlan(statement *sqlparser.ShowTables) (*Plan, er
 	return plan, nil
 }
 
-func (r *Router) buildShowFullTablesPlan(statement *sqlparser.ShowFullTables) (*Plan, error) {
+func (r *Router) buildShowFullTablesPlan(statement *sqlparser.ShowFullTables) (*normalPlan, error) {
 	db := ""
 	if statement.From != nil {
 		db = string(statement.From.Name)
@@ -205,7 +241,7 @@ func (r *Router) buildShowFullTablesPlan(statement *sqlparser.ShowFullTables) (*
 	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
 		return nil, errors.ErrDatabaseNotExists
 	}
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
@@ -249,8 +285,8 @@ func (r *Router) buildShowFullTablesPlan(statement *sqlparser.ShowFullTables) (*
 	return plan, nil
 }
 
-func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*Plan, error) {
-	plan := new(Plan)
+func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normalPlan, error) {
+	plan := new(normalPlan)
 
 	schemaConfig := r.Schemas[r.SchemaName]
 	db := string(statement.From.Qualifier)
@@ -283,8 +319,8 @@ func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*Plan, 
 	return plan, nil
 }
 
-func (r *Router) buildShowFullColumnsPlan(statement *sqlparser.ShowFullColumns) (*Plan, error) {
-	plan := new(Plan)
+func (r *Router) buildShowFullColumnsPlan(statement *sqlparser.ShowFullColumns) (*normalPlan, error) {
+	plan := new(normalPlan)
 
 	db := string(statement.From.Qualifier)
 	if db == "" {
@@ -314,8 +350,8 @@ func (r *Router) buildShowFullColumnsPlan(statement *sqlparser.ShowFullColumns) 
 	return plan, nil
 }
 
-func (r *Router) buildShowIndexPlan(statement *sqlparser.ShowIndex) (*Plan, error) {
-	plan := new(Plan)
+func (r *Router) buildShowIndexPlan(statement *sqlparser.ShowIndex) (*normalPlan, error) {
+	plan := new(normalPlan)
 
 	db := string(statement.From.Qualifier)
 	if db == "" {
@@ -345,7 +381,7 @@ func (r *Router) buildShowIndexPlan(statement *sqlparser.ShowIndex) (*Plan, erro
 	return plan, nil
 }
 
-func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*Plan, error) {
+func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*normalPlan, error) {
 	db := string(statement.From.Name)
 	if db == "" {
 		db = r.SchemaName
@@ -356,7 +392,7 @@ func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*Plan
 	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
 		return nil, errors.ErrDatabaseNotExists
 	}
-	plan := new(Plan)
+	plan := new(normalPlan)
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
 	plan.Statement = statement
@@ -511,9 +547,9 @@ func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*Plan
 	return plan, nil
 }
 
-func (r *Router) buildShowProcedureStatusPlan(statement *sqlparser.ShowProcedureStatus) (*Plan, error) {
+func (r *Router) buildShowProcedureStatusPlan(statement *sqlparser.ShowProcedureStatus) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(Plan)
+	plan := new(normalPlan)
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
 	plan.Statement = statement
@@ -665,9 +701,9 @@ func (r *Router) buildShowProcedureStatusPlan(statement *sqlparser.ShowProcedure
 	return plan, nil
 }
 
-func (r *Router) buildShowFunctionStatusPlan(statement *sqlparser.ShowFunctionStatus) (*Plan, error) {
+func (r *Router) buildShowFunctionStatusPlan(statement *sqlparser.ShowFunctionStatus) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(Plan)
+	plan := new(normalPlan)
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
 	plan.Statement = statement
@@ -817,7 +853,7 @@ func (r *Router) buildShowFunctionStatusPlan(statement *sqlparser.ShowFunctionSt
 	return plan, nil
 }
 
-func (r *Router) buildShowCreateDatabasePlan(statement *sqlparser.ShowCreateDatabase) (*Plan, error) {
+func (r *Router) buildShowCreateDatabasePlan(statement *sqlparser.ShowCreateDatabase) (*normalPlan, error) {
 	db := string(statement.Name.Name)
 	if db == "" {
 		db = r.SchemaName
@@ -829,7 +865,7 @@ func (r *Router) buildShowCreateDatabasePlan(statement *sqlparser.ShowCreateData
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Name = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
@@ -838,7 +874,7 @@ func (r *Router) buildShowCreateDatabasePlan(statement *sqlparser.ShowCreateData
 	return plan, nil
 }
 
-func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) (*Plan, error) {
+func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) (*normalPlan, error) {
 	db := string(statement.Name.Qualifier)
 	if db == "" {
 		db = r.SchemaName
@@ -850,7 +886,7 @@ func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) 
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	table := string(statement.Name.Name)
 	table = strings.Trim(strings.ToLower(table), "`")
@@ -866,7 +902,7 @@ func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) 
 	return plan, nil
 }
 
-func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*Plan, error) {
+func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*normalPlan, error) {
 	db := string(statement.Name.Qualifier)
 	if db == "" {
 		db = r.SchemaName
@@ -878,7 +914,7 @@ func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	table := string(statement.Name.Name)
 	table = strings.Trim(strings.ToLower(table), "`")
@@ -894,7 +930,7 @@ func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*
 	return plan, nil
 }
 
-func (r *Router) buildShowCreateTriggerPlan(statement *sqlparser.ShowCreateTrigger) (*Plan, error) {
+func (r *Router) buildShowCreateTriggerPlan(statement *sqlparser.ShowCreateTrigger) (*normalPlan, error) {
 	db := string(statement.Name.Qualifier)
 	if db == "" {
 		db = r.SchemaName
@@ -907,7 +943,7 @@ func (r *Router) buildShowCreateTriggerPlan(statement *sqlparser.ShowCreateTrigg
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
 	if schemaConfig.ShardKey == "" {
-		plan := new(Plan)
+		plan := new(normalPlan)
 
 		trigger := string(statement.Name.Name)
 		trigger = strings.Trim(strings.ToLower(trigger), "`")
@@ -921,7 +957,7 @@ func (r *Router) buildShowCreateTriggerPlan(statement *sqlparser.ShowCreateTrigg
 	return nil, errors.ErrNoPlan
 }
 
-func (r *Router) buildShowCreateProcedurePlan(statement *sqlparser.ShowCreateProcedure) (*Plan, error) {
+func (r *Router) buildShowCreateProcedurePlan(statement *sqlparser.ShowCreateProcedure) (*normalPlan, error) {
 	db := string(statement.Name.Qualifier)
 	if db == "" {
 		db = r.SchemaName
@@ -934,7 +970,7 @@ func (r *Router) buildShowCreateProcedurePlan(statement *sqlparser.ShowCreatePro
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
 	if schemaConfig.ShardKey == "" {
-		plan := new(Plan)
+		plan := new(normalPlan)
 
 		procedure := string(statement.Name.Name)
 		procedure = strings.Trim(strings.ToLower(procedure), "`")
@@ -948,7 +984,7 @@ func (r *Router) buildShowCreateProcedurePlan(statement *sqlparser.ShowCreatePro
 	return nil, errors.ErrNoPlan
 }
 
-func (r *Router) buildShowCreateFunctionPlan(statement *sqlparser.ShowCreateFunction) (*Plan, error) {
+func (r *Router) buildShowCreateFunctionPlan(statement *sqlparser.ShowCreateFunction) (*normalPlan, error) {
 	db := string(statement.Name.Qualifier)
 	if db == "" {
 		db = r.SchemaName
@@ -961,7 +997,7 @@ func (r *Router) buildShowCreateFunctionPlan(statement *sqlparser.ShowCreateFunc
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
 	if schemaConfig.ShardKey == "" {
-		plan := new(Plan)
+		plan := new(normalPlan)
 
 		function := string(statement.Name.Name)
 		function = strings.Trim(strings.ToLower(function), "`")

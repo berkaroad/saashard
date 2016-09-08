@@ -51,7 +51,7 @@ var databaseField = &mysql.Field{Schema: []byte(""),
 	Flags:        mysql.NOT_NULL_FLAG,
 	Decimals:     31}
 
-func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*Plan, error) {
+func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	supportedFieldNames := map[string]*mysql.Field{
 		"current_user()":  currentUserField,
@@ -74,7 +74,7 @@ func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*Plan
 		}
 	}
 
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
@@ -101,9 +101,9 @@ func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*Plan
 	return plan, nil
 }
 
-func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*Plan, error) {
+func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(Plan)
+	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true

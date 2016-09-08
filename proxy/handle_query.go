@@ -31,12 +31,11 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 			return
 		}
 	}()
-	var onlySingleSQL = true
-	var plan *route.MergedPlan
-	var result *mysql.Result
 
 	sql = strings.TrimSpace(sql)
 
+	var onlySingleSQL = true
+	var plan route.Plan
 	var sqls []string
 	if c.capability&mysql.CLIENT_MULTI_STATEMENTS > 0 {
 		sqls = sqlparser.SplitSQLStatement(sql)
@@ -52,43 +51,12 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 			err = mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s'", sql))
 			return
 		}
-
-		switch v := stmt.(type) {
-		case *sqlparser.UseDB:
-			return c.handleInitDB(v.DB)
-
-		case *sqlparser.ShowDatabases:
-			result = new(mysql.Result)
-			result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
-			result.Resultset = new(mysql.Resultset)
-			result.Resultset.Fields = make([]*mysql.Field, 1)
-			result.Resultset.Fields[0] = &mysql.Field{Schema: []byte("information_schema"),
-				Table:        []byte("SCHEMATA"),
-				OrgTable:     []byte("SCHEMATA"),
-				Name:         []byte("Database"),
-				OrgName:      []byte("SCHEMA_NAME"),
-				Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
-				ColumnLength: 192,
-				ColumnType:   mysql.MYSQL_TYPE_VAR_STRING,
-				Flags:        mysql.NOT_NULL_FLAG,
-				Decimals:     0}
-
-			result.Rows = make([]*mysql.Row, 0, len(c.schemas))
-			for name := range c.schemas {
-				row := mysql.NewTextRow(result.Resultset.Fields)
-				row.AppendStringValue(name)
-				result.Rows = append(result.Rows, row)
-			}
-			return c.pkg.WriteResultSet(c.capability, c.status, result)
-
-		default:
-			router := route.NewRouter(c.db, c.schemas, c.proxy.cfg.GetNodes(), c.connectionID, c.user)
-			plan, err = router.BuildMergedPlan(v)
-			if err != nil {
-				return
-			}
-			return c.executePlan(plan)
+		router := route.NewRouter(c.db, c.schemas, c.proxy.cfg.GetNodes(), c.connectionID, c.user)
+		plan, err = router.BuildMergedPlan(stmt)
+		if err != nil {
+			return
 		}
+		return plan.Execute(c.executePlan)
 	}
 
 	var stmts = make([]sqlparser.Statement, len(sqls))
@@ -106,19 +74,19 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 	if err != nil {
 		return
 	}
-	return c.executePlan(plan)
+	return plan.Execute(c.executePlan)
 }
 
-func (c *ClientConn) executePlan(plan *route.MergedPlan) (err error) {
-	resultCount := len(plan.Statements)
+func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*mysql.Result, dataNode string, isSlave bool) (err error) {
+	resultCount := len(statements)
 	var direct = false
 	var total = make([]byte, 0, 1024)
 
-	node := c.proxy.nodes[plan.DataNode]
+	node := c.proxy.nodes[dataNode]
 	var mysqlConn *mysqlBackend.Conn
 	var conn backend.Connection
 	var dbHost *backend.DBHost
-	if plan.IsSlave {
+	if isSlave {
 		dbHost = node.DataHost.Slaves[0]
 
 	} else {
@@ -131,7 +99,7 @@ func (c *ClientConn) executePlan(plan *route.MergedPlan) (err error) {
 
 	defer mysqlConn.Close()
 
-	//mysqlConn.SetAutoCommit(1)
+	mysqlConn.SetAutoCommit(1)
 	mysqlConn.UseDB(node.Database)
 
 	var result *mysql.Result
@@ -140,49 +108,30 @@ func (c *ClientConn) executePlan(plan *route.MergedPlan) (err error) {
 			direct = true
 		}
 
-		if plan.Results[i] != nil {
-			total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, plan.Results[i], direct)
+		if results[i] != nil {
+			total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, results[i], direct)
 			if err != nil {
 				return
 			}
-		} else if plan.Statements[i] != nil {
-			statement := plan.Statements[i]
-			sql := sqlparser.String(statement)
-			if result, err = mysqlConn.Query(sql); err != nil {
-				return
-			}
-			if result.Resultset == nil {
-				total, err = c.pkg.WriteOKBatch(total, c.capability, c.status, result, direct)
-			} else {
-				total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, result, direct)
+		} else if statements[i] != nil {
+			statement := statements[i]
+			switch v := statement.(type) {
+			case *sqlparser.UseDB:
+				err = c.handleInitDB(v.DB)
+			default:
+				sql := sqlparser.String(statement)
+				if result, err = mysqlConn.Query(sql); err != nil {
+					return
+				}
+				if result.Resultset == nil {
+					total, err = c.pkg.WriteOKBatch(total, c.capability, c.status, result, direct)
+				} else {
+					total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, result, direct)
+				}
 			}
 			if err != nil {
 				return
 			}
-			// switch statement.(type) {
-			// case sqlparser.SelectStatement:
-			// 	total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, result, direct)
-			// 	if err != nil {
-			// 		return
-			// 	}
-			// case sqlparser.ShowStatement:
-			// 	total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, result, direct)
-			// 	if err != nil {
-			// 		return
-			// 	}
-
-			// case *sqlparser.Explain:
-			// 	total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, result, direct)
-			// 	if err != nil {
-			// 		return
-			// 	}
-
-			// default:
-			// 	total, err = c.pkg.WriteOKBatch(total, c.capability, c.status, result, direct)
-			// 	if err != nil {
-			// 		return
-			// 	}
-			// }
 		}
 	}
 	return nil
