@@ -127,6 +127,9 @@ func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err 
 	originalSQL := sqlparser.String(statement)
 	planSQL := originalSQL
 	switch v := statement.(type) {
+	case *sqlparser.UseDB:
+		plan, err = r.buildUseDBPlan(v)
+
 	case *sqlparser.ShowEngines:
 		plan, err = r.buildShowEnginesPlan(v)
 	case *sqlparser.ShowPlugins:
