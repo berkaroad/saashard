@@ -33,7 +33,8 @@ func TestParseSelect(t *testing.T) {
 	// sql = "UPDATE `buy_list` SET `status_id`=5 WHERE `buy_id`=1"
 
 	// sql = "explain select * from `kgw2`.`buy_list`"
-
+	sql = "select version()"
+	sql = "select database()"
 	t.Log(sql)
 	if stmt, err := Parse(sql); err != nil {
 		t.Error(err)

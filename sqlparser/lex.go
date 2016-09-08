@@ -124,6 +124,7 @@ var keywords = map[string]int{
 	"character":    CHARACTER,
 	"collation":    COLLATION,
 	"show":         SHOW,
+	"describe":     DESCRIBE,
 	"explain":      EXPLAIN,
 
 	"variables":   VARIABLES,

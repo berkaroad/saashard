@@ -78,7 +78,7 @@ func (c *ClientConn) IsAllowConnect() bool {
 // Handshake between client and proxy.
 func (c *ClientConn) Handshake() error {
 	var err error
-	if err = c.pkg.WriteInitialHandshake(c.connectionID, c.salt, mysql.DEFAULT_COLLATION_ID, DEFAULT_CAPABILITY, c.status); err != nil {
+	if err = c.pkg.WriteInitialHandshake(c.connectionID, c.salt, mysql.DEFAULT_COLLATION_ID, mysql.DEFAULT_CAPABILITY, c.status); err != nil {
 		golog.Error("server", "Handshake", err.Error(),
 			c.connectionID, "msg", "send initial handshake error")
 		return err
@@ -148,6 +148,9 @@ func (c *ClientConn) Run() {
 		data, err := c.pkg.ReadPacket()
 
 		if err != nil {
+			golog.Error("server", "Run",
+				err.Error(), c.connectionID,
+			)
 			return
 		}
 

@@ -17,11 +17,6 @@ import (
 )
 
 var (
-	// DEFAULT_CAPABILITY default client capability.
-	DEFAULT_CAPABILITY uint32 = mysql.CLIENT_LONG_PASSWORD | mysql.CLIENT_LONG_FLAG |
-		mysql.CLIENT_CONNECT_WITH_DB | mysql.CLIENT_PROTOCOL_41 |
-		mysql.CLIENT_TRANSACTIONS | mysql.CLIENT_SECURE_CONNECTION
-
 	baseConnID uint32 = 10000
 )
 
@@ -214,10 +209,10 @@ func (p *Server) flushCounter() {
 func (p *Server) parseAllowIps() error {
 	atomic.StoreInt32(&p.allowipsIndex, 0)
 	cfg := p.cfg
-	if len(cfg.AllowIps) == 0 {
+	if cfg.AllowIps == nil || len(cfg.AllowIps) == 0 {
 		return nil
 	}
-	ipVec := strings.Split(cfg.AllowIps, ",")
+	ipVec := cfg.AllowIps
 	p.allowips[p.allowipsIndex] = make([]net.IP, 0, 10)
 	p.allowips[1] = make([]net.IP, 0, 10)
 	for _, ip := range ipVec {

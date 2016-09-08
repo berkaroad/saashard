@@ -8,16 +8,16 @@ import (
 
 // Config is a global config for saashard.
 type Config struct {
-	BindIP      string `yaml:"bind_ip"`
-	ProxyPort   int    `yaml:"proxy_port"`
-	AdminPort   int    `yaml:"admin_port"`
-	LogPath     string `yaml:"log_path"`
-	LogLevel    string `yaml:"log_level"`
-	LogSQL      string `yaml:"log_sql"`
-	SlowLogTime int    `yaml:"slow_log_time"`
-	AllowIps    string `yaml:"allow_ips"`
-	BlsFile     string `yaml:"blacklist_sql_file"`
-	Charset     string `yaml:"proxy_charset"`
+	BindIP      string   `yaml:"bind_ip"`
+	ProxyPort   int      `yaml:"proxy_port"`
+	AdminPort   int      `yaml:"admin_port"`
+	LogPath     string   `yaml:"log_path"`
+	LogLevel    string   `yaml:"log_level"`
+	LogSQL      string   `yaml:"log_sql"`
+	SlowLogTime int      `yaml:"slow_log_time"`
+	AllowIps    []string `yaml:"allow_ips"`
+	BlsFile     string   `yaml:"blacklist_sql_file"`
+	Charset     string   `yaml:"proxy_charset"`
 
 	Hosts   []HostConfig   `yaml:"hosts"`
 	Nodes   []NodeConfig   `yaml:"nodes"`

@@ -64,7 +64,7 @@ var (
 %token LEX_ERROR
 %token <empty> SELECT INSERT UPDATE DELETE FROM WHERE GROUP HAVING ORDER BY LIMIT FOR
 %token <empty> ALL DISTINCT AS EXISTS NULL ASC DESC VALUES INTO DUPLICATE KEY DEFAULT SET LOCK
-%token <empty> SHOW EXPLAIN
+%token <empty> SHOW EXPLAIN DESCRIBE
 %token <bytes> ID STRING NUMBER VALUE_ARG COMMENT
 %token <empty> '(' '~'
 
@@ -127,7 +127,7 @@ var (
 %type <statement> command
 %type <selStmt> select_statement
 %type <setStmt> set_statement
-%type <showStmt> show_statement
+%type <showStmt> show_statement describe_statement
 %type <statement> insert_statement update_statement delete_statement replace_statement
 %type <statement> create_statement alter_statement rename_statement drop_statement
 %type <statement> begin_statement commit_statement rollback_statement 
@@ -196,6 +196,8 @@ command:
 | set_statement
   { $$ = $1 }
 | show_statement
+  { $$ = $1 }
+| describe_statement
   { $$ = $1 }
 | insert_statement
 | update_statement
@@ -541,6 +543,13 @@ show_statement:
   {
     $$ = &ShowPlugins{}
   }
+
+describe_statement:
+  DESCRIBE comment_opt dml_table_expression
+  {
+    $$ = &ShowColumns{Comments : Comments($2), From : $3}
+  }
+
 
 admin_statement:
   ADMIN
@@ -1278,6 +1287,10 @@ sql_id:
   ID
   {
     $$ = bytes.ToLower($1)
+  }
+| DATABASE
+  {
+    $$ = []byte("database")
   }
 
 force_eof:

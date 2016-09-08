@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/berkaroad/saashard/backend"
 	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/route"
 	"github.com/berkaroad/saashard/sqlparser"
@@ -30,204 +31,159 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 			return
 		}
 	}()
-	sql = strings.TrimSpace(sql)
-	var stmt sqlparser.Statement
-	stmt, err = sqlparser.Parse(sql)
-	if err != nil {
-		golog.Error("proxy", "handleQuery", err.Error(), 0, "sql", sql)
-		return c.pkg.WriteError(c.capability, mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s'", sql)))
-	}
-	if stmt == nil {
-		golog.Debug("proxy", "handle_query",
-			sql,
-			c.connectionID)
-		return c.pkg.WriteOK(c.capability, c.status, nil)
-	}
-
-	var plan *route.Plan
-
+	var onlySingleSQL = true
+	var plan *route.MergedPlan
 	var result *mysql.Result
 
-	switch v := stmt.(type) {
-	case *sqlparser.UseDB:
-		return c.handleInitDB(v.DB)
+	sql = strings.TrimSpace(sql)
 
-	case *sqlparser.SimpleSelect:
-		if len(v.SelectExprs) == 1 {
-			switch strings.ToLower(sqlparser.String(v.SelectExprs[0])) {
-			case "current_user()":
-				result = new(mysql.Result)
-				result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
-				result.Resultset = new(mysql.Resultset)
-				result.Resultset.Fields = make([]*mysql.Field, 1)
-				result.Resultset.Fields[0] = &mysql.Field{Schema: []byte(""),
-					Table:        []byte(""),
-					OrgTable:     []byte(""),
-					Name:         []byte("current_user()"),
-					OrgName:      []byte(""),
-					Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
-					ColumnLength: 423,
-					ColumnType:   mysql.MYSQL_TYPE_VAR_STRING,
-					Flags:        mysql.NOT_NULL_FLAG,
-					Decimals:     31}
-
-				result.Rows = make([]*mysql.Row, 1)
-				row := mysql.NewTextRow(result.Resultset.Fields)
-				row.AppendStringValue(c.user)
-				result.Rows[0] = row
-				return c.pkg.WriteResultSet(c.capability, c.status, result)
-
-			case "version()":
-				result = new(mysql.Result)
-				result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
-				result.Resultset = new(mysql.Resultset)
-				result.Resultset.Fields = make([]*mysql.Field, 1)
-				result.Resultset.Fields[0] = &mysql.Field{Schema: []byte(""),
-					Table:        []byte(""),
-					OrgTable:     []byte(""),
-					Name:         []byte("version()"),
-					OrgName:      []byte(""),
-					Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
-					ColumnLength: 72,
-					ColumnType:   mysql.MYSQL_TYPE_VAR_STRING,
-					Flags:        mysql.NOT_NULL_FLAG,
-					Decimals:     31}
-
-				result.Rows = make([]*mysql.Row, 1)
-				row := mysql.NewTextRow(result.Resultset.Fields)
-				row.AppendStringValue(mysql.ServerVersion)
-				result.Rows[0] = row
-				return c.pkg.WriteResultSet(c.capability, c.status, result)
-
-			case "connection_id()":
-				result = new(mysql.Result)
-				result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
-				result.Resultset = new(mysql.Resultset)
-				result.Resultset.Fields = make([]*mysql.Field, 1)
-				result.Resultset.Fields[0] = &mysql.Field{Schema: []byte(""),
-					Table:        []byte(""),
-					OrgTable:     []byte(""),
-					Name:         []byte("CONNECTION_ID()"),
-					OrgName:      []byte(""),
-					Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
-					ColumnLength: 10,
-					ColumnType:   mysql.MYSQL_TYPE_LONGLONG,
-					Flags:        mysql.NOT_NULL_FLAG | mysql.BINARY_FLAG,
-					Decimals:     0}
-
-				result.Rows = make([]*mysql.Row, 1)
-				row := mysql.NewTextRow(result.Resultset.Fields)
-				row.AppendUIntValue(uint64(c.connectionID))
-				result.Rows[0] = row
-				return c.pkg.WriteResultSet(c.capability, c.status, result)
-
-			case "database()":
-				result = new(mysql.Result)
-				result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
-				result.Resultset = new(mysql.Resultset)
-				result.Resultset.Fields = make([]*mysql.Field, 1)
-				result.Resultset.Fields[0] = &mysql.Field{Schema: []byte(""),
-					Table:        []byte(""),
-					OrgTable:     []byte(""),
-					Name:         []byte("DATABASE()"),
-					OrgName:      []byte(""),
-					Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
-					ColumnLength: 102,
-					ColumnType:   mysql.MYSQL_TYPE_VAR_STRING,
-					Flags:        mysql.NOT_NULL_FLAG,
-					Decimals:     31}
-
-				result.Rows = make([]*mysql.Row, 1)
-				row := mysql.NewTextRow(result.Resultset.Fields)
-				row.AppendStringValue(c.db)
-				result.Rows[0] = row
-				return c.pkg.WriteResultSet(c.capability, c.status, result)
-
-			default:
-				return c.pkg.WriteError(c.capability, mysql.NewError(mysql.ER_TABLEACCESS_DENIED_ERROR, fmt.Sprintf("SELECT command denied to user '%s'@'%v' for '%s'", c.user, c.clientIP, sql)))
-			}
-		} else {
-			return c.pkg.WriteError(c.capability, mysql.NewError(mysql.ER_TABLEACCESS_DENIED_ERROR, fmt.Sprintf("SELECT command denied to user '%s'@'%v' for '%s'", c.user, c.clientIP, sql)))
-		}
-
-	case *sqlparser.ShowDatabases:
-		result = new(mysql.Result)
-		result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
-		result.Resultset = new(mysql.Resultset)
-		result.Resultset.Fields = make([]*mysql.Field, 1)
-		result.Resultset.Fields[0] = &mysql.Field{Schema: []byte("information_schema"),
-			Table:        []byte("SCHEMATA"),
-			OrgTable:     []byte("SCHEMATA"),
-			Name:         []byte("Database"),
-			OrgName:      []byte("SCHEMA_NAME"),
-			Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
-			ColumnLength: 192,
-			ColumnType:   mysql.MYSQL_TYPE_VAR_STRING,
-			Flags:        mysql.NOT_NULL_FLAG,
-			Decimals:     0}
-
-		result.Rows = make([]*mysql.Row, 0, len(c.schemas))
-		for name := range c.schemas {
-			row := mysql.NewTextRow(result.Resultset.Fields)
-			row.AppendStringValue(name)
-			result.Rows = append(result.Rows, row)
-		}
-		return c.pkg.WriteResultSet(c.capability, c.status, result)
-
-	case sqlparser.SetStatement:
-		return c.pkg.WriteOK(c.capability, c.status, result)
-
-	default:
-		router := route.NewRouter(c.db, c.schemas, c.proxy.cfg.GetNodes(), c.connectionID)
-		plan, result, err = router.BuildPlan(v)
-		if err != nil {
-			return c.pkg.WriteError(c.capability, err)
-		}
-		return c.executePlain(plan, result)
-		// if strings.HasPrefix(strings.ToUpper(sql), "SHOW") ||
-		// 	strings.HasPrefix(strings.ToUpper(sql), "SELECT") ||
-		// 	strings.HasPrefix(strings.ToUpper(sql), "EXPLAIN") {
-
-		// 	golog.Error("proxy", "handle_query", fmt.Sprintf("Command denied to user '%s'@'%v' for '%s'", c.user, c.clientIP, sql), c.connectionID)
-		// 	return c.pkg.WriteError(c.capability, mysql.NewError(mysql.ER_TABLEACCESS_DENIED_ERROR, fmt.Sprintf("Command denied for '%s'", sql)))
-		// }
-		// return c.pkg.WriteOK(c.capability, c.status, nil)
+	var sqls []string
+	if c.capability&mysql.CLIENT_MULTI_STATEMENTS > 0 {
+		sqls = sqlparser.SplitSQLStatement(sql)
+		onlySingleSQL = len(sqls) == 1
+		sql = sqls[0]
 	}
+
+	if onlySingleSQL {
+		var stmt sqlparser.Statement
+		stmt, err = sqlparser.Parse(sql)
+		if err != nil {
+			golog.Error("proxy", "handleQuery", err.Error(), 0, "sql", sql)
+			err = mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s'", sql))
+			return
+		}
+
+		switch v := stmt.(type) {
+		case *sqlparser.UseDB:
+			return c.handleInitDB(v.DB)
+
+		case *sqlparser.ShowDatabases:
+			result = new(mysql.Result)
+			result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
+			result.Resultset = new(mysql.Resultset)
+			result.Resultset.Fields = make([]*mysql.Field, 1)
+			result.Resultset.Fields[0] = &mysql.Field{Schema: []byte("information_schema"),
+				Table:        []byte("SCHEMATA"),
+				OrgTable:     []byte("SCHEMATA"),
+				Name:         []byte("Database"),
+				OrgName:      []byte("SCHEMA_NAME"),
+				Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
+				ColumnLength: 192,
+				ColumnType:   mysql.MYSQL_TYPE_VAR_STRING,
+				Flags:        mysql.NOT_NULL_FLAG,
+				Decimals:     0}
+
+			result.Rows = make([]*mysql.Row, 0, len(c.schemas))
+			for name := range c.schemas {
+				row := mysql.NewTextRow(result.Resultset.Fields)
+				row.AppendStringValue(name)
+				result.Rows = append(result.Rows, row)
+			}
+			return c.pkg.WriteResultSet(c.capability, c.status, result)
+
+		default:
+			router := route.NewRouter(c.db, c.schemas, c.proxy.cfg.GetNodes(), c.connectionID, c.user)
+			plan, err = router.BuildMergedPlan(v)
+			if err != nil {
+				return
+			}
+			return c.executePlan(plan)
+		}
+	}
+
+	var stmts = make([]sqlparser.Statement, len(sqls))
+	for i, sql := range sqls {
+		stmt, err := sqlparser.Parse(sql)
+		if err != nil {
+			golog.Error("proxy", "handleQuery", err.Error(), 0, "sql", sql)
+			return mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s'", sql))
+		}
+		stmts[i] = stmt
+	}
+
+	router := route.NewRouter(c.db, c.schemas, c.proxy.cfg.GetNodes(), c.connectionID, c.user)
+	plan, err = router.BuildMergedPlan(stmts...)
+	if err != nil {
+		return
+	}
+	return c.executePlan(plan)
 }
 
-func (c *ClientConn) executePlain(plan *route.Plan, result *mysql.Result) (err error) {
-	if result != nil {
-		return c.pkg.WriteResultSet(c.capability, c.status, result)
-	}
-	sql := sqlparser.String(plan.Statement)
-	node := c.proxy.nodes[plan.DataNode]
+func (c *ClientConn) executePlan(plan *route.MergedPlan) (err error) {
+	resultCount := len(plan.Statements)
+	var direct = false
+	var total = make([]byte, 0, 1024)
 
+	node := c.proxy.nodes[plan.DataNode]
 	var mysqlConn *mysqlBackend.Conn
-	if conn, err := node.DataHost.Slaves[0].Connect(node.Database); err != nil {
-		return err
+	var conn backend.Connection
+	var dbHost *backend.DBHost
+	if plan.IsSlave {
+		dbHost = node.DataHost.Slaves[0]
+
 	} else {
-		mysqlConn = conn.(*mysqlBackend.Conn)
+		dbHost = node.DataHost.Master
 	}
+	if conn, err = dbHost.Connect(node.Database); err != nil {
+		return
+	}
+	mysqlConn = conn.(*mysqlBackend.Conn)
 
 	defer mysqlConn.Close()
 
-	mysqlConn.SetAutoCommit(1)
+	//mysqlConn.SetAutoCommit(1)
 	mysqlConn.UseDB(node.Database)
-	if result, err = mysqlConn.Query(sql); err != nil {
-		return c.pkg.WriteError(c.capability, err)
+
+	var result *mysql.Result
+	for i := 0; i < resultCount; i++ {
+		if i == resultCount-1 {
+			direct = true
+		}
+
+		if plan.Results[i] != nil {
+			total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, plan.Results[i], direct)
+			if err != nil {
+				return
+			}
+		} else if plan.Statements[i] != nil {
+			statement := plan.Statements[i]
+			sql := sqlparser.String(statement)
+			if result, err = mysqlConn.Query(sql); err != nil {
+				return
+			}
+			if result.Resultset == nil {
+				total, err = c.pkg.WriteOKBatch(total, c.capability, c.status, result, direct)
+			} else {
+				total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, result, direct)
+			}
+			if err != nil {
+				return
+			}
+			// switch statement.(type) {
+			// case sqlparser.SelectStatement:
+			// 	total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, result, direct)
+			// 	if err != nil {
+			// 		return
+			// 	}
+			// case sqlparser.ShowStatement:
+			// 	total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, result, direct)
+			// 	if err != nil {
+			// 		return
+			// 	}
+
+			// case *sqlparser.Explain:
+			// 	total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, result, direct)
+			// 	if err != nil {
+			// 		return
+			// 	}
+
+			// default:
+			// 	total, err = c.pkg.WriteOKBatch(total, c.capability, c.status, result, direct)
+			// 	if err != nil {
+			// 		return
+			// 	}
+			// }
+		}
 	}
-
-	switch plan.Statement.(type) {
-	case sqlparser.SelectStatement:
-		return c.pkg.WriteResultSet(c.capability, c.status, result)
-
-	case sqlparser.ShowStatement:
-		return c.pkg.WriteResultSet(c.capability, c.status, result)
-
-	case *sqlparser.Explain:
-		return c.pkg.WriteResultSet(c.capability, c.status, result)
-
-	default:
-		return c.pkg.WriteOK(c.capability, c.status, result)
-	}
+	return nil
 }
