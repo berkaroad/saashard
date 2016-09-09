@@ -209,15 +209,18 @@ func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err 
 	case *sqlparser.ShowCreateFunction:
 		realPlan, err = r.buildShowCreateFunctionPlan(v)
 
+	case sqlparser.SetStatement:
+		realPlan, err = r.buildSetPlan(v)
+
+	case *sqlparser.Explain:
+		realPlan, err = r.buildExplainPlan(v)
+
 	case *sqlparser.SimpleSelect:
 		realPlan, err = r.buildSimpleSelectPlan(v)
 	case *sqlparser.Select:
 		realPlan, err = r.buildSelectPlan(v)
 	case *sqlparser.Union:
 		realPlan, err = r.buildUnitPlan(v)
-
-	case sqlparser.SetStatement:
-		realPlan, err = r.buildSetPlan(v)
 
 	case *sqlparser.Insert:
 		realPlan, err = r.buildInsertPlan(v)

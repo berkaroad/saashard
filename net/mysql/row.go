@@ -122,6 +122,16 @@ func (r *Row) AppendFloatValue(val float64) {
 	}
 }
 
+// AppendBooleanValue append bool value.
+func (r *Row) AppendBooleanValue(val bool) {
+	if len(r.fieldValues) < len(r.fields) {
+		str := strconv.FormatBool(val)
+		encodedVal := StringToLenencStr([]byte(str))
+		r.fieldValues = append(r.fieldValues, str)
+		r.fieldValuesCache = append(r.fieldValuesCache, encodedVal)
+	}
+}
+
 // AppendNullValue append null value.
 func (r *Row) AppendNullValue() {
 	if len(r.fieldValues) < len(r.fields) {
