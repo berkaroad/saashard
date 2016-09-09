@@ -43,5 +43,4 @@ select f1,f2,f3 into t2 from t1
 |
 |utils |
 |------|golog |
-|------|yaml |
 ```

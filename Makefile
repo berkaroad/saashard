@@ -27,7 +27,6 @@ dev: build
 
 test: saashard
 	go install github.com/berkaroad/saashard/utils/golog
-	go install github.com/berkaroad/saashard/utils/yaml
 	go install github.com/berkaroad/saashard/config
 	go install github.com/berkaroad/saashard/errors
 	go install github.com/berkaroad/saashard/sqlparser/sqltypes

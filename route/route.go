@@ -1,3 +1,25 @@
+// The MIT License (MIT)
+
+// Copyright (c) 2016 Jerry Bai
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 package route
 
 import (
@@ -45,7 +67,16 @@ type mergedPlan struct {
 // Execute the plan
 func (plan *mergedPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result, dataNode string, isSlave bool) error) error {
 	if executor != nil {
-		return executor(plan.Statements, plan.Results, plan.DataNode, plan.IsSlave)
+		err := executor(plan.Statements, plan.Results, plan.DataNode, plan.IsSlave)
+
+		planSQL := ""
+		for _, statement := range plan.Statements {
+			planSQL += sqlparser.String(statement) + "; "
+		}
+		golog.OutputSql("Plan", "Execute on data node '%s': '%s'",
+			plan.DataNode,
+			planSQL)
+		return err
 	}
 	return nil
 }
@@ -87,6 +118,7 @@ func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan Plan, 
 		plans[i] = thePlan.(*normalPlan)
 	}
 	planCount := len(plans)
+
 	mergedPlan := new(mergedPlan)
 	mergedPlan.Statements = make([]sqlparser.Statement, planCount)
 	mergedPlan.Results = make([]*mysql.Result, planCount)
@@ -119,85 +151,93 @@ func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan Plan, 
 			mergedPlan.Statements[i+1] = currentPlan.Statement
 		}
 	}
-	return mergedPlan, nil
+	plan = mergedPlan
+	return
 }
 
 // BuildNormalPlan to build plan
 func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err error) {
 	originalSQL := sqlparser.String(statement)
 	planSQL := originalSQL
+	var realPlan *normalPlan
 	switch v := statement.(type) {
 	case *sqlparser.UseDB:
-		plan, err = r.buildUseDBPlan(v)
+		realPlan, err = r.buildUseDBPlan(v)
 
 	case *sqlparser.ShowEngines:
-		plan, err = r.buildShowEnginesPlan(v)
+		realPlan, err = r.buildShowEnginesPlan(v)
 	case *sqlparser.ShowPlugins:
-		plan, err = r.buildShowPluginsPlan(v)
+		realPlan, err = r.buildShowPluginsPlan(v)
 	case *sqlparser.ShowProcessList:
-		plan, err = r.buildShowProcessListPlan(v)
+		realPlan, err = r.buildShowProcessListPlan(v)
 	case *sqlparser.ShowFullProcessList:
-		plan, err = r.buildShowFullProcessListPlan(v)
+		realPlan, err = r.buildShowFullProcessListPlan(v)
 	case *sqlparser.ShowSlaveStatus:
-		plan, err = r.buildShowSlaveStatusPlan(v)
+		realPlan, err = r.buildShowSlaveStatusPlan(v)
 	case *sqlparser.ShowVariables:
-		plan, err = r.buildShowVariablesPlan(v)
+		realPlan, err = r.buildShowVariablesPlan(v)
 	case *sqlparser.ShowStatus:
-		plan, err = r.buildShowStatusPlan(v)
+		realPlan, err = r.buildShowStatusPlan(v)
 	case *sqlparser.ShowDatabases:
-		plan, err = r.buildShowDatabasesPlan(v)
+		realPlan, err = r.buildShowDatabasesPlan(v)
 	case *sqlparser.ShowTables:
-		plan, err = r.buildShowTablesPlan(v)
+		realPlan, err = r.buildShowTablesPlan(v)
 	case *sqlparser.ShowFullTables:
-		plan, err = r.buildShowFullTablesPlan(v)
+		realPlan, err = r.buildShowFullTablesPlan(v)
 	case *sqlparser.ShowColumns:
-		plan, err = r.buildShowColumnsPlan(v)
+		realPlan, err = r.buildShowColumnsPlan(v)
 	case *sqlparser.ShowFullColumns:
-		plan, err = r.buildShowFullColumnsPlan(v)
+		realPlan, err = r.buildShowFullColumnsPlan(v)
 	case *sqlparser.ShowIndex:
-		plan, err = r.buildShowIndexPlan(v)
+		realPlan, err = r.buildShowIndexPlan(v)
 	case *sqlparser.ShowTriggers:
-		plan, err = r.buildShowTriggersPlan(v)
+		realPlan, err = r.buildShowTriggersPlan(v)
 	case *sqlparser.ShowProcedureStatus:
-		plan, err = r.buildShowProcedureStatusPlan(v)
+		realPlan, err = r.buildShowProcedureStatusPlan(v)
 	case *sqlparser.ShowFunctionStatus:
-		plan, err = r.buildShowFunctionStatusPlan(v)
+		realPlan, err = r.buildShowFunctionStatusPlan(v)
 	case *sqlparser.ShowCreateDatabase:
-		plan, err = r.buildShowCreateDatabasePlan(v)
+		realPlan, err = r.buildShowCreateDatabasePlan(v)
 	case *sqlparser.ShowCreateTable:
-		plan, err = r.buildShowCreateTablePlan(v)
+		realPlan, err = r.buildShowCreateTablePlan(v)
 	case *sqlparser.ShowCreateView:
-		plan, err = r.buildShowCreateViewPlan(v)
+		realPlan, err = r.buildShowCreateViewPlan(v)
 	case *sqlparser.ShowCreateTrigger:
-		plan, err = r.buildShowCreateTriggerPlan(v)
+		realPlan, err = r.buildShowCreateTriggerPlan(v)
 	case *sqlparser.ShowCreateProcedure:
-		plan, err = r.buildShowCreateProcedurePlan(v)
+		realPlan, err = r.buildShowCreateProcedurePlan(v)
 	case *sqlparser.ShowCreateFunction:
-		plan, err = r.buildShowCreateFunctionPlan(v)
+		realPlan, err = r.buildShowCreateFunctionPlan(v)
 
 	case *sqlparser.SimpleSelect:
-		plan, err = r.buildSimpleSelectPlan(v)
+		realPlan, err = r.buildSimpleSelectPlan(v)
 	case *sqlparser.Select:
-		plan, err = r.buildSelectPlan(v)
+		realPlan, err = r.buildSelectPlan(v)
 
 	case sqlparser.SetStatement:
-		plan, err = r.buildSetPlan(v)
+		realPlan, err = r.buildSetPlan(v)
 
 	case *sqlparser.Insert:
-
-	case *sqlparser.Replace:
-
+		realPlan, err = r.buildInsertPlan(v)
 	case *sqlparser.Update:
-
+		realPlan, err = r.buildUpdatePlan(v)
 	case *sqlparser.Delete:
-
+		realPlan, err = r.buildDeletePlan(v)
+	case *sqlparser.Replace:
+		realPlan, err = r.buildReplacePlan(v)
 	default:
-		plan, err = nil, errors.ErrNoPlan
+		realPlan, err = nil, errors.ErrNoPlan
 	}
-
+	plan = realPlan
 	planSQL = sqlparser.String(statement)
-	golog.Debug("route", "BuildPlan", "", r.ConnectionID,
-		"originalSQL", originalSQL,
-		"planSQL", planSQL)
+	if realPlan != nil {
+		golog.Debug("route", "BuildNormalPlan", "Plan to execute", r.ConnectionID,
+			"data node",
+			realPlan.DataNode,
+			"originalSQL",
+			originalSQL,
+			"planSQL",
+			planSQL)
+	}
 	return
 }

@@ -1,3 +1,39 @@
+// Copyright 2016 The kingshard Authors. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License"): you may
+// not use this file except in compliance with the License. You may obtain
+// a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations
+// under the License.
+
+// The MIT License (MIT)
+
+// Copyright (c) 2016 Jerry Bai
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 package sqlparser
 
 import (
@@ -18,50 +54,37 @@ func handleError(err *error) {
 	}
 }
 
-// GetDBName parses the specified DML and returns the
-// db name if it was used to qualify the table name.
-// It returns an error if parsing fails or if the statement
-// is not a DML.
-func GetDBName(sql string) (string, error) {
-	statement, err := Parse(sql)
-	if err != nil {
-		return "", err
+// IsColInEqualConditionExists check if exists or not.
+func IsColInEqualConditionExists(expr BoolExpr, colName string) bool {
+	if expr == nil {
+		return false
 	}
-	switch stmt := statement.(type) {
-	case *Insert:
-		return string(stmt.Table.Qualifier), nil
-	case *Update:
-		return string(stmt.Table.Qualifier), nil
-	case *Delete:
-		return string(stmt.Table.Qualifier), nil
-	}
-	return "", fmt.Errorf("statement '%s' is not a dml", sql)
-}
-
-func GetTableName(token string) string {
-	if len(token) == 0 {
-		return ""
-	}
-
-	vec := strings.SplitN(token, ".", 2)
-	if len(vec) == 2 {
-		return strings.ToLower(strings.Trim(vec[1], "`"))
-	}
-	return strings.ToLower(strings.Trim(vec[0], "`"))
-}
-
-func GetInsertTableName(token string) string {
-	if len(token) == 0 {
-		return ""
-	}
-
-	vec := strings.SplitN(token, ".", 2)
-	if len(vec) == 2 {
-		table := strings.Split(vec[1], "(")
-		return strings.ToLower(strings.Trim(table[0], "`"))
-	} else {
-		table := strings.Split(vec[0], "(")
-		return strings.ToLower(strings.Trim(table[0], "`"))
+	switch boolExpr := expr.(type) {
+	case *AndExpr:
+		exp1 := boolExpr.Left
+		exp2 := boolExpr.Right
+		return IsColInEqualConditionExists(exp1, colName) || IsColInEqualConditionExists(exp2, colName)
+	case *OrExpr:
+		exp1 := boolExpr.Left
+		exp2 := boolExpr.Right
+		return IsColInEqualConditionExists(exp1, colName) && IsColInEqualConditionExists(exp2, colName)
+	case *ParenBoolExpr:
+		return IsColInEqualConditionExists(boolExpr.Expr, colName)
+	case *ComparisonExpr:
+		switch boolExpr.Operator {
+		case AST_EQ:
+			if GetColName(boolExpr.Left) == colName {
+				return true
+			}
+			if GetColName(boolExpr.Right) == colName {
+				return true
+			}
+			return false
+		default:
+			return false
+		}
+	default:
+		return false
 	}
 }
 
@@ -69,7 +92,7 @@ func GetInsertTableName(token string) string {
 // it's a simple expression. Otherwise, it returns "".
 func GetColName(node Expr) string {
 	if n, ok := node.(*ColName); ok {
-		return string(n.Name)
+		return strings.Trim(strings.ToLower(string(n.Name)), "`")
 	}
 	return ""
 }
@@ -80,7 +103,7 @@ func IsColName(node ValExpr) bool {
 	return ok
 }
 
-// IsVal returns true if the ValExpr is a string, number or value arg.
+// IsValue returns true if the ValExpr is a string, number or value arg.
 // NULL is not considered to be a value.
 func IsValue(node ValExpr) bool {
 	switch node.(type) {
@@ -90,7 +113,7 @@ func IsValue(node ValExpr) bool {
 	return false
 }
 
-// HasINCaluse returns true if an yof the conditions has an IN clause.
+// HasINClause returns true if an yof the conditions has an IN clause.
 func HasINClause(conditions []BoolExpr) bool {
 	for _, node := range conditions {
 		if c, ok := node.(*ComparisonExpr); ok && c.Operator == AST_IN {

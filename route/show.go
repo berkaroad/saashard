@@ -1,3 +1,25 @@
+// The MIT License (MIT)
+
+// Copyright (c) 2016 Jerry Bai
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 package route
 
 import (
@@ -212,7 +234,7 @@ func (r *Router) buildShowTablesPlan(statement *sqlparser.ShowTables) (*normalPl
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
 	plan.Statement = statement
-	if schemaConfig.ShardKey != "" {
+	if schemaConfig.ShardEnabled() {
 		result := new(mysql.Result)
 		result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
 		result.Resultset = new(mysql.Resultset)
@@ -259,7 +281,7 @@ func (r *Router) buildShowFullTablesPlan(statement *sqlparser.ShowFullTables) (*
 	plan.IsSlave = true
 	plan.Statement = statement
 
-	if schemaConfig.ShardKey != "" {
+	if schemaConfig.ShardEnabled() {
 		result := new(mysql.Result)
 		result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
 		result.Resultset = new(mysql.Resultset)
@@ -316,7 +338,7 @@ func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normal
 		table := string(statement.From.Name)
 		table = strings.Trim(strings.ToLower(table), "`")
 		tables := schemaConfig.GetTables()
-		if _, ok := tables[table]; schemaConfig.ShardKey != "" && !ok {
+		if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
 			return nil, errors.ErrTableOrViewNotExists
 		}
 	}
@@ -347,7 +369,7 @@ func (r *Router) buildShowFullColumnsPlan(statement *sqlparser.ShowFullColumns) 
 	table := string(statement.From.Name)
 	table = strings.Trim(strings.ToLower(table), "`")
 	tables := schemaConfig.GetTables()
-	if _, ok := tables[table]; schemaConfig.ShardKey != "" && !ok {
+	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
 		return nil, errors.ErrTableOrViewNotExists
 	}
 
@@ -378,7 +400,7 @@ func (r *Router) buildShowIndexPlan(statement *sqlparser.ShowIndex) (*normalPlan
 	table := string(statement.From.Name)
 	table = strings.Trim(strings.ToLower(table), "`")
 	tables := schemaConfig.GetTables()
-	if _, ok := tables[table]; schemaConfig.ShardKey != "" && !ok {
+	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
 		return nil, errors.ErrTableOrViewNotExists
 	}
 
@@ -408,7 +430,7 @@ func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*norm
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
 	plan.Statement = statement
-	if schemaConfig.ShardKey != "" {
+	if schemaConfig.ShardEnabled() {
 		result := new(mysql.Result)
 		result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
 		result.Resultset = new(mysql.Resultset)
@@ -566,7 +588,7 @@ func (r *Router) buildShowProcedureStatusPlan(statement *sqlparser.ShowProcedure
 	plan.IsSlave = true
 	plan.Statement = statement
 
-	if schemaConfig.ShardKey == "" {
+	if !schemaConfig.ShardEnabled() {
 
 		switch v := statement.LikeOrWhere.(type) {
 		case *sqlparser.WhereExpr:
@@ -719,7 +741,7 @@ func (r *Router) buildShowFunctionStatusPlan(statement *sqlparser.ShowFunctionSt
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
 	plan.Statement = statement
-	if schemaConfig.ShardKey == "" {
+	if !schemaConfig.ShardEnabled() {
 		switch v := statement.LikeOrWhere.(type) {
 		case *sqlparser.WhereExpr:
 			if comparisonExpr, ok := v.Expr.(*sqlparser.ComparisonExpr); ok {
@@ -903,7 +925,7 @@ func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) 
 	table := string(statement.Name.Name)
 	table = strings.Trim(strings.ToLower(table), "`")
 	tables := schemaConfig.GetTables()
-	if _, ok := tables[table]; schemaConfig.ShardKey != "" && !ok {
+	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
 		return nil, errors.ErrTableOrViewNotExists
 	}
 
@@ -931,7 +953,7 @@ func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*
 	table := string(statement.Name.Name)
 	table = strings.Trim(strings.ToLower(table), "`")
 	tables := schemaConfig.GetTables()
-	if _, ok := tables[table]; schemaConfig.ShardKey != "" && !ok {
+	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
 		return nil, errors.ErrTableOrViewNotExists
 	}
 
@@ -954,7 +976,7 @@ func (r *Router) buildShowCreateTriggerPlan(statement *sqlparser.ShowCreateTrigg
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	if schemaConfig.ShardKey == "" {
+	if !schemaConfig.ShardEnabled() {
 		plan := new(normalPlan)
 
 		trigger := string(statement.Name.Name)
@@ -981,7 +1003,7 @@ func (r *Router) buildShowCreateProcedurePlan(statement *sqlparser.ShowCreatePro
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	if schemaConfig.ShardKey == "" {
+	if !schemaConfig.ShardEnabled() {
 		plan := new(normalPlan)
 
 		procedure := string(statement.Name.Name)
@@ -1008,7 +1030,7 @@ func (r *Router) buildShowCreateFunctionPlan(statement *sqlparser.ShowCreateFunc
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	if schemaConfig.ShardKey == "" {
+	if !schemaConfig.ShardEnabled() {
 		plan := new(normalPlan)
 
 		function := string(statement.Name.Name)
