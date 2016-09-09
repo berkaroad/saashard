@@ -59,36 +59,102 @@ func handleError(err *error) {
 }
 
 // IsColInEqualConditionExists check if exists or not.
-func IsColInEqualConditionExists(expr BoolExpr, colName string) bool {
+func IsColInEqualConditionExists(expr BoolExpr, colName string) (exists bool, strOrNumValue ValExpr) {
 	if expr == nil {
-		return false
+		return
 	}
 	switch boolExpr := expr.(type) {
 	case *AndExpr:
 		exp1 := boolExpr.Left
 		exp2 := boolExpr.Right
-		return IsColInEqualConditionExists(exp1, colName) || IsColInEqualConditionExists(exp2, colName)
+		exists1, colValue1 := IsColInEqualConditionExists(exp1, colName)
+		exists2, colValue2 := IsColInEqualConditionExists(exp2, colName)
+
+		// If exists, get column value
+		if exists1 {
+			if colValue1 == nil {
+				strOrNumValue = nil
+				exists1 = false
+			} else if _, ok := colValue1.(*ColName); !ok {
+				strOrNumValue = colValue1
+			}
+		}
+
+		// If exists, get column value; if not equal, set nil.
+		if exists2 {
+			if colValue2 == nil {
+				strOrNumValue = nil
+				exists2 = false
+			} else if _, ok := colValue2.(*ColName); !ok {
+				if strOrNumValue == nil {
+					strOrNumValue = colValue2
+				} else if String(strOrNumValue) != String(colValue2) {
+					strOrNumValue = nil
+				}
+			}
+		}
+		exists = exists1 || exists2
+		return
 	case *OrExpr:
 		exp1 := boolExpr.Left
 		exp2 := boolExpr.Right
-		return IsColInEqualConditionExists(exp1, colName) && IsColInEqualConditionExists(exp2, colName)
+		exists1, colValue1 := IsColInEqualConditionExists(exp1, colName)
+		exists2, colValue2 := IsColInEqualConditionExists(exp2, colName)
+
+		// If exists, get column value
+		if exists1 {
+			if colValue1 == nil {
+				strOrNumValue = nil
+				exists1 = false
+			} else if _, ok := colValue1.(*ColName); !ok {
+				strOrNumValue = colValue1
+			}
+		}
+
+		// If exists, get column value; if not equal, set nil.
+		if exists2 {
+			if colValue2 == nil {
+				strOrNumValue = nil
+				exists2 = false
+			} else if _, ok := colValue2.(*ColName); !ok {
+				if strOrNumValue == nil {
+					strOrNumValue = colValue2
+				} else if String(strOrNumValue) != String(colValue2) {
+					strOrNumValue = nil
+				}
+			}
+		}
+		exists = exists1 && exists2
+		return
 	case *ParenBoolExpr:
-		return IsColInEqualConditionExists(boolExpr.Expr, colName)
+		exists, strOrNumValue = IsColInEqualConditionExists(boolExpr.Expr, colName)
+		return
 	case *ComparisonExpr:
 		switch boolExpr.Operator {
 		case AST_EQ:
 			if GetColName(boolExpr.Left) == colName {
-				return true
+				exists = true
+				strOrNumValue = boolExpr.Right
+			} else if GetColName(boolExpr.Right) == colName {
+				exists = true
+				strOrNumValue = boolExpr.Left
 			}
-			if GetColName(boolExpr.Right) == colName {
-				return true
+			if strOrNumValue != nil {
+				switch strOrNumValue.(type) {
+				case StrVal:
+				case NumVal:
+				case *ColName:
+				default:
+					strOrNumValue = nil
+				}
 			}
-			return false
+			return
 		default:
-			return false
+			return
 		}
 	default:
-		return false
+		exists = false
+		return
 	}
 }
 

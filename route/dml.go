@@ -126,9 +126,12 @@ func (r *Router) buildUpdatePlan(statement *sqlparser.Update) (*normalPlan, erro
 		if statement.Where == nil || statement.Where.Expr == nil {
 			return nil, errors.ErrWhereKey
 		}
-		if !sqlparser.IsColInEqualConditionExists(statement.Where.Expr, schemaConfig.ShardKey) {
+		var exists bool
+		var colValue sqlparser.ValExpr
+		if exists, colValue = sqlparser.IsColInEqualConditionExists(statement.Where.Expr, schemaConfig.ShardKey); !exists || colValue == nil {
 			return nil, errors.ErrWhereKey
 		}
+		println("ShardKey=", sqlparser.String(colValue))
 	}
 
 	plan := new(normalPlan)
@@ -163,9 +166,12 @@ func (r *Router) buildDeletePlan(statement *sqlparser.Delete) (*normalPlan, erro
 		if statement.Where == nil || statement.Where.Expr == nil {
 			return nil, errors.ErrWhereKey
 		}
-		if !sqlparser.IsColInEqualConditionExists(statement.Where.Expr, schemaConfig.ShardKey) {
+		var exists bool
+		var colValue sqlparser.ValExpr
+		if exists, colValue = sqlparser.IsColInEqualConditionExists(statement.Where.Expr, schemaConfig.ShardKey); !exists || colValue == nil {
 			return nil, errors.ErrWhereKey
 		}
+		println("ShardKey=", sqlparser.String(colValue))
 	}
 
 	plan := new(normalPlan)
@@ -187,6 +193,38 @@ func (r *Router) buildReplacePlan(statement *sqlparser.Replace) (*normalPlan, er
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Table.Qualifier = nil
+
+	if schemaConfig.ShardEnabled() {
+		// check table exists or not.
+		table := string(statement.Table.Name)
+		table = strings.Trim(strings.ToLower(table), "`")
+		tables := schemaConfig.GetTables()
+		if _, ok := tables[table]; !ok {
+			return nil, errors.ErrTableOrViewNotExists
+		}
+
+		// insert statement must contain shardkey column.
+		if statement.Columns == nil {
+			return nil, errors.ErrInsertKey
+		}
+		shardKeyExists := false
+		for _, columnExpr := range statement.Columns {
+			if realColumnExpr, ok := columnExpr.(*sqlparser.NonStarExpr); ok {
+				if colNameExpr, ok := realColumnExpr.Expr.(*sqlparser.ColName); ok {
+					colName := strings.ToLower(string(colNameExpr.Name))
+					colName = strings.Trim(colName, "`")
+					if colName == schemaConfig.ShardKey {
+						shardKeyExists = true
+						break
+					}
+				}
+			}
+		}
+		// insert statement must contain shardkey column.
+		if !shardKeyExists {
+			return nil, errors.ErrInsertKey
+		}
+	}
 
 	plan := new(normalPlan)
 	plan.DataNode = schemaConfig.Nodes[0]

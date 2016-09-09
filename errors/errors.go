@@ -87,7 +87,7 @@ var (
 	ErrNoPlanRule       = errors.New("statement have no plan rule")
 	ErrInsertKey        = errors.New("no shard key in insert column list")
 	ErrUpdateKey        = errors.New("shard key in update expression")
-	ErrWhereKey         = errors.New("no shard key in where expression")
+	ErrWhereKey         = errors.New("no shard key or key has multi values in where expression")
 	ErrStmtConvert      = errors.New("statement fail to convert")
 	ErrExprConvert      = errors.New("expr fail to convert")
 	ErrConnNotEqual     = errors.New("the length of conns not equal sqls")

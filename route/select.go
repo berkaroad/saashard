@@ -101,6 +101,7 @@ func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*norm
 	plan.DataNode = schemaConfig.Nodes[0]
 	plan.IsSlave = true
 	plan.Statement = statement
+	plan.anyNode = true
 
 	if allFieldsSupported {
 		result := new(mysql.Result)
@@ -124,6 +125,17 @@ func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*norm
 }
 
 func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	plan := new(normalPlan)
+
+	plan.DataNode = schemaConfig.Nodes[0]
+	plan.IsSlave = true
+	plan.Statement = statement
+
+	return plan, nil
+}
+
+func (r *Router) buildUnitPlan(statement *sqlparser.Union) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
