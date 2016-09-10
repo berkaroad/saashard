@@ -54,9 +54,9 @@ var (
 	ErrNoSchema   = errors.New("no schema")
 	ErrNoTable    = errors.New("no table")
 
-	ErrSchemaNotExists      = errors.New("schema not exists")
-	ErrDatabaseNotExists    = errors.New("database not exists")
-	ErrTableOrViewNotExists = errors.New("table or view not exists")
+	ErrSchemaNotExists   = errors.New("schema not exists")
+	ErrDatabaseNotExists = errors.New("database not exists")
+	ErrTableNotExists    = errors.New("table not exists")
 
 	ErrMasterDown    = errors.New("master is down")
 	ErrSlaveDown     = errors.New("slave is down")

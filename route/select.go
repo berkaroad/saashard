@@ -25,6 +25,7 @@ package route
 import (
 	"strings"
 
+	"github.com/berkaroad/saashard/errors"
 	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/sqlparser"
 )
@@ -126,6 +127,10 @@ func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*norm
 
 func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
+	if isValid := sqlparser.CheckTableInSelect(statement, schemaConfig.GetTables()); !isValid {
+		return nil, errors.ErrTableNotExists
+	}
+
 	plan := new(normalPlan)
 
 	plan.DataNode = schemaConfig.Nodes[0]

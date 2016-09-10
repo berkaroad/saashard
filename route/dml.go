@@ -49,7 +49,7 @@ func (r *Router) buildInsertPlan(statement *sqlparser.Insert) (*normalPlan, erro
 		table = strings.Trim(strings.ToLower(table), "`")
 		tables := schemaConfig.GetTables()
 		if _, ok := tables[table]; !ok {
-			return nil, errors.ErrTableOrViewNotExists
+			return nil, errors.ErrTableNotExists
 		}
 
 		// insert statement must contain shardkey column.
@@ -110,7 +110,7 @@ func (r *Router) buildUpdatePlan(statement *sqlparser.Update) (*normalPlan, erro
 		table = strings.Trim(strings.ToLower(table), "`")
 		tables := schemaConfig.GetTables()
 		if _, ok := tables[table]; !ok {
-			return nil, errors.ErrTableOrViewNotExists
+			return nil, errors.ErrTableNotExists
 		}
 
 		// UPDATE expression, couldn't contain shardkey.
@@ -160,7 +160,7 @@ func (r *Router) buildDeletePlan(statement *sqlparser.Delete) (*normalPlan, erro
 		table = strings.Trim(strings.ToLower(table), "`")
 		tables := schemaConfig.GetTables()
 		if _, ok := tables[table]; !ok {
-			return nil, errors.ErrTableOrViewNotExists
+			return nil, errors.ErrTableNotExists
 		}
 		// WHERE expression, should contain shardkey.
 		if statement.Where == nil || statement.Where.Expr == nil {
@@ -200,7 +200,7 @@ func (r *Router) buildReplacePlan(statement *sqlparser.Replace) (*normalPlan, er
 		table = strings.Trim(strings.ToLower(table), "`")
 		tables := schemaConfig.GetTables()
 		if _, ok := tables[table]; !ok {
-			return nil, errors.ErrTableOrViewNotExists
+			return nil, errors.ErrTableNotExists
 		}
 
 		// insert statement must contain shardkey column.

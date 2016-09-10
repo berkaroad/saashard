@@ -162,6 +162,7 @@ func (c *Conn) Reconnect() error {
 // Close conn
 func (c *Conn) Close() error {
 	if c.conn != nil {
+		c.Rollback()
 		c.pkg.Quit(c.capability, &(c.status))
 		c.conn.Close()
 		c.conn = nil

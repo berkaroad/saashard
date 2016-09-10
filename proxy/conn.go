@@ -65,7 +65,7 @@ type ClientConn struct {
 	db           string
 	salt         []byte
 	schemas      map[string]*config.SchemaConfig
-	txConns      map[*backend.DataNode]backend.Connection
+	backendConns map[*backend.DataNode]backend.Connection
 	closed       bool
 	lastInsertID int64
 	affectedRows int64
@@ -201,10 +201,14 @@ func (c *ClientConn) Run() {
 	}
 }
 
-// Close client <-> proxy.
+// Close client
 func (c *ClientConn) Close() error {
 	if c.closed {
 		return nil
+	}
+
+	for _, conn := range c.backendConns {
+		conn.Close()
 	}
 
 	c.c.Close()

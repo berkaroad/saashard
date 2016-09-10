@@ -119,23 +119,22 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 	var total = make([]byte, 0, 1024)
 
 	node := c.proxy.nodes[dataNode]
-	var mysqlConn *mysqlBackend.Conn
 	var conn backend.Connection
-	var dbHost *backend.DBHost
-	if isSlave {
-		dbHost = node.DataHost.Slaves[0]
+	if conn = c.backendConns[node]; conn == nil {
+		var dbHost *backend.DBHost
+		if isSlave {
+			dbHost = node.DataHost.Slaves[0]
 
-	} else {
-		dbHost = node.DataHost.Master
+		} else {
+			dbHost = node.DataHost.Master
+		}
+		if conn, err = dbHost.Connect(node.Database); err != nil {
+			return
+		}
+		c.backendConns[node] = conn
 	}
-	if conn, err = dbHost.Connect(node.Database); err != nil {
-		return
-	}
-	mysqlConn = conn.(*mysqlBackend.Conn)
 
-	defer mysqlConn.Close()
-
-	mysqlConn.SetAutoCommit(1)
+	var mysqlConn = conn.(*mysqlBackend.Conn)
 	mysqlConn.UseDB(node.Database)
 
 	var result *mysql.Result

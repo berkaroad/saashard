@@ -339,7 +339,7 @@ func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normal
 		table = strings.Trim(strings.ToLower(table), "`")
 		tables := schemaConfig.GetTables()
 		if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
-			return nil, errors.ErrTableOrViewNotExists
+			return nil, errors.ErrTableNotExists
 		}
 	}
 	if statement.From != nil && !isSysDB {
@@ -370,7 +370,7 @@ func (r *Router) buildShowFullColumnsPlan(statement *sqlparser.ShowFullColumns) 
 	table = strings.Trim(strings.ToLower(table), "`")
 	tables := schemaConfig.GetTables()
 	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
-		return nil, errors.ErrTableOrViewNotExists
+		return nil, errors.ErrTableNotExists
 	}
 
 	if statement.From != nil {
@@ -401,7 +401,7 @@ func (r *Router) buildShowIndexPlan(statement *sqlparser.ShowIndex) (*normalPlan
 	table = strings.Trim(strings.ToLower(table), "`")
 	tables := schemaConfig.GetTables()
 	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
-		return nil, errors.ErrTableOrViewNotExists
+		return nil, errors.ErrTableNotExists
 	}
 
 	if statement.From != nil {
@@ -926,7 +926,7 @@ func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) 
 	table = strings.Trim(strings.ToLower(table), "`")
 	tables := schemaConfig.GetTables()
 	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
-		return nil, errors.ErrTableOrViewNotExists
+		return nil, errors.ErrTableNotExists
 	}
 
 	plan.DataNode = schemaConfig.Nodes[0]
@@ -954,7 +954,7 @@ func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*
 	table = strings.Trim(strings.ToLower(table), "`")
 	tables := schemaConfig.GetTables()
 	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
-		return nil, errors.ErrTableOrViewNotExists
+		return nil, errors.ErrTableNotExists
 	}
 
 	plan.DataNode = schemaConfig.Nodes[0]

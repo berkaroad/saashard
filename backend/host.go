@@ -80,8 +80,8 @@ func NewDBHost(addr string, user, password string, weight int) *DBHost {
 
 // Connect a backend conn.
 // Need mantain connection pool.
-func (h *DBHost) Connect(database string) (Connection, error) {
-	conn := new(mysqlBackend.Conn)
-	err := conn.Connect(h.addr, h.user, h.password, database)
-	return conn, err
+func (h *DBHost) Connect(database string) (conn Connection, err error) {
+	conn = new(mysqlBackend.Conn)
+	err = conn.Connect(h.addr, h.user, h.password, database)
+	return
 }

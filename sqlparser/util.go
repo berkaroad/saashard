@@ -41,11 +41,9 @@
 package sqlparser
 
 import (
-	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
-
-	"github.com/berkaroad/saashard/sqlparser/sqltypes"
 )
 
 var (
@@ -158,6 +156,34 @@ func IsColInEqualConditionExists(expr BoolExpr, colName string) (exists bool, st
 	}
 }
 
+// CheckTableInSelect remove db and check table's name.
+func CheckTableInSelect(statement SelectStatement, tableNames interface{}) bool {
+	var isValid = true
+	switch selStmt := statement.(type) {
+	case *Select:
+		for _, tabExpr := range selStmt.From {
+			switch realTabExpr := tabExpr.(type) {
+			case *AliasedTableExpr:
+				switch simpExpr := realTabExpr.Expr.(type) {
+				case *TableName:
+					simpExpr.Qualifier = nil
+					tableName := strings.Trim(strings.ToLower(string(simpExpr.Name)), "`")
+					if isValid = Contains(tableNames, tableName); !isValid {
+						break
+					}
+				case *Subquery:
+					if isValid = CheckTableInSelect(simpExpr.Select, tableNames); !isValid {
+						break
+					}
+				}
+			}
+		}
+	case *Union:
+		isValid = CheckTableInSelect(selStmt.Left, tableNames) && CheckTableInSelect(selStmt.Right, tableNames)
+	}
+	return isValid
+}
+
 // GetColName returns the column name, only if
 // it's a simple expression. Otherwise, it returns "".
 func GetColName(node Expr) string {
@@ -183,66 +209,19 @@ func IsValue(node ValExpr) bool {
 	return false
 }
 
-// HasINClause returns true if an yof the conditions has an IN clause.
-func HasINClause(conditions []BoolExpr) bool {
-	for _, node := range conditions {
-		if c, ok := node.(*ComparisonExpr); ok && c.Operator == AST_IN {
-			return true
-		}
-	}
-	return false
-}
-
-// IsSimpleTuple returns true if the ValExpr is a ValTuple that
-// contains simple values.
-func IsSimpleTuple(node ValExpr) bool {
-	list, ok := node.(ValTuple)
-	if !ok {
-		// It's a subquery.
-		return false
-	}
-	for _, n := range list {
-		if !IsValue(n) {
-			return false
-		}
-	}
-	return true
-}
-
-// AsInterface converts the ValExpr to an interface. It converts
-// ValTuple to []interface{}, ValArg to string, StrVal to sqltypes.String,
-// NumVal to sqltypes.Numeric. Otherwise, it returns an error.
-func AsInterface(node ValExpr) (interface{}, error) {
-	switch node := node.(type) {
-	case ValTuple:
-		vals := make([]interface{}, 0, len(node))
-		for _, val := range node {
-			v, err := AsInterface(val)
-			if err != nil {
-				return nil, err
-			}
-			vals = append(vals, v)
-		}
-		return vals, nil
-	case ValArg:
-		return string(node), nil
-	case StrVal:
-		return sqltypes.MakeString(node), nil
-	case NumVal:
-		n, err := sqltypes.BuildNumeric(string(node))
-		if err != nil {
-			return nil, fmt.Errorf("type mismatch: %s", err)
-		}
-		return n, nil
-	}
-	return nil, fmt.Errorf("unexpected node %v", node)
-}
-
-// StringIn is a convenience function that returns
+// Contains is a convenience function that returns
 // true if str matches any of the values.
-func StringIn(str string, values ...string) bool {
-	for _, val := range values {
-		if str == val {
+func Contains(arr interface{}, item interface{}) bool {
+	arrValue := reflect.ValueOf(arr)
+	switch reflect.TypeOf(arr).Kind() {
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < arrValue.Len(); i++ {
+			if arrValue.Index(i).Interface() == item {
+				return true
+			}
+		}
+	case reflect.Map:
+		if arrValue.MapIndex(reflect.ValueOf(item)).IsValid() {
 			return true
 		}
 	}
