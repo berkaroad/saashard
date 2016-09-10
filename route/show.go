@@ -68,8 +68,8 @@ func (r *Router) buildShowEnginesPlan(statement *sqlparser.ShowEngines) (*normal
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	return plan, nil
@@ -79,8 +79,8 @@ func (r *Router) buildShowPluginsPlan(statement *sqlparser.ShowPlugins) (*normal
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	return plan, nil
@@ -88,10 +88,11 @@ func (r *Router) buildShowPluginsPlan(statement *sqlparser.ShowPlugins) (*normal
 
 func (r *Router) buildShowProcessListPlan(statement *sqlparser.ShowProcessList) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(normalPlan)
+	ReadHint(&statement.Comments)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	return plan, nil
@@ -99,10 +100,11 @@ func (r *Router) buildShowProcessListPlan(statement *sqlparser.ShowProcessList) 
 
 func (r *Router) buildShowFullProcessListPlan(statement *sqlparser.ShowFullProcessList) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(normalPlan)
+	ReadHint(&statement.Comments)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	return plan, nil
@@ -110,10 +112,11 @@ func (r *Router) buildShowFullProcessListPlan(statement *sqlparser.ShowFullProce
 
 func (r *Router) buildShowSlaveStatusPlan(statement *sqlparser.ShowSlaveStatus) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(normalPlan)
+	ReadHint(&statement.Comments)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 	plan.anyNode = true
 
@@ -122,10 +125,11 @@ func (r *Router) buildShowSlaveStatusPlan(statement *sqlparser.ShowSlaveStatus) 
 
 func (r *Router) buildShowVariablesPlan(statement *sqlparser.ShowVariables) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(normalPlan)
+	ReadHint(&statement.Comments)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	if statement.Scope == "session" {
@@ -181,20 +185,22 @@ func (r *Router) buildShowVariablesPlan(statement *sqlparser.ShowVariables) (*no
 
 func (r *Router) buildShowStatusPlan(statement *sqlparser.ShowStatus) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(normalPlan)
+	ReadHint(&statement.Comments)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 	return plan, nil
 }
 
 func (r *Router) buildShowDatabasesPlan(statement *sqlparser.ShowDatabases) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(normalPlan)
+	ReadHint(&statement.Comments)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 	plan.anyNode = true
 
@@ -229,10 +235,11 @@ func (r *Router) buildShowTablesPlan(statement *sqlparser.ShowTables) (*normalPl
 		return nil, errors.ErrDatabaseNotExists
 	}
 
-	plan := new(normalPlan)
+	ReadHint(&statement.Comments)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 	if schemaConfig.ShardEnabled() {
 		result := new(mysql.Result)
@@ -275,10 +282,11 @@ func (r *Router) buildShowFullTablesPlan(statement *sqlparser.ShowFullTables) (*
 	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
 		return nil, errors.ErrDatabaseNotExists
 	}
-	plan := new(normalPlan)
+	ReadHint(&statement.Comments)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	if schemaConfig.ShardEnabled() {
@@ -320,7 +328,6 @@ func (r *Router) buildShowFullTablesPlan(statement *sqlparser.ShowFullTables) (*
 }
 
 func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normalPlan, error) {
-	plan := new(normalPlan)
 
 	schemaConfig := r.Schemas[r.SchemaName]
 	db := string(statement.From.Qualifier)
@@ -346,15 +353,17 @@ func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normal
 		statement.From.Qualifier = nil
 	}
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	ReadHint(&statement.Comments)
+
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	return plan, nil
 }
 
 func (r *Router) buildShowFullColumnsPlan(statement *sqlparser.ShowFullColumns) (*normalPlan, error) {
-	plan := new(normalPlan)
 
 	db := string(statement.From.Qualifier)
 	if db == "" {
@@ -376,16 +385,17 @@ func (r *Router) buildShowFullColumnsPlan(statement *sqlparser.ShowFullColumns) 
 	if statement.From != nil {
 		statement.From.Qualifier = nil
 	}
+	ReadHint(&statement.Comments)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	return plan, nil
 }
 
 func (r *Router) buildShowIndexPlan(statement *sqlparser.ShowIndex) (*normalPlan, error) {
-	plan := new(normalPlan)
 
 	db := string(statement.From.Qualifier)
 	if db == "" {
@@ -407,9 +417,11 @@ func (r *Router) buildShowIndexPlan(statement *sqlparser.ShowIndex) (*normalPlan
 	if statement.From != nil {
 		statement.From.Qualifier = nil
 	}
+	ReadHint(&statement.Comments)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	return plan, nil
@@ -426,9 +438,11 @@ func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*norm
 	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
 		return nil, errors.ErrDatabaseNotExists
 	}
+	ReadHint(&statement.Comments)
+
 	plan := new(normalPlan)
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 	if schemaConfig.ShardEnabled() {
 		result := new(mysql.Result)
@@ -583,9 +597,11 @@ func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*norm
 
 func (r *Router) buildShowProcedureStatusPlan(statement *sqlparser.ShowProcedureStatus) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
+	ReadHint(&statement.Comments)
+
 	plan := new(normalPlan)
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	if !schemaConfig.ShardEnabled() {
@@ -737,9 +753,11 @@ func (r *Router) buildShowProcedureStatusPlan(statement *sqlparser.ShowProcedure
 
 func (r *Router) buildShowFunctionStatusPlan(statement *sqlparser.ShowFunctionStatus) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
+	ReadHint(&statement.Comments)
+
 	plan := new(normalPlan)
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 	if !schemaConfig.ShardEnabled() {
 		switch v := statement.LikeOrWhere.(type) {
@@ -899,10 +917,12 @@ func (r *Router) buildShowCreateDatabasePlan(statement *sqlparser.ShowCreateData
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Name = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
+	ReadHint(&statement.Comments)
+
 	plan := new(normalPlan)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	return plan, nil
@@ -920,6 +940,8 @@ func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) 
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
+	ReadHint(&statement.Comments)
+
 	plan := new(normalPlan)
 
 	table := string(statement.Name.Name)
@@ -929,8 +951,8 @@ func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) 
 		return nil, errors.ErrTableNotExists
 	}
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	return plan, nil
@@ -948,6 +970,8 @@ func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
+	ReadHint(&statement.Comments)
+
 	plan := new(normalPlan)
 
 	table := string(statement.Name.Name)
@@ -957,8 +981,8 @@ func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*
 		return nil, errors.ErrTableNotExists
 	}
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 
 	return plan, nil
@@ -976,14 +1000,16 @@ func (r *Router) buildShowCreateTriggerPlan(statement *sqlparser.ShowCreateTrigg
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
+	ReadHint(&statement.Comments)
+
 	if !schemaConfig.ShardEnabled() {
 		plan := new(normalPlan)
 
 		trigger := string(statement.Name.Name)
 		trigger = strings.Trim(strings.ToLower(trigger), "`")
 
-		plan.DataNode = schemaConfig.Nodes[0]
-		plan.IsSlave = true
+		plan.nodeName = schemaConfig.Nodes[0]
+		plan.onSlave = true
 		plan.Statement = statement
 
 		return plan, nil
@@ -1003,14 +1029,16 @@ func (r *Router) buildShowCreateProcedurePlan(statement *sqlparser.ShowCreatePro
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
+	ReadHint(&statement.Comments)
+
 	if !schemaConfig.ShardEnabled() {
 		plan := new(normalPlan)
 
 		procedure := string(statement.Name.Name)
 		procedure = strings.Trim(strings.ToLower(procedure), "`")
 
-		plan.DataNode = schemaConfig.Nodes[0]
-		plan.IsSlave = true
+		plan.nodeName = schemaConfig.Nodes[0]
+		plan.onSlave = true
 		plan.Statement = statement
 
 		return plan, nil
@@ -1030,14 +1058,16 @@ func (r *Router) buildShowCreateFunctionPlan(statement *sqlparser.ShowCreateFunc
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
+	ReadHint(&statement.Comments)
+
 	if !schemaConfig.ShardEnabled() {
 		plan := new(normalPlan)
 
 		function := string(statement.Name.Name)
 		function = strings.Trim(strings.ToLower(function), "`")
 
-		plan.DataNode = schemaConfig.Nodes[0]
-		plan.IsSlave = true
+		plan.nodeName = schemaConfig.Nodes[0]
+		plan.onSlave = true
 		plan.Statement = statement
 
 		return plan, nil

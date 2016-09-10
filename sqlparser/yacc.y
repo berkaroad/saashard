@@ -338,6 +338,18 @@ explain_statement:
   {
     $$= &Explain{Statement: $2}
   }
+| EXPLAIN set_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
+| EXPLAIN show_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
+| EXPLAIN describe_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
 
 set_statement:
   SET comment_opt scope_opt update_list

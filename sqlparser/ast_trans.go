@@ -40,6 +40,13 @@
 
 package sqlparser
 
+// TransactionStatement Transaction Statement
+type TransactionStatement interface {
+	IStatement()
+	ITransactionStatement()
+	SQLNode
+}
+
 // Begin statement
 type Begin struct {
 }
@@ -48,4 +55,27 @@ func (node *Begin) Format(buf *TrackedBuffer) {
 	buf.Fprintf("begin")
 }
 
-func (node *Begin) IStatement() {}
+func (node *Begin) IStatement()            {}
+func (node *Begin) ITransactionStatement() {}
+
+// Commit statement
+type Commit struct {
+}
+
+func (node *Commit) Format(buf *TrackedBuffer) {
+	buf.Fprintf("commit")
+}
+
+func (node *Commit) IStatement()            {}
+func (node *Commit) ITransactionStatement() {}
+
+// Rollback statement
+type Rollback struct {
+}
+
+func (node *Rollback) Format(buf *TrackedBuffer) {
+	buf.Fprintf("rollback")
+}
+
+func (node *Rollback) IStatement()            {}
+func (node *Rollback) ITransactionStatement() {}

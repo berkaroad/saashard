@@ -96,11 +96,12 @@ func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*norm
 			break
 		}
 	}
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true && !hint.OnMaster
 	plan.Statement = statement
 	plan.anyNode = true
 
@@ -130,22 +131,33 @@ func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, erro
 	if isValid := sqlparser.CheckTableInSelect(statement, schemaConfig.GetTables()); !isValid {
 		return nil, errors.ErrTableNotExists
 	}
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true && !hint.OnMaster
 	plan.Statement = statement
 
 	return plan, nil
 }
 
-func (r *Router) buildUnitPlan(statement *sqlparser.Union) (*normalPlan, error) {
+func (r *Router) buildUnionPlan(statement *sqlparser.Union) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(normalPlan)
+	var hint *Hint
+	switch left := statement.Left.(type) {
+	case *sqlparser.SimpleSelect:
+		hint = ReadHint(&left.Comments)
+	case *sqlparser.Select:
+		hint = ReadHint(&left.Comments)
+	}
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
+	if hint != nil {
+		plan.onSlave = plan.onSlave && !hint.OnMaster
+	}
 	plan.Statement = statement
 
 	return plan, nil

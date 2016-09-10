@@ -44,6 +44,8 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+
+	"github.com/berkaroad/saashard/errors"
 )
 
 var (
@@ -182,6 +184,71 @@ func CheckTableInSelect(statement SelectStatement, tableNames interface{}) bool 
 		isValid = CheckTableInSelect(selStmt.Left, tableNames) && CheckTableInSelect(selStmt.Right, tableNames)
 	}
 	return isValid
+}
+
+// CheckInsertOrReplace check shard key should exists in columns, not in dup expers, has same shard key's value in rows.
+func CheckInsertOrReplace(columns Columns, insertRows InsertRows, onDup OnDup, shardKey string) (strOrNumValue ValExpr, err error) {
+	var colValue ValExpr
+	// insert statement must contain shardkey column.
+	if columns == nil {
+		return nil, errors.ErrInsertColumnsKey
+	}
+	shardKeyExists := false
+	shardKeyPos := -1
+	for colIndex, columnExpr := range columns {
+		if realColumnExpr, ok := columnExpr.(*NonStarExpr); ok {
+			if colNameExpr, ok := realColumnExpr.Expr.(*ColName); ok {
+				colName := strings.ToLower(string(colNameExpr.Name))
+				colName = strings.Trim(colName, "`")
+				if colName == shardKey {
+					shardKeyExists = true
+					shardKeyPos = colIndex
+					break
+				}
+			}
+		}
+	}
+	// insert statement must contain shardkey column.
+	if !shardKeyExists {
+		return nil, errors.ErrInsertColumnsKey
+	}
+
+	// ON DUPLICATE KEY UPDATE expression, couldn't contain shardkey.
+	if onDup != nil {
+		for _, dupExpr := range onDup {
+			colName := strings.ToLower(string(dupExpr.Name.Name))
+			colName = strings.Trim(colName, "`")
+			if colName == shardKey {
+				return nil, errors.ErrUpdateKey
+			}
+		}
+	}
+
+	// Fetch shard key's value.
+	switch values := insertRows.(type) {
+	case Values:
+		for _, val := range values {
+			switch val := val.(type) {
+			case ValTuple:
+				if len(val) != len(columns) {
+					return nil, errors.ErrColsLenNotMatch
+				}
+				if colValue == nil {
+					colValue = val[shardKeyPos]
+				} else {
+					colValue1 := val[shardKeyPos]
+					if String(colValue1) != String(colValue) {
+						colValue = nil
+						break
+					}
+				}
+			}
+		}
+	}
+	if colValue == nil {
+		return nil, errors.ErrInsertValuesKey
+	}
+	return colValue, nil
 }
 
 // GetColName returns the column name, only if

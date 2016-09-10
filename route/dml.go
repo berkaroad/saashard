@@ -25,24 +25,13 @@ package route
 import (
 	"strings"
 
-	"github.com/berkaroad/saashard/config"
 	"github.com/berkaroad/saashard/errors"
 	"github.com/berkaroad/saashard/sqlparser"
 )
 
 func (r *Router) buildInsertPlan(statement *sqlparser.Insert) (*normalPlan, error) {
-	db := string(statement.Table.Qualifier)
-	if db == "" {
-		db = r.SchemaName
-	} else {
-		db = strings.Trim(strings.ToLower(db), "`")
-	}
-	var schemaConfig *config.SchemaConfig
-	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
-		return nil, errors.ErrDatabaseNotExists
-	}
+	schemaConfig := r.Schemas[r.SchemaName]
 	statement.Table.Qualifier = nil
-
 	if schemaConfig.ShardEnabled() {
 		// check table exists or not.
 		table := string(statement.Table.Name)
@@ -52,57 +41,23 @@ func (r *Router) buildInsertPlan(statement *sqlparser.Insert) (*normalPlan, erro
 			return nil, errors.ErrTableNotExists
 		}
 
-		// insert statement must contain shardkey column.
-		if statement.Columns == nil {
-			return nil, errors.ErrInsertKey
+		colValue, err := sqlparser.CheckInsertOrReplace(statement.Columns, statement.Rows, statement.OnDup, schemaConfig.ShardKey)
+		if err != nil {
+			return nil, err
 		}
-		shardKeyExists := false
-		for _, columnExpr := range statement.Columns {
-			if realColumnExpr, ok := columnExpr.(*sqlparser.NonStarExpr); ok {
-				if colNameExpr, ok := realColumnExpr.Expr.(*sqlparser.ColName); ok {
-					colName := strings.ToLower(string(colNameExpr.Name))
-					colName = strings.Trim(colName, "`")
-					if colName == schemaConfig.ShardKey {
-						shardKeyExists = true
-						break
-					}
-				}
-			}
-		}
-		// insert statement must contain shardkey column.
-		if !shardKeyExists {
-			return nil, errors.ErrInsertKey
-		}
-
-		// ON DUPLICATE KEY UPDATE expression, couldn't contain shardkey.
-		if statement.OnDup != nil {
-			for _, dupExpr := range statement.OnDup {
-				colName := strings.ToLower(string(dupExpr.Name.Name))
-				colName = strings.Trim(colName, "`")
-				if colName == schemaConfig.ShardKey {
-					return nil, errors.ErrUpdateKey
-				}
-			}
-		}
+		println("Insert ShardKey=", sqlparser.String(colValue))
 	}
 
+	ReadHint(&statement.Comments)
+
 	plan := new(normalPlan)
-	plan.DataNode = schemaConfig.Nodes[0]
+	plan.nodeName = schemaConfig.Nodes[0]
 	plan.Statement = statement
 	return plan, nil
 }
 
 func (r *Router) buildUpdatePlan(statement *sqlparser.Update) (*normalPlan, error) {
-	db := string(statement.Table.Qualifier)
-	if db == "" {
-		db = r.SchemaName
-	} else {
-		db = strings.Trim(strings.ToLower(db), "`")
-	}
-	var schemaConfig *config.SchemaConfig
-	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
-		return nil, errors.ErrDatabaseNotExists
-	}
+	schemaConfig := r.Schemas[r.SchemaName]
 	statement.Table.Qualifier = nil
 	if schemaConfig.ShardEnabled() {
 		// check table exists or not.
@@ -131,29 +86,20 @@ func (r *Router) buildUpdatePlan(statement *sqlparser.Update) (*normalPlan, erro
 		if exists, colValue = sqlparser.IsColInEqualConditionExists(statement.Where.Expr, schemaConfig.ShardKey); !exists || colValue == nil {
 			return nil, errors.ErrWhereKey
 		}
-		println("ShardKey=", sqlparser.String(colValue))
+		println("Update ShardKey=", sqlparser.String(colValue))
 	}
+	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.DataNode = schemaConfig.Nodes[0]
+	plan.nodeName = schemaConfig.Nodes[0]
 	plan.Statement = statement
 
 	return plan, nil
 }
 
 func (r *Router) buildDeletePlan(statement *sqlparser.Delete) (*normalPlan, error) {
-	db := string(statement.Table.Qualifier)
-	if db == "" {
-		db = r.SchemaName
-	} else {
-		db = strings.Trim(strings.ToLower(db), "`")
-	}
-	var schemaConfig *config.SchemaConfig
-	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
-		return nil, errors.ErrDatabaseNotExists
-	}
+	schemaConfig := r.Schemas[r.SchemaName]
 	statement.Table.Qualifier = nil
-
 	if schemaConfig.ShardEnabled() {
 		// check table exists or not.
 		table := string(statement.Table.Name)
@@ -171,29 +117,20 @@ func (r *Router) buildDeletePlan(statement *sqlparser.Delete) (*normalPlan, erro
 		if exists, colValue = sqlparser.IsColInEqualConditionExists(statement.Where.Expr, schemaConfig.ShardKey); !exists || colValue == nil {
 			return nil, errors.ErrWhereKey
 		}
-		println("ShardKey=", sqlparser.String(colValue))
+		println("Delete ShardKey=", sqlparser.String(colValue))
 	}
+	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.DataNode = schemaConfig.Nodes[0]
+	plan.nodeName = schemaConfig.Nodes[0]
 	plan.Statement = statement
 
 	return plan, nil
 }
 
 func (r *Router) buildReplacePlan(statement *sqlparser.Replace) (*normalPlan, error) {
-	db := string(statement.Table.Qualifier)
-	if db == "" {
-		db = r.SchemaName
-	} else {
-		db = strings.Trim(strings.ToLower(db), "`")
-	}
-	var schemaConfig *config.SchemaConfig
-	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
-		return nil, errors.ErrDatabaseNotExists
-	}
+	schemaConfig := r.Schemas[r.SchemaName]
 	statement.Table.Qualifier = nil
-
 	if schemaConfig.ShardEnabled() {
 		// check table exists or not.
 		table := string(statement.Table.Name)
@@ -203,31 +140,16 @@ func (r *Router) buildReplacePlan(statement *sqlparser.Replace) (*normalPlan, er
 			return nil, errors.ErrTableNotExists
 		}
 
-		// insert statement must contain shardkey column.
-		if statement.Columns == nil {
-			return nil, errors.ErrInsertKey
+		colValue, err := sqlparser.CheckInsertOrReplace(statement.Columns, statement.Rows, nil, schemaConfig.ShardKey)
+		if err != nil {
+			return nil, err
 		}
-		shardKeyExists := false
-		for _, columnExpr := range statement.Columns {
-			if realColumnExpr, ok := columnExpr.(*sqlparser.NonStarExpr); ok {
-				if colNameExpr, ok := realColumnExpr.Expr.(*sqlparser.ColName); ok {
-					colName := strings.ToLower(string(colNameExpr.Name))
-					colName = strings.Trim(colName, "`")
-					if colName == schemaConfig.ShardKey {
-						shardKeyExists = true
-						break
-					}
-				}
-			}
-		}
-		// insert statement must contain shardkey column.
-		if !shardKeyExists {
-			return nil, errors.ErrInsertKey
-		}
+		println("Replace ShardKey=", sqlparser.String(colValue))
 	}
+	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.DataNode = schemaConfig.Nodes[0]
+	plan.nodeName = schemaConfig.Nodes[0]
 	plan.Statement = statement
 
 	return plan, nil

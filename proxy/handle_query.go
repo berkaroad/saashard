@@ -68,31 +68,12 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 		}
 	}()
 
-	sql = strings.TrimSpace(sql)
-
-	var onlySingleSQL = true
 	var plan route.Plan
 	var sqls []string
 	if c.capability&mysql.CLIENT_MULTI_STATEMENTS > 0 {
 		sqls = sqlparser.SplitSQLStatement(sql)
-		onlySingleSQL = len(sqls) == 1
-		sql = sqls[0]
-	}
-
-	if onlySingleSQL {
-		var stmt sqlparser.Statement
-		stmt, err = sqlparser.Parse(sql)
-		if err != nil {
-			golog.Error("proxy", "handleQuery", err.Error(), 0, "sql", sql)
-			err = mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s'", sql))
-			return
-		}
-		router := route.NewRouter(c.db, c.schemas, c.proxy.cfg.GetNodes(), c.connectionID, c.user)
-		plan, err = router.BuildMergedPlan(stmt)
-		if err != nil {
-			return
-		}
-		return plan.Execute(c.executePlan)
+	} else {
+		sqls = []string{strings.TrimSpace(sql)}
 	}
 
 	var stmts = make([]sqlparser.Statement, len(sqls))
@@ -122,9 +103,8 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 	var conn backend.Connection
 	if conn = c.backendConns[node]; conn == nil {
 		var dbHost *backend.DBHost
-		if isSlave {
+		if isSlave && len(node.DataHost.Slaves) > 0 {
 			dbHost = node.DataHost.Slaves[0]
-
 		} else {
 			dbHost = node.DataHost.Master
 		}
@@ -152,7 +132,28 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			statement := statements[i]
 			switch v := statement.(type) {
 			case *sqlparser.UseDB:
-				err = c.handleInitDB(v.DB)
+				return c.handleInitDB(v.DB)
+			case *sqlparser.Begin:
+				c.status |= mysql.SERVER_STATUS_IN_TRANS
+				sql := sqlparser.String(statement)
+				if result, err = mysqlConn.Query(sql); err != nil {
+					return
+				}
+				return c.pkg.WriteOK(c.capability, c.status, result)
+			case *sqlparser.Commit:
+				c.status &= ^mysql.SERVER_STATUS_IN_TRANS
+				sql := sqlparser.String(statement)
+				if result, err = mysqlConn.Query(sql); err != nil {
+					return
+				}
+				return c.pkg.WriteOK(c.capability, c.status, result)
+			case *sqlparser.Rollback:
+				c.status &= ^mysql.SERVER_STATUS_IN_TRANS
+				sql := sqlparser.String(statement)
+				if result, err = mysqlConn.Query(sql); err != nil {
+					return
+				}
+				return c.pkg.WriteOK(c.capability, c.status, result)
 			default:
 				sql := sqlparser.String(statement)
 				if result, err = mysqlConn.Query(sql); err != nil {

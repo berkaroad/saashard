@@ -54,7 +54,14 @@ func (c *ClientConn) handleFieldList(data []byte) error {
 
 	var err error
 	var conn backend.Connection
-	if conn, err = node.DataHost.Slaves[0].Connect(node.Database); err != nil {
+
+	var dbHost *backend.DBHost
+	if len(node.DataHost.Slaves) > 0 {
+		dbHost = node.DataHost.Slaves[0]
+	} else {
+		dbHost = node.DataHost.Master
+	}
+	if conn, err = dbHost.Connect(node.Database); err != nil {
 		return err
 	}
 	mysqlConn := conn.(*mysqlBackend.Conn)

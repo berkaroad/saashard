@@ -23,6 +23,9 @@
 package route
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/sqlparser"
 )
@@ -31,8 +34,8 @@ func (r *Router) buildExplainPlan(statement *sqlparser.Explain) (*normalPlan, er
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = true
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true
 	plan.Statement = statement
 	plan.anyNode = true
 
@@ -43,7 +46,7 @@ func (r *Router) buildExplainPlan(statement *sqlparser.Explain) (*normalPlan, er
 	result.Resultset.Fields[0] = &mysql.Field{Schema: []byte(""),
 		Table:        []byte(""),
 		OrgTable:     []byte(""),
-		Name:         []byte("data_node"),
+		Name:         []byte("node_name"),
 		OrgName:      []byte(""),
 		Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
 		ColumnLength: 192,
@@ -53,7 +56,7 @@ func (r *Router) buildExplainPlan(statement *sqlparser.Explain) (*normalPlan, er
 	result.Resultset.Fields[1] = &mysql.Field{Schema: []byte(""),
 		Table:        []byte(""),
 		OrgTable:     []byte(""),
-		Name:         []byte("is_slave"),
+		Name:         []byte("on_slave"),
 		OrgName:      []byte(""),
 		Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
 		ColumnLength: 32,
@@ -63,16 +66,6 @@ func (r *Router) buildExplainPlan(statement *sqlparser.Explain) (*normalPlan, er
 	result.Resultset.Fields[2] = &mysql.Field{Schema: []byte(""),
 		Table:        []byte(""),
 		OrgTable:     []byte(""),
-		Name:         []byte("any_node"),
-		OrgName:      []byte(""),
-		Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
-		ColumnLength: 32,
-		ColumnType:   mysql.MYSQL_TYPE_VAR_STRING,
-		Flags:        mysql.NOT_NULL_FLAG,
-		Decimals:     0}
-	result.Resultset.Fields[3] = &mysql.Field{Schema: []byte(""),
-		Table:        []byte(""),
-		OrgTable:     []byte(""),
 		Name:         []byte("plan_sql"),
 		OrgName:      []byte(""),
 		Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
@@ -80,23 +73,34 @@ func (r *Router) buildExplainPlan(statement *sqlparser.Explain) (*normalPlan, er
 		ColumnType:   mysql.MYSQL_TYPE_VAR_STRING,
 		Flags:        mysql.NOT_NULL_FLAG,
 		Decimals:     0}
+	result.Resultset.Fields[3] = &mysql.Field{Schema: []byte(""),
+		Table:        []byte(""),
+		OrgTable:     []byte(""),
+		Name:         []byte("time_escape"),
+		OrgName:      []byte(""),
+		Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
+		ColumnLength: 192,
+		ColumnType:   mysql.MYSQL_TYPE_VAR_STRING,
+		Flags:        mysql.NOT_NULL_FLAG,
+		Decimals:     0}
 
 	result.Rows = make([]*mysql.Row, 1)
 	row := mysql.NewTextRow(result.Fields)
+	startTime := time.Now().UnixNano()
 
-	if innerPlan, err := r.BuildNormalPlan(statement.Statement); err != nil {
-		row.AppendNullValue()
+	innerPlan, err := r.BuildNormalPlan(statement.Statement)
+	endTime := time.Now().UnixNano()
+	consumedTime := float64(endTime-startTime) / float64(time.Millisecond)
+	if err != nil {
 		row.AppendNullValue()
 		row.AppendNullValue()
 		row.AppendStringValue(err.Error())
 	} else {
-		innerNormalPlan := innerPlan.(*normalPlan)
-		row.AppendStringValue(innerNormalPlan.DataNode)
-		row.AppendBooleanValue(innerNormalPlan.IsSlave)
-		row.AppendBooleanValue(innerNormalPlan.anyNode)
-		row.AppendStringValue(sqlparser.String(innerNormalPlan.Statement))
-		result.Resultset.Rows[0] = row
+		row.AppendStringValue(innerPlan.GetNodeName())
+		row.AppendBooleanValue(innerPlan.OnSlave())
+		row.AppendStringValue(innerPlan.GetPlanSQL())
 	}
+	row.AppendStringValue(fmt.Sprintf("%vms", consumedTime))
 	result.Resultset.Rows[0] = row
 	plan.Result = result
 

@@ -234,18 +234,18 @@ func (c *ClientConn) dispatch(data []byte) error {
 		return c.pkg.WriteOK(c.capability, c.status, nil)
 	case mysql.COM_INIT_DB:
 		return c.handleInitDB(string(data))
-	case mysql.COM_FIELD_LIST:
-		// return c.handleFieldList(data)
-	case mysql.COM_STMT_PREPARE:
-		// return c.handleStmtPrepare(hack.String(data))
-	case mysql.COM_STMT_EXECUTE:
-		// return c.handleStmtExecute(data)
-	case mysql.COM_STMT_CLOSE:
-		// return c.handleStmtClose(data)
-	case mysql.COM_STMT_SEND_LONG_DATA:
-		// return c.handleStmtSendLongData(data)
-	case mysql.COM_STMT_RESET:
-		// return c.handleStmtReset(data)
+	// case mysql.COM_FIELD_LIST:
+	// return c.handleFieldList(data)
+	// case mysql.COM_STMT_PREPARE:
+	// return c.handleStmtPrepare(hack.String(data))
+	// case mysql.COM_STMT_EXECUTE:
+	// return c.handleStmtExecute(data)
+	// case mysql.COM_STMT_CLOSE:
+	// return c.handleStmtClose(data)
+	// case mysql.COM_STMT_SEND_LONG_DATA:
+	// return c.handleStmtSendLongData(data)
+	// case mysql.COM_STMT_RESET:
+	// return c.handleStmtReset(data)
 	case mysql.COM_SET_OPTION:
 		return c.pkg.WriteEOF(c.capability, 0)
 	default:
@@ -253,8 +253,6 @@ func (c *ClientConn) dispatch(data []byte) error {
 		golog.Error("ClientConn", "dispatch", msg, 0)
 		return mysql.NewError(mysql.ER_UNKNOWN_ERROR, msg)
 	}
-
-	return nil
 }
 func (c *ClientConn) isInTransaction() bool {
 	return c.status&mysql.SERVER_STATUS_IN_TRANS > 0 ||

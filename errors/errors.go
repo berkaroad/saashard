@@ -75,6 +75,7 @@ var (
 	ErrNoRouteNode    = errors.New("no route node")
 	ErrResultNil      = errors.New("result is nil")
 	ErrSumColumnType  = errors.New("sum column type error")
+
 	ErrSelectInInsert = errors.New("select in insert not allowed")
 	ErrInsertInMulti  = errors.New("insert in multi node")
 	ErrUpdateInMulti  = errors.New("update in multi node")
@@ -84,8 +85,8 @@ var (
 	ErrTransInMulti   = errors.New("transaction in multi node")
 
 	ErrNoPlan           = errors.New("statement have no plan")
-	ErrNoPlanRule       = errors.New("statement have no plan rule")
-	ErrInsertKey        = errors.New("no shard key in insert column list")
+	ErrInsertColumnsKey = errors.New("no shard key in insert column list")
+	ErrInsertValuesKey  = errors.New("no shard key or key has multi values in insert values list")
 	ErrUpdateKey        = errors.New("shard key in update expression")
 	ErrWhereKey         = errors.New("no shard key or key has multi values in where expression")
 	ErrStmtConvert      = errors.New("statement fail to convert")

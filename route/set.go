@@ -24,12 +24,49 @@ package route
 
 import "github.com/berkaroad/saashard/sqlparser"
 
-func (r *Router) buildSetPlan(statement sqlparser.SetStatement) (*normalPlan, error) {
+func (r *Router) buildSetCharsetPlan(statement *sqlparser.SetCharset) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(normalPlan)
+	ReadHint(&statement.Comments)
 
-	plan.DataNode = schemaConfig.Nodes[0]
-	plan.IsSlave = false
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = false
+	plan.anyNode = true
+	plan.Statement = statement
+	return plan, nil
+}
+
+func (r *Router) buildSetNamesPlan(statement *sqlparser.SetNames) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	ReadHint(&statement.Comments)
+
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = false
+	plan.anyNode = true
+	plan.Statement = statement
+	return plan, nil
+}
+
+func (r *Router) buildSetVariablePlan(statement *sqlparser.SetVariable) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	ReadHint(&statement.Comments)
+
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = false
+	plan.anyNode = true
+	plan.Statement = statement
+	return plan, nil
+}
+
+func (r *Router) buildSetTransactionIsolationLevelPlan(statement *sqlparser.SetTransactionIsolationLevel) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	ReadHint(&statement.Comments)
+
+	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = false
 	plan.anyNode = true
 	plan.Statement = statement
 	return plan, nil
