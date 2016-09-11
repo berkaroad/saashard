@@ -246,35 +246,18 @@ func (c *Conn) Prepare(query string) (*Stmt, error) {
 }
 
 func (c *Conn) Begin() error {
-	_, err := c.pkg.Query(c.capability, &(c.status), "begin")
+	_, err := c.Query("begin")
 	return err
 }
 
 func (c *Conn) Commit() error {
-	_, err := c.pkg.Query(c.capability, &(c.status), "commit")
+	_, err := c.Query("commit")
 	return err
 }
 
 func (c *Conn) Rollback() error {
-	_, err := c.pkg.Query(c.capability, &(c.status), "rollback")
+	_, err := c.Query("rollback")
 	return err
-}
-
-func (c *Conn) SetAutoCommit(n uint8) error {
-	if n == 0 {
-		if _, err := c.pkg.Query(c.capability, &(c.status), "set autocommit = 0"); err != nil {
-			c.conn.Close()
-
-			return err
-		}
-	} else {
-		if _, err := c.pkg.Query(c.capability, &(c.status), "set autocommit = 1"); err != nil {
-			c.conn.Close()
-
-			return err
-		}
-	}
-	return nil
 }
 
 func (c *Conn) SetCharset(charset string) error {

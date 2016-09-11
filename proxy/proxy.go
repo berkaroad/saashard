@@ -217,7 +217,8 @@ func (p *Server) newClientConn(co net.Conn) *ClientConn {
 	c.connectionID = atomic.AddUint32(&baseConnID, 1)
 	c.status = mysql.SERVER_STATUS_AUTOCOMMIT
 	c.salt, _ = mysql.RandomBuf(20)
-	c.backendConns = make(map[*backend.DataNode]backend.Connection)
+	c.backendMasterConns = make(map[*backend.DataNode]backend.Connection)
+	c.backendSlaveConns = make(map[*backend.DataNode]backend.Connection)
 	c.closed = false
 	c.charset = mysql.DEFAULT_CHARSET
 	c.collation = mysql.DEFAULT_COLLATION_ID

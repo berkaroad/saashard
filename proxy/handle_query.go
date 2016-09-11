@@ -48,6 +48,7 @@ import (
 	"github.com/berkaroad/saashard/utils/golog"
 
 	mysqlBackend "github.com/berkaroad/saashard/backend/mysql"
+	"github.com/berkaroad/saashard/errors"
 )
 
 func (c *ClientConn) handleQuery(sql string) (err error) {
@@ -86,7 +87,7 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 		stmts[i] = stmt
 	}
 
-	router := route.NewRouter(c.db, c.schemas, c.proxy.cfg.GetNodes(), c.connectionID, c.user)
+	router := route.NewRouter(c.db, c.schemas, c.proxy.cfg.GetNodes(), c.connectionID, c.user, c.isInTransaction())
 	plan, err = router.BuildMergedPlan(stmts...)
 	if err != nil {
 		return
@@ -94,24 +95,39 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 	return plan.Execute(c.executePlan)
 }
 
-func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*mysql.Result, dataNode string, isSlave bool) (err error) {
+func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*mysql.Result,
+	dataNode string, isSlave bool,
+	queryDataNodes map[sqlparser.Statement][]string) (err error) {
 	resultCount := len(statements)
 	var direct = false
 	var total = make([]byte, 0, 1024)
 
 	node := c.proxy.nodes[dataNode]
+	// If in transaction, must exec in the same node.
+	if c.isInTransaction() && node != c.nodeInTrans {
+		return errors.ErrTransInMulti
+	}
+
 	var conn backend.Connection
-	if conn = c.backendConns[node]; conn == nil {
-		var dbHost *backend.DBHost
-		if isSlave && len(node.DataHost.Slaves) > 0 {
+	// Get backend conn from slave or master.
+	if !c.isInTransaction() && isSlave && len(node.DataHost.Slaves) > 0 {
+		if conn = c.backendSlaveConns[node]; conn == nil {
+			var dbHost *backend.DBHost
 			dbHost = node.DataHost.Slaves[0]
-		} else {
+			if conn, err = dbHost.Connect(node.Database); err != nil {
+				return
+			}
+			c.backendSlaveConns[node] = conn
+		}
+	} else {
+		if conn = c.backendMasterConns[node]; conn == nil {
+			var dbHost *backend.DBHost
 			dbHost = node.DataHost.Master
+			if conn, err = dbHost.Connect(node.Database); err != nil {
+				return
+			}
+			c.backendMasterConns[node] = conn
 		}
-		if conn, err = dbHost.Connect(node.Database); err != nil {
-			return
-		}
-		c.backendConns[node] = conn
 	}
 
 	var mysqlConn = conn.(*mysqlBackend.Conn)
@@ -134,24 +150,47 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			case *sqlparser.UseDB:
 				return c.handleInitDB(v.DB)
 			case *sqlparser.Begin:
-				c.status |= mysql.SERVER_STATUS_IN_TRANS
 				sql := sqlparser.String(statement)
 				if result, err = mysqlConn.Query(sql); err != nil {
 					return
 				}
+				c.status |= mysql.SERVER_STATUS_IN_TRANS
+				c.nodeInTrans = node
 				return c.pkg.WriteOK(c.capability, c.status, result)
 			case *sqlparser.Commit:
-				c.status &= ^mysql.SERVER_STATUS_IN_TRANS
 				sql := sqlparser.String(statement)
 				if result, err = mysqlConn.Query(sql); err != nil {
 					return
 				}
+				c.status &= ^mysql.SERVER_STATUS_IN_TRANS
+				c.nodeInTrans = nil
 				return c.pkg.WriteOK(c.capability, c.status, result)
 			case *sqlparser.Rollback:
-				c.status &= ^mysql.SERVER_STATUS_IN_TRANS
 				sql := sqlparser.String(statement)
 				if result, err = mysqlConn.Query(sql); err != nil {
 					return
+				}
+				c.status &= ^mysql.SERVER_STATUS_IN_TRANS
+				c.nodeInTrans = nil
+				return c.pkg.WriteOK(c.capability, c.status, result)
+			case *sqlparser.SetVariable:
+				sql := sqlparser.String(statement)
+				if result, err = mysqlConn.Query(sql); err != nil {
+					return
+				}
+				for _, varNameVal := range v.Exprs {
+					if string(varNameVal.Name.Name) == "autocommit" {
+						autoCommit := sqlparser.String(varNameVal.Expr)
+						if autoCommit == "0" {
+							c.status &= ^mysql.SERVER_STATUS_AUTOCOMMIT
+							c.nodeInTrans = node
+						} else {
+							c.status |= mysql.SERVER_STATUS_AUTOCOMMIT
+							c.status &= ^mysql.SERVER_STATUS_IN_TRANS
+							c.nodeInTrans = nil
+						}
+						break
+					}
 				}
 				return c.pkg.WriteOK(c.capability, c.status, result)
 			default:

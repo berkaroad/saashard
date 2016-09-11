@@ -38,4 +38,13 @@ type Connection interface {
 
 	// Ping db server.
 	Ping() error
+
+	// Begin transaction
+	Begin() error
+
+	// Commit transaction
+	Commit() error
+
+	// Rollback transaction
+	Rollback() error
 }

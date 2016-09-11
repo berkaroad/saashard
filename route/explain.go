@@ -35,7 +35,7 @@ func (r *Router) buildExplainPlan(statement *sqlparser.Explain) (*normalPlan, er
 	plan := new(normalPlan)
 
 	plan.nodeName = schemaConfig.Nodes[0]
-	plan.onSlave = true
+	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	plan.anyNode = true
 

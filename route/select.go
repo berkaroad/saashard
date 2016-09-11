@@ -101,7 +101,7 @@ func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*norm
 	plan := new(normalPlan)
 
 	plan.nodeName = schemaConfig.Nodes[0]
-	plan.onSlave = true && !hint.OnMaster
+	plan.onSlave = true && !hint.OnMaster && !r.InTrans
 	plan.Statement = statement
 	plan.anyNode = true
 
@@ -136,7 +136,7 @@ func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, erro
 	plan := new(normalPlan)
 
 	plan.nodeName = schemaConfig.Nodes[0]
-	plan.onSlave = true && !hint.OnMaster
+	plan.onSlave = true && !hint.OnMaster && !r.InTrans
 	plan.Statement = statement
 
 	return plan, nil
@@ -154,7 +154,7 @@ func (r *Router) buildUnionPlan(statement *sqlparser.Union) (*normalPlan, error)
 
 	plan := new(normalPlan)
 	plan.nodeName = schemaConfig.Nodes[0]
-	plan.onSlave = true
+	plan.onSlave = true && !r.InTrans
 	if hint != nil {
 		plan.onSlave = plan.onSlave && !hint.OnMaster
 	}

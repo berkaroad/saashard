@@ -52,24 +52,26 @@ import (
 // ClientConn client <-> proxy
 type ClientConn struct {
 	sync.Mutex
-	pkg          *mysql.PacketIO
-	c            net.Conn
-	clientIP     net.IP
-	proxy        *Server
-	capability   uint32
-	connectionID uint32
-	status       uint16
-	collation    mysql.CollationID
-	charset      string
-	user         string
-	db           string
-	salt         []byte
-	schemas      map[string]*config.SchemaConfig
-	backendConns map[*backend.DataNode]backend.Connection
-	closed       bool
-	lastInsertID int64
-	affectedRows int64
-	stmtID       uint32
+	pkg                *mysql.PacketIO
+	c                  net.Conn
+	clientIP           net.IP
+	proxy              *Server
+	capability         uint32
+	connectionID       uint32
+	status             uint16
+	collation          mysql.CollationID
+	charset            string
+	user               string
+	db                 string
+	salt               []byte
+	schemas            map[string]*config.SchemaConfig
+	backendMasterConns map[*backend.DataNode]backend.Connection
+	backendSlaveConns  map[*backend.DataNode]backend.Connection
+	nodeInTrans        *backend.DataNode
+	closed             bool
+	lastInsertID       int64
+	affectedRows       int64
+	stmtID             uint32
 	//stmts map[uint32]*Stmt //prepare相关,client端到proxy的stmt
 }
 
@@ -206,8 +208,11 @@ func (c *ClientConn) Close() error {
 	if c.closed {
 		return nil
 	}
-
-	for _, conn := range c.backendConns {
+	c.nodeInTrans = nil
+	for _, conn := range c.backendMasterConns {
+		conn.Close()
+	}
+	for _, conn := range c.backendSlaveConns {
 		conn.Close()
 	}
 

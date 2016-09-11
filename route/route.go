@@ -45,15 +45,18 @@ type Route interface {
 // Plan to execute.
 type Plan interface {
 	Route
-	Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result, dataNode string, isSlave bool) error) error
+	Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
+		dataNode string, isSlave bool,
+		queryDataNodes map[sqlparser.Statement][]string) error) error
 }
 
 type normalPlan struct {
-	Statement sqlparser.Statement
-	Result    *mysql.Result // If has result then get it, or execute plan.
-	nodeName  string
-	onSlave   bool // Execute at slave or master.
-	anyNode   bool // Can execute at any node or not.
+	Statement      sqlparser.Statement
+	Result         *mysql.Result // If has result then get it, or execute plan.
+	nodeName       string
+	queryNodeNames []string
+	onSlave        bool // Execute at slave or master.
+	anyNode        bool // Can execute at any node or not.
 }
 
 func (plan *normalPlan) GetPlanSQL() string {
@@ -69,9 +72,13 @@ func (plan *normalPlan) OnSlave() bool {
 }
 
 // Execute the plan
-func (plan *normalPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result, dataNode string, isSlave bool) error) error {
+func (plan *normalPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
+	dataNode string, isSlave bool,
+	queryDataNodes map[sqlparser.Statement][]string) error) error {
 	if executor != nil {
-		err := executor([]sqlparser.Statement{plan.Statement}, []*mysql.Result{plan.Result}, plan.nodeName, plan.onSlave)
+		err := executor([]sqlparser.Statement{plan.Statement}, []*mysql.Result{plan.Result},
+			plan.nodeName, plan.onSlave,
+			map[sqlparser.Statement][]string{plan.Statement: plan.queryNodeNames})
 
 		planSQL := plan.GetPlanSQL()
 		golog.OutputSql("Plan", "Execute on data node '%s': '%s'",
@@ -84,11 +91,12 @@ func (plan *normalPlan) Execute(executor func(statements []sqlparser.Statement, 
 
 // mergedPlan from plan array.
 type mergedPlan struct {
-	Statements []sqlparser.Statement
-	Results    []*mysql.Result
-	nodeName   string
-	onSlave    bool // Execute at slave or master.
-	anyNode    bool // Can execute at any node or not.
+	Statements     []sqlparser.Statement
+	Results        []*mysql.Result
+	nodeName       string
+	queryNodeNames map[sqlparser.Statement][]string // select or union will use.
+	onSlave        bool                             // Execute at slave or master.
+	anyNode        bool                             // Can execute at any node or not.
 }
 
 func (plan *mergedPlan) GetPlanSQL() string {
@@ -108,9 +116,12 @@ func (plan *mergedPlan) OnSlave() bool {
 }
 
 // Execute the plan
-func (plan *mergedPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result, dataNode string, isSlave bool) error) error {
+func (plan *mergedPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
+	dataNode string, isSlave bool,
+	queryDataNodes map[sqlparser.Statement][]string) error) error {
 	if executor != nil {
-		err := executor(plan.Statements, plan.Results, plan.nodeName, plan.onSlave)
+		err := executor(plan.Statements, plan.Results,
+			plan.nodeName, plan.onSlave, plan.queryNodeNames)
 
 		planSQL := plan.GetPlanSQL()
 		golog.OutputSql("Plan", "Execute on data node '%s': '%s'",
@@ -128,17 +139,19 @@ type Router struct {
 	Nodes        map[string]*config.NodeConfig
 	ConnectionID uint32
 	User         string
+	InTrans      bool
 }
 
 // NewRouter to create router.
 func NewRouter(schemaName string, schemas map[string]*config.SchemaConfig, nodes map[string]*config.NodeConfig,
-	connectionID uint32, user string) *Router {
+	connectionID uint32, user string, inTrans bool) *Router {
 	r := new(Router)
 	r.SchemaName = schemaName
 	r.Schemas = schemas
 	r.Nodes = nodes
 	r.ConnectionID = connectionID
 	r.User = user
+	r.InTrans = inTrans
 	return r
 }
 
@@ -164,6 +177,7 @@ func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan Plan, 
 	mergedPlan.Results = make([]*mysql.Result, planCount)
 	firstNormalPlan := plans[0]
 	mergedPlan.nodeName = firstNormalPlan.nodeName
+	mergedPlan.queryNodeNames = make(map[sqlparser.Statement][]string)
 	mergedPlan.onSlave = firstNormalPlan.onSlave
 	mergedPlan.anyNode = firstNormalPlan.anyNode
 	mergedPlan.Results[0] = firstNormalPlan.Result
@@ -186,6 +200,11 @@ func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan Plan, 
 				// if last plan use slave, override it
 				if mergedPlan.onSlave {
 					mergedPlan.onSlave = currentPlan.onSlave
+				}
+
+				// mapping nodes to query statement.
+				if len(currentPlan.queryNodeNames) > 0 {
+					mergedPlan.queryNodeNames[currentPlan.Statement] = currentPlan.queryNodeNames
 				}
 			}
 			mergedPlan.Statements[i+1] = currentPlan.Statement
