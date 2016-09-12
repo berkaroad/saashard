@@ -169,15 +169,19 @@ func CheckTableInSelect(statement SelectStatement, tableNames interface{}) bool 
 			case *AliasedTableExpr:
 				switch simpExpr := realTabExpr.Expr.(type) {
 				case *TableName:
+					isSystemDB := false
 					if len(simpExpr.Qualifier) > 0 {
 						db := strings.ToLower(string(simpExpr.Qualifier))
-						if !IsSystemDB(db) {
+						if isSystemDB = IsSystemDB(db); !isSystemDB {
 							simpExpr.Qualifier = nil
+							println(db, "is not system db.")
 						}
 					}
-					tableName := strings.Trim(strings.ToLower(string(simpExpr.Name)), "`")
-					if isValid = Contains(tableNames, tableName); !isValid {
-						break
+					if !isSystemDB {
+						tableName := strings.Trim(strings.ToLower(string(simpExpr.Name)), "`")
+						if isValid = Contains(tableNames, tableName); !isValid {
+							break
+						}
 					}
 				case *Subquery:
 					if isValid = CheckTableInSelect(simpExpr.Select, tableNames); !isValid {
@@ -314,5 +318,6 @@ func SplitSQLStatement(multiSQL string) []string {
 
 // IsSystemDB is system db or not.
 func IsSystemDB(db string) bool {
+	println("IsSystemDB, current db=", db)
 	return Contains(sysdbs, db)
 }

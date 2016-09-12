@@ -148,7 +148,7 @@ var (
 %token <empty> VARIABLES STATUS
 %token <empty> DATABASES SCHEMAS DATABASE
 %token <empty> STORAGE ENGINES
-%token <empty> TABLES COLUMNS PROCEDURE FUNCTION INDEXES KEYS TRIGGER TRIGGERS
+%token <empty> TABLES COLUMNS FIELDS PROCEDURE FUNCTION INDEXES KEYS TRIGGER TRIGGERS
 %token <empty> PLUGINS PROCESSLIST SLAVE
 %token <empty> PROFILES
 
@@ -527,7 +527,15 @@ show_statement:
   {
     $$ = &ShowColumns{Comments : Comments($2), From : $5, LikeOrWhere : $6}
   }
+| SHOW comment_opt FIELDS FROM dml_table_expression where_or_like_opt
+  {
+    $$ = &ShowColumns{Comments : Comments($2), From : $5, LikeOrWhere : $6}
+  }
 | SHOW comment_opt FULL COLUMNS FROM dml_table_expression where_or_like_opt
+  {
+    $$ = &ShowFullColumns{Comments : Comments($2), From : $6, LikeOrWhere : $7}
+  }
+| SHOW comment_opt FULL FIELDS FROM dml_table_expression where_or_like_opt
   {
     $$ = &ShowFullColumns{Comments : Comments($2), From : $6, LikeOrWhere : $7}
   }

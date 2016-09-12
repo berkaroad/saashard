@@ -173,6 +173,7 @@ var keywords = map[string]int{
 	"database":    DATABASE,
 	"tables":      TABLES,
 	"columns":     COLUMNS,
+	"fields":      FIELDS,
 	"procedure":   PROCEDURE,
 	"function":    FUNCTION,
 	"engines":     ENGINES,

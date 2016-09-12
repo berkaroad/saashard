@@ -369,7 +369,7 @@ func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normal
 
 	schemaConfig := r.Schemas[r.SchemaName]
 	db := string(statement.From.Qualifier)
-	_, isSysDB := sysDBMapping[db]
+	isSysDB := sqlparser.IsSystemDB(db)
 
 	if !isSysDB {
 		if db == "" {

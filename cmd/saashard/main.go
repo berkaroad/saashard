@@ -146,6 +146,7 @@ func main() {
 				svr.Close()
 			} else if sig == syscall.SIGPIPE {
 				golog.Info("main", "main", "Ignore broken pipe signal", 0)
+				signal.Ignore(sig)
 			}
 		}
 	}()

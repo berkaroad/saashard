@@ -30,10 +30,6 @@ import (
 	"github.com/berkaroad/saashard/utils/golog"
 )
 
-// system db.
-var sysDBMapping = map[string]string{
-	"mysql": "mysql"}
-
 // Route info
 type Route interface {
 	GetPlanSQL() string
