@@ -80,49 +80,9 @@ func (p *PacketIO) WriteResultSet(capability uint32, status uint16, r *Result) e
 		if err != nil {
 			return err
 		}
+		// PrintPacketData(total)
 	}
 	return nil
-}
-
-// WriteResultSetBatch is to write Result Set packet in batch.
-func (p *PacketIO) WriteResultSetBatch(total []byte, capability uint32, status uint16, r *Result, direct bool) ([]byte, error) {
-	var err error
-	total, err = p.writeResultSetHeader(total, r)
-	if err != nil {
-		return nil, err
-	}
-	for _, f := range r.Fields {
-		total, err = p.writeResultSetField(total, f)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if capability&CLIENT_DEPRECATE_EOF == 0 {
-		total, err = p.WriteEOFBatch(total, capability, status, false)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if r.Rows != nil && len(r.Rows) > 0 {
-		for _, row := range r.Rows {
-			total, err = p.writeResultSetRowData(total, row)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-	if capability&CLIENT_DEPRECATE_EOF > 0 {
-		total, err = p.WriteOKBatch(total, capability, status, r, direct)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		total, err = p.WriteEOFBatch(total, capability, status, direct)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return total, nil
 }
 
 // ReadResultSet read result set.

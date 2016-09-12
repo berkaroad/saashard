@@ -188,6 +188,8 @@ var keywords = map[string]int{
 	"session": SESSION,
 	"global":  GLOBAL,
 
+	"profiles": PROFILES,
+
 	// charset
 	"armscii8": ARMSCII8,
 	"ascii":    ASCII,

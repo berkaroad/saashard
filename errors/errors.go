@@ -54,6 +54,10 @@ var (
 	ErrNoSchema   = errors.New("no schema")
 	ErrNoTable    = errors.New("no table")
 
+	ErrNoRouteNode  = errors.New("no route node")
+	ErrNoPlan       = errors.New("statement have no plan")
+	ErrNoStatements = errors.New("no statement to execute")
+
 	ErrSchemaNotExists   = errors.New("schema not exists")
 	ErrDatabaseNotExists = errors.New("database not exists")
 	ErrTableNotExists    = errors.New("table not exists")
@@ -72,8 +76,7 @@ var (
 
 	ErrSelectInInsert   = errors.New("select in insert not allowed")
 	ErrTransInMulti     = errors.New("transaction in multi node")
-	ErrNoRouteNode      = errors.New("no route node")
-	ErrNoPlan           = errors.New("statement have no plan")
+	ErrExecInMulti      = errors.New("execute in multi node")
 	ErrColsLenNotMatch  = errors.New("insert or replace cols and values length not match")
 	ErrInsertColumnsKey = errors.New("no shard key in insert column list")
 	ErrInsertValuesKey  = errors.New("no shard key or key has multi values in insert values list")

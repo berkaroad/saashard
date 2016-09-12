@@ -158,7 +158,7 @@ func NewRouter(schemaName string, schemas map[string]*config.SchemaConfig, nodes
 // BuildMergedPlan to merge from plan array.
 func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan Plan, err error) {
 	if len(statements) == 0 {
-		return nil, errors.ErrNoPlan
+		return nil, errors.ErrNoStatements
 	}
 	plans := make([]*normalPlan, len(statements))
 	for i, stmt := range statements {
@@ -190,7 +190,7 @@ func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan Plan, 
 			} else {
 				// couldn't execute in any node and exists more than one data node.
 				if !mergedPlan.anyNode && mergedPlan.nodeName != currentPlan.nodeName {
-					return nil, errors.ErrNoPlan
+					return nil, errors.ErrExecInMulti
 				}
 				// if last plan can execute in any node, override it
 				if mergedPlan.anyNode {
@@ -233,6 +233,12 @@ func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err 
 		realPlan, err = r.buildShowFullProcessListPlan(v)
 	case *sqlparser.ShowSlaveStatus:
 		realPlan, err = r.buildShowSlaveStatusPlan(v)
+	case *sqlparser.ShowProfiles:
+		realPlan, err = r.buildShowProfilesPlan(v)
+	case *sqlparser.ShowCharset:
+		realPlan, err = r.buildShowCharsetPlan(v)
+	case *sqlparser.ShowCollation:
+		realPlan, err = r.buildShowCollationPlan(v)
 	case *sqlparser.ShowVariables:
 		realPlan, err = r.buildShowVariablesPlan(v)
 	case *sqlparser.ShowStatus:
@@ -298,6 +304,9 @@ func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err 
 		realPlan, err = r.buildDeletePlan(v)
 	case *sqlparser.Replace:
 		realPlan, err = r.buildReplacePlan(v)
+
+	// case sqlparser.Comments:
+	// 	realPlan, err = nil, errors.ErrNoPlan
 	default:
 		realPlan, err = nil, errors.ErrNoPlan
 	}

@@ -455,3 +455,14 @@ func (node *ShowSlaveStatus) Format(buf *TrackedBuffer) {
 
 func (node *ShowSlaveStatus) IStatement()     {}
 func (node *ShowSlaveStatus) IShowStatement() {}
+
+// ShowProfiles statement
+type ShowProfiles struct {
+}
+
+func (node *ShowProfiles) Format(buf *TrackedBuffer) {
+	buf.Fprintf("show profiles")
+}
+
+func (node *ShowProfiles) IStatement()     {}
+func (node *ShowProfiles) IShowStatement() {}

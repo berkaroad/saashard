@@ -128,8 +128,10 @@ func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*norm
 
 func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	if isValid := sqlparser.CheckTableInSelect(statement, schemaConfig.GetTables()); !isValid {
-		return nil, errors.ErrTableNotExists
+	if schemaConfig.ShardEnabled() {
+		if isValid := sqlparser.CheckTableInSelect(statement, schemaConfig.GetTables()); !isValid {
+			return nil, errors.ErrTableNotExists
+		}
 	}
 	hint := ReadHint(&statement.Comments)
 

@@ -50,6 +50,7 @@ import (
 
 var (
 	regSQLStatement = regexp.MustCompile(`([^';]*|('[^']*')*)+;`)
+	sysdbs          = []string{"information_schema", "mysql"}
 )
 
 func handleError(err *error) {
@@ -168,7 +169,12 @@ func CheckTableInSelect(statement SelectStatement, tableNames interface{}) bool 
 			case *AliasedTableExpr:
 				switch simpExpr := realTabExpr.Expr.(type) {
 				case *TableName:
-					simpExpr.Qualifier = nil
+					if len(simpExpr.Qualifier) > 0 {
+						db := strings.ToLower(string(simpExpr.Qualifier))
+						if !IsSystemDB(db) {
+							simpExpr.Qualifier = nil
+						}
+					}
 					tableName := strings.Trim(strings.ToLower(string(simpExpr.Name)), "`")
 					if isValid = Contains(tableNames, tableName); !isValid {
 						break
@@ -304,4 +310,9 @@ func SplitSQLStatement(multiSQL string) []string {
 		sqlStrArray[i] = query
 	}
 	return sqlStrArray
+}
+
+// IsSystemDB is system db or not.
+func IsSystemDB(db string) bool {
+	return Contains(sysdbs, db)
 }

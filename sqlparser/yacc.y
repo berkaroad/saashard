@@ -150,6 +150,7 @@ var (
 %token <empty> STORAGE ENGINES
 %token <empty> TABLES COLUMNS PROCEDURE FUNCTION INDEXES KEYS TRIGGER TRIGGERS
 %token <empty> PLUGINS PROCESSLIST SLAVE
+%token <empty> PROFILES
 
 // Replace
 %token <empty> REPLACE
@@ -601,6 +602,10 @@ show_statement:
 | SHOW PLUGINS
   {
     $$ = &ShowPlugins{}
+  }
+| SHOW PROFILES
+  {
+    $$ = &ShowProfiles{}
   }
 
 describe_statement:

@@ -71,6 +71,7 @@ func (r *Router) buildShowEnginesPlan(statement *sqlparser.ShowEngines) (*normal
 	plan.nodeName = schemaConfig.Nodes[0]
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
+	plan.anyNode = true
 
 	return plan, nil
 }
@@ -82,6 +83,7 @@ func (r *Router) buildShowPluginsPlan(statement *sqlparser.ShowPlugins) (*normal
 	plan.nodeName = schemaConfig.Nodes[0]
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
+	plan.anyNode = true
 
 	return plan, nil
 }
@@ -115,6 +117,42 @@ func (r *Router) buildShowSlaveStatusPlan(statement *sqlparser.ShowSlaveStatus) 
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true && !r.InTrans
+	plan.Statement = statement
+	plan.anyNode = true
+
+	return plan, nil
+}
+
+func (r *Router) buildShowProfilesPlan(statement *sqlparser.ShowProfiles) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	plan := new(normalPlan)
+
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true && !r.InTrans
+	plan.Statement = statement
+	plan.anyNode = true
+
+	return plan, nil
+}
+
+func (r *Router) buildShowCharsetPlan(statement *sqlparser.ShowCharset) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	plan := new(normalPlan)
+
+	plan.nodeName = schemaConfig.Nodes[0]
+	plan.onSlave = true && !r.InTrans
+	plan.Statement = statement
+	plan.anyNode = true
+
+	return plan, nil
+}
+
+func (r *Router) buildShowCollationPlan(statement *sqlparser.ShowCollation) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	plan := new(normalPlan)
+
 	plan.nodeName = schemaConfig.Nodes[0]
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement

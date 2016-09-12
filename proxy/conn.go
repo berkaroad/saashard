@@ -41,6 +41,7 @@ import (
 	"net"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/berkaroad/saashard/backend"
 	"github.com/berkaroad/saashard/config"
@@ -167,6 +168,8 @@ func (c *ClientConn) Run() {
 		c.Close()
 	}()
 
+	c.Ping()
+
 	for {
 		data, err := c.pkg.ReadPacket()
 
@@ -176,7 +179,6 @@ func (c *ClientConn) Run() {
 			)
 			return
 		}
-
 		if err := c.dispatch(data); err != nil {
 			c.proxy.counter.IncrErrLogTotal()
 			if len(data) > 1 {
@@ -200,6 +202,7 @@ func (c *ClientConn) Run() {
 		}
 
 		c.pkg.Sequence = 0
+		c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 	}
 }
 
@@ -221,6 +224,23 @@ func (c *ClientConn) Close() error {
 	c.closed = true
 
 	return nil
+}
+
+// Ping backend
+func (c *ClientConn) Ping() {
+	go func() {
+		for true {
+			for _, conn := range c.backendMasterConns {
+				conn.Ping()
+				time.Sleep(time.Millisecond * 100)
+			}
+			for _, conn := range c.backendSlaveConns {
+				conn.Ping()
+				time.Sleep(time.Millisecond * 100)
+			}
+			time.Sleep(time.Second * 5)
+		}
+	}()
 }
 
 func (c *ClientConn) dispatch(data []byte) error {

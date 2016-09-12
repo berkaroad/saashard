@@ -77,30 +77,33 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 		sqls = []string{strings.TrimSpace(sql)}
 	}
 
-	var stmts = make([]sqlparser.Statement, len(sqls))
-	for i, sql := range sqls {
+	var stmts = make([]sqlparser.Statement, 0, len(sqls))
+	for _, sql := range sqls {
 		stmt, err := sqlparser.Parse(sql)
 		if err != nil {
 			golog.Error("proxy", "handleQuery", err.Error(), 0, "sql", sql)
 			return mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s'", sql))
 		}
-		stmts[i] = stmt
+		if stmt != nil {
+			stmts = append(stmts, stmt)
+		}
 	}
 
-	router := route.NewRouter(c.db, c.schemas, c.proxy.cfg.GetNodes(), c.connectionID, c.user, c.isInTransaction())
-	plan, err = router.BuildMergedPlan(stmts...)
-	if err != nil {
-		return
+	if len(stmts) > 0 {
+		router := route.NewRouter(c.db, c.schemas, c.proxy.cfg.GetNodes(), c.connectionID, c.user, c.isInTransaction())
+		plan, err = router.BuildMergedPlan(stmts...)
+		if err != nil {
+			return
+		}
+		return plan.Execute(c.executePlan)
 	}
-	return plan.Execute(c.executePlan)
+	return c.pkg.WriteOK(c.capability, c.status, nil)
 }
 
 func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*mysql.Result,
 	dataNode string, isSlave bool,
 	queryDataNodes map[sqlparser.Statement][]string) (err error) {
 	resultCount := len(statements)
-	var direct = false
-	var total = make([]byte, 0, 1024)
 
 	node := c.proxy.nodes[dataNode]
 	// If in transaction, must exec in the same node.
@@ -132,15 +135,20 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 
 	var mysqlConn = conn.(*mysqlBackend.Conn)
 	mysqlConn.UseDB(node.Database)
+	var moreResult = true
 
 	var result *mysql.Result
 	for i := 0; i < resultCount; i++ {
 		if i == resultCount-1 {
-			direct = true
+			moreResult = false
 		}
 
 		if results[i] != nil {
-			total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, results[i], direct)
+			if results[i].Resultset == nil {
+				err = c.pkg.WriteOK(c.capability, c.status, results[i])
+			} else {
+				err = c.pkg.WriteResultSet(c.capability, c.status, results[i])
+			}
 			if err != nil {
 				return
 			}
@@ -148,6 +156,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			statement := statements[i]
 			switch v := statement.(type) {
 			case *sqlparser.UseDB:
+				c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 				return c.handleInitDB(v.DB)
 			case *sqlparser.Begin:
 				sql := sqlparser.String(statement)
@@ -156,6 +165,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 				}
 				c.status |= mysql.SERVER_STATUS_IN_TRANS
 				c.nodeInTrans = node
+				c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 				return c.pkg.WriteOK(c.capability, c.status, result)
 			case *sqlparser.Commit:
 				sql := sqlparser.String(statement)
@@ -164,6 +174,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 				}
 				c.status &= ^mysql.SERVER_STATUS_IN_TRANS
 				c.nodeInTrans = nil
+				c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 				return c.pkg.WriteOK(c.capability, c.status, result)
 			case *sqlparser.Rollback:
 				sql := sqlparser.String(statement)
@@ -172,6 +183,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 				}
 				c.status &= ^mysql.SERVER_STATUS_IN_TRANS
 				c.nodeInTrans = nil
+				c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 				return c.pkg.WriteOK(c.capability, c.status, result)
 			case *sqlparser.SetVariable:
 				sql := sqlparser.String(statement)
@@ -192,16 +204,26 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 						break
 					}
 				}
+				if moreResult {
+					c.status |= mysql.SERVER_MORE_RESULTS_EXISTS
+				} else {
+					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
+				}
 				return c.pkg.WriteOK(c.capability, c.status, result)
 			default:
 				sql := sqlparser.String(statement)
 				if result, err = mysqlConn.Query(sql); err != nil {
 					return
 				}
-				if result.Resultset == nil {
-					total, err = c.pkg.WriteOKBatch(total, c.capability, c.status, result, direct)
+				if moreResult {
+					c.status |= mysql.SERVER_MORE_RESULTS_EXISTS
 				} else {
-					total, err = c.pkg.WriteResultSetBatch(total, c.capability, c.status, result, direct)
+					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
+				}
+				if result.Resultset == nil {
+					err = c.pkg.WriteOK(c.capability, c.status, result)
+				} else {
+					err = c.pkg.WriteResultSet(c.capability, c.status, result)
 				}
 			}
 			if err != nil {
@@ -209,5 +231,5 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			}
 		}
 	}
-	return nil
+	return err
 }

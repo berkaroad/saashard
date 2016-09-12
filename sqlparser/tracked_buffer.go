@@ -86,32 +86,40 @@ func (buf *TrackedBuffer) Fprintf(format string, values ...interface{}) {
 		i++ // '%'
 		switch format[i] {
 		case 'c':
-			switch v := values[fieldnum].(type) {
-			case byte:
-				buf.WriteByte(v)
-			case rune:
-				buf.WriteRune(v)
-			default:
-				panic(fmt.Sprintf("unexpected type %T", v))
+			if values[fieldnum] != nil {
+				switch v := values[fieldnum].(type) {
+				case byte:
+					buf.WriteByte(v)
+				case rune:
+					buf.WriteRune(v)
+				default:
+					panic(fmt.Sprintf("unexpected type %T", v))
+				}
 			}
 		case 's':
-			switch v := values[fieldnum].(type) {
-			case []byte:
-				buf.Write(v)
-			case string:
-				buf.WriteString(v)
-			default:
-				panic(fmt.Sprintf("unexpected type %T", v))
+			if values[fieldnum] != nil {
+				switch v := values[fieldnum].(type) {
+				case []byte:
+					buf.Write(v)
+				case string:
+					buf.WriteString(v)
+				default:
+					panic(fmt.Sprintf("unexpected type %T", v))
+				}
 			}
 		case 'v':
-			node := values[fieldnum].(SQLNode)
-			if buf.nodeFormatter == nil {
-				node.Format(buf)
-			} else {
-				buf.nodeFormatter(buf, node)
+			if values[fieldnum] != nil {
+				node := values[fieldnum].(SQLNode)
+				if buf.nodeFormatter == nil {
+					node.Format(buf)
+				} else {
+					buf.nodeFormatter(buf, node)
+				}
 			}
 		case 'a':
-			buf.WriteArg(values[fieldnum].(string))
+			if values[fieldnum] != nil {
+				buf.WriteArg(values[fieldnum].(string))
+			}
 		default:
 			panic("unexpected")
 		}
