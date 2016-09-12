@@ -5,6 +5,36 @@ SaaS系统，具有租户的概念，每个租户间的数据是独立的。基�
 
 目前只考虑MySQL的实现，并且现阶段只实现按DB分片。
 
+## Compile and Run
+
+### Get source from github
+```
+go get github.com/berkaroad/saashard
+cd $GOPATH/src/github.com/berkaroad/saashard
+```
+
+### Compile
+
+```
+make # compile in current platform
+make build-all  # compile in windows, linux  and darwin platform.
+```
+
+### Run
+
+```
+make test # just for test
+make dev # Run immediately, use dev.yaml config file.
+make run # Run immediately, use ss.yaml config file.
+```
+
+## Feature
+- Support multi-query and multi-result.
+- Support transaction.
+- Support hint /*! saashard master */ to force execute on master.
+- Support split read and write. (Read balance feature is in 'TODO list'.)
+- Database sharding feature is in 'TODO list'.
+
 ## Unsupported SQL
 
 ```
