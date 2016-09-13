@@ -32,16 +32,21 @@ import (
 
 // DataHost is data host.
 type DataHost struct {
-	Name   string
-	Master *DBHost
-	Slaves []*DBHost
+	Name             string
+	MaxConnNum       int
+	DownAfterNoAlive int
+	PingInterval     int
+	Master           *DBHost
+	Slaves           []*DBHost
 }
 
 // NewDataHost new host.
 func NewDataHost(hostCfg config.HostConfig) *DataHost {
 	h := new(DataHost)
 	h.Name = hostCfg.Name
-
+	h.MaxConnNum = hostCfg.MaxConnNum
+	h.DownAfterNoAlive = hostCfg.DownAfterNoAlive
+	h.PingInterval = hostCfg.PingInterval
 	h.Master = NewDBHost(hostCfg.Master, hostCfg.User, hostCfg.Password, 0)
 
 	if len(hostCfg.Slaves) > 0 {

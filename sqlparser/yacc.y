@@ -745,10 +745,6 @@ table_expression:
   {
     $$ = &ParenTableExpr{Expr: $2}
   }
-| table_expression join_type table_expression %prec JOIN
-  {
-    $$ = &JoinTableExpr{LeftExpr: $1, Join: $2, RightExpr: $3}
-  }
 | table_expression join_type table_expression ON boolean_expression %prec JOIN
   {
     $$ = &JoinTableExpr{LeftExpr: $1, Join: $2, RightExpr: $3, On: $5}

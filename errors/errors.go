@@ -79,9 +79,9 @@ var (
 	ErrExecInMulti      = errors.New("execute in multi node")
 	ErrColsLenNotMatch  = errors.New("insert or replace cols and values length not match")
 	ErrInsertColumnsKey = errors.New("no shard key in insert column list")
-	ErrInsertValuesKey  = errors.New("no shard key or key has multi values in insert values list")
+	ErrInsertValuesKey  = errors.New("no shard key or key has different values in insert values list")
 	ErrUpdateKey        = errors.New("shard key in update expression")
-	ErrWhereKey         = errors.New("no shard key or key has multi values in where expression")
+	ErrWhereOrJoinOnKey = errors.New("no shard key or key has different values in where or join on expression")
 
 	ErrStmtConvert      = errors.New("statement fail to convert")
 	ErrExprConvert      = errors.New("expr fail to convert")

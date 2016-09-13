@@ -67,6 +67,7 @@ type HostConfig struct {
 	Name             string   `yaml:"name"`
 	MaxConnNum       int      `yaml:"max_conn_num"`
 	DownAfterNoAlive int      `yaml:"down_after_noalive"`
+	PingInterval     int      `yaml:"ping_interval"`
 	User             string   `yaml:"user"`
 	Password         string   `yaml:"password"`
 	Master           string   `yaml:"master"`

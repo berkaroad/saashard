@@ -129,9 +129,17 @@ func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*norm
 func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	if schemaConfig.ShardEnabled() {
-		if isValid := sqlparser.CheckTableInSelect(statement, schemaConfig.GetTables()); !isValid {
-			return nil, errors.ErrTableNotExists
+		var err error
+		if err = sqlparser.CheckTableExprsInSelect(statement, schemaConfig.GetTables()); err != nil {
+			return nil, err
 		}
+		var colValue sqlparser.ValExpr
+		if colValue, err = sqlparser.CheckColumnInSelect(statement, schemaConfig.ShardKey); err != nil {
+			return nil, err
+		} else if colValue == nil {
+			return nil, errors.ErrWhereOrJoinOnKey
+		}
+		println("Select ShardKey=", sqlparser.String(colValue))
 	}
 	hint := ReadHint(&statement.Comments)
 
@@ -146,6 +154,19 @@ func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, erro
 
 func (r *Router) buildUnionPlan(statement *sqlparser.Union) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
+	if schemaConfig.ShardEnabled() {
+		var err error
+		if err = sqlparser.CheckTableExprsInSelect(statement, schemaConfig.GetTables()); err != nil {
+			return nil, err
+		}
+		var colValue sqlparser.ValExpr
+		if colValue, err = sqlparser.CheckColumnInSelect(statement, schemaConfig.ShardKey); err != nil {
+			return nil, err
+		} else if colValue == nil {
+			return nil, errors.ErrWhereOrJoinOnKey
+		}
+		println("Union ShardKey=", sqlparser.String(colValue))
+	}
 	var hint *Hint
 	switch left := statement.Left.(type) {
 	case *sqlparser.SimpleSelect:

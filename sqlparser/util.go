@@ -59,85 +59,70 @@ func handleError(err *error) {
 	}
 }
 
-// IsColInEqualConditionExists check if exists or not.
-func IsColInEqualConditionExists(expr BoolExpr, colName string) (exists bool, strOrNumValue ValExpr) {
+// CheckColumnInBoolExpr check if exists or not.
+// strOrNumValue: if nil, mean no value or has different value.
+func CheckColumnInBoolExpr(expr BoolExpr, colName string) (strOrNumValue ValExpr, err error) {
 	if expr == nil {
-		return
+		return nil, errors.ErrWhereOrJoinOnKey
 	}
 	switch boolExpr := expr.(type) {
 	case *AndExpr:
 		exp1 := boolExpr.Left
 		exp2 := boolExpr.Right
-		exists1, colValue1 := IsColInEqualConditionExists(exp1, colName)
-		exists2, colValue2 := IsColInEqualConditionExists(exp2, colName)
+		colValue1, err1 := CheckColumnInBoolExpr(exp1, colName)
+		colValue2, err2 := CheckColumnInBoolExpr(exp2, colName)
 
 		// If exists, get column value
-		if exists1 {
-			if colValue1 == nil {
-				strOrNumValue = nil
-				exists1 = false
-			} else if _, ok := colValue1.(*ColName); !ok {
-				strOrNumValue = colValue1
-			}
+		if err1 == nil && colValue1 != nil {
+			strOrNumValue = colValue1
 		}
 
 		// If exists, get column value; if not equal, set nil.
-		if exists2 {
-			if colValue2 == nil {
+		if err2 == nil && colValue2 != nil {
+			if strOrNumValue == nil {
+				strOrNumValue = colValue2
+			} else if String(strOrNumValue) != String(colValue2) {
 				strOrNumValue = nil
-				exists2 = false
-			} else if _, ok := colValue2.(*ColName); !ok {
-				if strOrNumValue == nil {
-					strOrNumValue = colValue2
-				} else if String(strOrNumValue) != String(colValue2) {
-					strOrNumValue = nil
-				}
 			}
 		}
-		exists = exists1 || exists2
+		if err1 != nil && err2 != nil {
+			strOrNumValue = nil
+			err = errors.ErrWhereOrJoinOnKey
+		}
 		return
 	case *OrExpr:
 		exp1 := boolExpr.Left
 		exp2 := boolExpr.Right
-		exists1, colValue1 := IsColInEqualConditionExists(exp1, colName)
-		exists2, colValue2 := IsColInEqualConditionExists(exp2, colName)
+		colValue1, err1 := CheckColumnInBoolExpr(exp1, colName)
+		colValue2, err2 := CheckColumnInBoolExpr(exp2, colName)
 
 		// If exists, get column value
-		if exists1 {
-			if colValue1 == nil {
-				strOrNumValue = nil
-				exists1 = false
-			} else if _, ok := colValue1.(*ColName); !ok {
-				strOrNumValue = colValue1
-			}
+		if err1 == nil && colValue1 != nil {
+			strOrNumValue = colValue1
 		}
 
 		// If exists, get column value; if not equal, set nil.
-		if exists2 {
-			if colValue2 == nil {
+		if err2 == nil && colValue2 != nil {
+			if strOrNumValue == nil {
+				strOrNumValue = colValue2
+			} else if String(strOrNumValue) != String(colValue2) {
 				strOrNumValue = nil
-				exists2 = false
-			} else if _, ok := colValue2.(*ColName); !ok {
-				if strOrNumValue == nil {
-					strOrNumValue = colValue2
-				} else if String(strOrNumValue) != String(colValue2) {
-					strOrNumValue = nil
-				}
 			}
 		}
-		exists = exists1 && exists2
+		if err1 != nil || err2 != nil {
+			strOrNumValue = nil
+			err = errors.ErrWhereOrJoinOnKey
+		}
 		return
 	case *ParenBoolExpr:
-		exists, strOrNumValue = IsColInEqualConditionExists(boolExpr.Expr, colName)
+		strOrNumValue, err = CheckColumnInBoolExpr(boolExpr.Expr, colName)
 		return
 	case *ComparisonExpr:
 		switch boolExpr.Operator {
 		case AST_EQ:
 			if GetColName(boolExpr.Left) == colName {
-				exists = true
 				strOrNumValue = boolExpr.Right
 			} else if GetColName(boolExpr.Right) == colName {
-				exists = true
 				strOrNumValue = boolExpr.Left
 			}
 			if strOrNumValue != nil {
@@ -145,59 +130,159 @@ func IsColInEqualConditionExists(expr BoolExpr, colName string) (exists bool, st
 				case StrVal:
 				case NumVal:
 				case *ColName:
+					strOrNumValue = nil
 				default:
 					strOrNumValue = nil
+					err = errors.ErrWhereOrJoinOnKey
 				}
+			} else {
+				err = errors.ErrWhereOrJoinOnKey
 			}
 			return
 		default:
 			return
 		}
 	default:
-		exists = false
+		err = errors.ErrWhereOrJoinOnKey
 		return
 	}
 }
 
-// CheckTableInSelect remove db and check table's name.
-func CheckTableInSelect(statement SelectStatement, tableNames interface{}) bool {
-	var isValid = true
-	switch selStmt := statement.(type) {
-	case *Select:
-		for _, tabExpr := range selStmt.From {
-			switch realTabExpr := tabExpr.(type) {
-			case *AliasedTableExpr:
-				switch simpExpr := realTabExpr.Expr.(type) {
-				case *TableName:
-					isSystemDB := false
-					if len(simpExpr.Qualifier) > 0 {
-						db := strings.ToLower(string(simpExpr.Qualifier))
-						if isSystemDB = IsSystemDB(db); !isSystemDB {
-							simpExpr.Qualifier = nil
-							println(db, "is not system db.")
-						}
+// CheckTableExprs remove db and check table's name.
+func CheckTableExprs(tabExprs TableExprs, tableNames interface{}) (err error) {
+	for _, tabExpr := range tabExprs {
+		switch realTabExpr := tabExpr.(type) {
+		case *AliasedTableExpr:
+			switch simpExpr := realTabExpr.Expr.(type) {
+			case *TableName:
+				isSystemDB := false
+				if len(simpExpr.Qualifier) > 0 {
+					db := strings.ToLower(string(simpExpr.Qualifier))
+					if isSystemDB = IsSystemDB(db); !isSystemDB {
+						simpExpr.Qualifier = nil
+						println(db, "is not system db.")
 					}
-					if !isSystemDB {
-						tableName := strings.Trim(strings.ToLower(string(simpExpr.Name)), "`")
-						if isValid = Contains(tableNames, tableName); !isValid {
-							break
-						}
-					}
-				case *Subquery:
-					if isValid = CheckTableInSelect(simpExpr.Select, tableNames); !isValid {
+				}
+				if !isSystemDB {
+					tableName := strings.Trim(strings.ToLower(string(simpExpr.Name)), "`")
+					if isValid := Contains(tableNames, tableName); !isValid {
+						err = errors.ErrTableNotExists
 						break
 					}
 				}
+			case *Subquery:
+				if err = CheckTableExprsInSelect(simpExpr.Select, tableNames); err != nil {
+					break
+				}
+			}
+		case *ParenTableExpr:
+			err = CheckTableExprs(TableExprs{realTabExpr.Expr}, tableNames)
+		case *JoinTableExpr:
+			err = CheckTableExprs(TableExprs{realTabExpr.LeftExpr}, tableNames)
+			if err == nil {
+				CheckTableExprs(TableExprs{realTabExpr.RightExpr}, tableNames)
+			}
+		}
+	}
+	return err
+}
+
+// CheckTableExprsInSelect remove db and check table's name.
+func CheckTableExprsInSelect(stmt SelectStatement, tableNames interface{}) (err error) {
+	switch selStmt := stmt.(type) {
+	case *Select:
+		err = CheckTableExprs(selStmt.From, tableNames)
+	case *Union:
+		err = CheckTableExprsInSelect(selStmt.Left, tableNames)
+		if err == nil {
+			err = CheckTableExprsInSelect(selStmt.Right, tableNames)
+		}
+	}
+	return err
+}
+
+// CheckColumnInTableExpr check shard key should exists in table expression, and has same shard key's value in it.
+func CheckColumnInTableExpr(tabExpr TableExpr, colName string) (strOrNumValue ValExpr, err error) {
+	switch realTabExpr := tabExpr.(type) {
+	case *AliasedTableExpr:
+		if subQuery, ok := realTabExpr.Expr.(*Subquery); ok {
+			valInSubQuery, errInSubQuery := CheckColumnInSelect(subQuery.Select, colName)
+			strOrNumValue, err = mergeValExprAndError(strOrNumValue, err, valInSubQuery, errInSubQuery)
+			if err != nil {
+				return
+			}
+		}
+	case *ParenTableExpr:
+		valInParen, errInParen := CheckColumnInTableExpr(realTabExpr.Expr, colName)
+		strOrNumValue, err = mergeValExprAndError(strOrNumValue, err, valInParen, errInParen)
+		if err != nil {
+			return
+		}
+	case *JoinTableExpr:
+		if realTabExpr.On == nil {
+			strOrNumValue = nil
+			err = errors.ErrWhereOrJoinOnKey
+			return
+		}
+		valInOn, errInOn := CheckColumnInBoolExpr(realTabExpr.On, colName)
+		strOrNumValue, err = mergeValExprAndError(strOrNumValue, err, valInOn, errInOn)
+		if err != nil {
+			return
+		}
+
+		valInLeft, errInLeft := CheckColumnInTableExpr(realTabExpr.LeftExpr, colName)
+		strOrNumValue, err = mergeValExprAndError(strOrNumValue, err, valInLeft, errInLeft)
+		if err != nil {
+			return
+		}
+
+		valInRight, errInRight := CheckColumnInTableExpr(realTabExpr.RightExpr, colName)
+		strOrNumValue, err = mergeValExprAndError(strOrNumValue, err, valInRight, errInRight)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+// CheckColumnInSelect check shard key should exists in where and join expression, and has same shard key's value in it.
+func CheckColumnInSelect(statement SelectStatement, colName string) (strOrNumValue ValExpr, err error) {
+	switch selStmt := statement.(type) {
+	case *Select:
+		if selStmt.Where == nil {
+			strOrNumValue = nil
+			err = errors.ErrWhereOrJoinOnKey
+			return
+		}
+		strOrNumValue, err = CheckColumnInBoolExpr(selStmt.Where.Expr, colName)
+		if err != nil {
+			return
+		}
+		for _, tabExpr := range selStmt.From {
+			valInTab, errInTab := CheckColumnInTableExpr(tabExpr, colName)
+			strOrNumValue, err = mergeValExprAndError(strOrNumValue, err, valInTab, errInTab)
+			if err != nil {
+				return
 			}
 		}
 	case *Union:
-		isValid = CheckTableInSelect(selStmt.Left, tableNames) && CheckTableInSelect(selStmt.Right, tableNames)
+		valInLeft, errInLeft := CheckColumnInSelect(selStmt.Left, colName)
+		strOrNumValue, err = mergeValExprAndError(strOrNumValue, err, valInLeft, errInLeft)
+		if err != nil {
+			return
+		}
+
+		valInRight, errInRight := CheckColumnInSelect(selStmt.Right, colName)
+		strOrNumValue, err = mergeValExprAndError(strOrNumValue, err, valInRight, errInRight)
+		if err != nil {
+			return
+		}
 	}
-	return isValid
+	return strOrNumValue, err
 }
 
-// CheckInsertOrReplace check shard key should exists in columns, not in dup expers, has same shard key's value in rows.
-func CheckInsertOrReplace(columns Columns, insertRows InsertRows, onDup OnDup, shardKey string) (strOrNumValue ValExpr, err error) {
+// CheckColumnInInsertOrReplace check shard key should exists in columns, not in dup expers, has same shard key's value in rows.
+func CheckColumnInInsertOrReplace(columns Columns, insertRows InsertRows, onDup OnDup, colName string) (strOrNumValue ValExpr, err error) {
 	var colValue ValExpr
 	// insert statement must contain shardkey column.
 	if columns == nil {
@@ -208,9 +293,9 @@ func CheckInsertOrReplace(columns Columns, insertRows InsertRows, onDup OnDup, s
 	for colIndex, columnExpr := range columns {
 		if realColumnExpr, ok := columnExpr.(*NonStarExpr); ok {
 			if colNameExpr, ok := realColumnExpr.Expr.(*ColName); ok {
-				colName := strings.ToLower(string(colNameExpr.Name))
-				colName = strings.Trim(colName, "`")
-				if colName == shardKey {
+				currentColName := strings.ToLower(string(colNameExpr.Name))
+				currentColName = strings.Trim(currentColName, "`")
+				if currentColName == colName {
 					shardKeyExists = true
 					shardKeyPos = colIndex
 					break
@@ -226,9 +311,9 @@ func CheckInsertOrReplace(columns Columns, insertRows InsertRows, onDup OnDup, s
 	// ON DUPLICATE KEY UPDATE expression, couldn't contain shardkey.
 	if onDup != nil {
 		for _, dupExpr := range onDup {
-			colName := strings.ToLower(string(dupExpr.Name.Name))
-			colName = strings.Trim(colName, "`")
-			if colName == shardKey {
+			currentColName := strings.ToLower(string(dupExpr.Name.Name))
+			currentColName = strings.Trim(currentColName, "`")
+			if currentColName == colName {
 				return nil, errors.ErrUpdateKey
 			}
 		}
@@ -320,4 +405,22 @@ func SplitSQLStatement(multiSQL string) []string {
 func IsSystemDB(db string) bool {
 	println("IsSystemDB, current db=", db)
 	return Contains(sysdbs, db)
+}
+
+func mergeValExprAndError(val1 ValExpr, err1 error, val2 ValExpr, err2 error) (strOrNumValue ValExpr, err error) {
+	strOrNumValue, err = val1, err1
+	if err2 != nil {
+		strOrNumValue = nil
+		err = err2
+		return
+	} else if val2 != nil {
+		if strOrNumValue == nil {
+			strOrNumValue = val2
+		} else if strOrNumValue != nil && String(val2) != String(strOrNumValue) {
+			strOrNumValue = nil
+			err = errors.ErrWhereOrJoinOnKey
+			return
+		}
+	}
+	return
 }

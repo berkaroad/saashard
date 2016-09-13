@@ -41,7 +41,7 @@ func (r *Router) buildInsertPlan(statement *sqlparser.Insert) (*normalPlan, erro
 			return nil, errors.ErrTableNotExists
 		}
 
-		colValue, err := sqlparser.CheckInsertOrReplace(statement.Columns, statement.Rows, statement.OnDup, schemaConfig.ShardKey)
+		colValue, err := sqlparser.CheckColumnInInsertOrReplace(statement.Columns, statement.Rows, statement.OnDup, schemaConfig.ShardKey)
 		if err != nil {
 			return nil, err
 		}
@@ -79,12 +79,14 @@ func (r *Router) buildUpdatePlan(statement *sqlparser.Update) (*normalPlan, erro
 
 		// WHERE expression, should contain shardkey.
 		if statement.Where == nil || statement.Where.Expr == nil {
-			return nil, errors.ErrWhereKey
+			return nil, errors.ErrWhereOrJoinOnKey
 		}
-		var exists bool
+		var err error
 		var colValue sqlparser.ValExpr
-		if exists, colValue = sqlparser.IsColInEqualConditionExists(statement.Where.Expr, schemaConfig.ShardKey); !exists || colValue == nil {
-			return nil, errors.ErrWhereKey
+		if colValue, err = sqlparser.CheckColumnInBoolExpr(statement.Where.Expr, schemaConfig.ShardKey); err != nil {
+			return nil, err
+		} else if colValue == nil {
+			return nil, errors.ErrWhereOrJoinOnKey
 		}
 		println("Update ShardKey=", sqlparser.String(colValue))
 	}
@@ -110,12 +112,14 @@ func (r *Router) buildDeletePlan(statement *sqlparser.Delete) (*normalPlan, erro
 		}
 		// WHERE expression, should contain shardkey.
 		if statement.Where == nil || statement.Where.Expr == nil {
-			return nil, errors.ErrWhereKey
+			return nil, errors.ErrWhereOrJoinOnKey
 		}
-		var exists bool
+		var err error
 		var colValue sqlparser.ValExpr
-		if exists, colValue = sqlparser.IsColInEqualConditionExists(statement.Where.Expr, schemaConfig.ShardKey); !exists || colValue == nil {
-			return nil, errors.ErrWhereKey
+		if colValue, err = sqlparser.CheckColumnInBoolExpr(statement.Where.Expr, schemaConfig.ShardKey); err != nil {
+			return nil, err
+		} else if colValue == nil {
+			return nil, errors.ErrWhereOrJoinOnKey
 		}
 		println("Delete ShardKey=", sqlparser.String(colValue))
 	}
@@ -140,7 +144,7 @@ func (r *Router) buildReplacePlan(statement *sqlparser.Replace) (*normalPlan, er
 			return nil, errors.ErrTableNotExists
 		}
 
-		colValue, err := sqlparser.CheckInsertOrReplace(statement.Columns, statement.Rows, nil, schemaConfig.ShardKey)
+		colValue, err := sqlparser.CheckColumnInInsertOrReplace(statement.Columns, statement.Rows, nil, schemaConfig.ShardKey)
 		if err != nil {
 			return nil, err
 		}
