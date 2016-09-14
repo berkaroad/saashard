@@ -191,6 +191,9 @@ var keywords = map[string]int{
 
 	"profiles": PROFILES,
 
+	// function
+	"position": POSITION,
+
 	// charset
 	"armscii8": ARMSCII8,
 	"ascii":    ASCII,

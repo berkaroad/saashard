@@ -210,6 +210,7 @@ func (c *ClientConn) Close() error {
 	}
 	c.nodeInTrans = nil
 	for _, conn := range c.backendMasterConns {
+		conn.Rollback()
 		conn.Close()
 	}
 	for _, conn := range c.backendSlaveConns {
@@ -230,7 +231,6 @@ func (c *ClientConn) dispatch(data []byte) error {
 
 	switch cmd {
 	case mysql.COM_QUIT:
-		//c.handleRollback()
 		c.Close()
 		return nil
 	case mysql.COM_QUERY:

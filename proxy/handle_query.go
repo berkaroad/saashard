@@ -154,7 +154,6 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			}
 		} else if statements[i] != nil {
 			statement := statements[i]
-			println(sqlparser.String(statement))
 
 			switch v := statement.(type) {
 			case *sqlparser.UseDB:

@@ -167,6 +167,9 @@ var (
 %token <empty> CREATE ALTER DROP RENAME
 %token <empty> TABLE INDEX VIEW TO IGNORE IF UNIQUE USING
 
+// Functin
+%token <empty> POSITION
+
 %start any_command
 
 %type <statement> command
@@ -1074,15 +1077,19 @@ function_expression:
   {
     $$ = &FuncExpr{Name: $1}
   }
-| sql_id '(' select_expression_list ')'
+| sql_id '(' value_expression_list ')'
   {
     $$ = &FuncExpr{Name: $1, Exprs: $3}
   }
-| sql_id '(' DISTINCT select_expression_list ')'
+| sql_id '(' DISTINCT value_expression_list ')'
   {
     $$ = &FuncExpr{Name: $1, Distinct: true, Exprs: $4}
   }
-| keyword_as_func '(' select_expression_list ')'
+| POSITION '(' value_expression IN value_expression ')'
+  {
+    $$ = &FuncExpr{Name: []byte("locate"), Exprs: ValExprs{$3,$5}}
+  }
+| keyword_as_func '(' value_expression_list ')'
   {
     $$ = &FuncExpr{Name: $1, Exprs: $3}
   }

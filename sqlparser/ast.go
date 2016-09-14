@@ -672,7 +672,7 @@ func (node *UnaryExpr) Format(buf *TrackedBuffer) {
 type FuncExpr struct {
 	Name     []byte
 	Distinct bool
-	Exprs    SelectExprs
+	Exprs    ValExprs
 }
 
 func (node *FuncExpr) Format(buf *TrackedBuffer) {
