@@ -38,8 +38,7 @@ type Config struct {
 	LogSQL      string   `yaml:"log_sql"`
 	SlowLogTime int      `yaml:"slow_log_time"`
 	AllowIps    []string `yaml:"allow_ips"`
-	BlsFile     string   `yaml:"blacklist_sql_file"`
-	Charset     string   `yaml:"proxy_charset"`
+	Charset     string   `yaml:"charset"`
 
 	Hosts   []HostConfig   `yaml:"hosts"`
 	Nodes   []NodeConfig   `yaml:"nodes"`

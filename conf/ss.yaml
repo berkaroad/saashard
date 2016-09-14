@@ -21,7 +21,7 @@ log_sql: on
 
 # the charset of saashard, if you don't set this item
 # the default charset of saashard is utf8.
-#proxy_charset: gbk
+#charset: gbk
 
 # data host list
 hosts :

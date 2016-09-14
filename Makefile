@@ -16,7 +16,7 @@ build-windows: saashard
 	export GOOS=windows && go build -ldflags "-s -w" -o ./bin/saashard.exe ./cmd/saashard
 
 saashard:
-	cd ./sqlparser && go tool yacc -o ./yacc.go ./yacc.y && gofmt -w ./yacc.go
+	cd ./sqlparser && go tool yacc -o ./yacc.go -v ./yacc.output ./yacc.y && gofmt -w ./yacc.go
 	@bash genver.sh
 
 run: build
@@ -44,4 +44,4 @@ test: saashard
 
 clean:
 	@rm -rf bin
-	@rm -f ./sqlparse/y.output
+	@rm -f ./sqlparse/yacc.output
