@@ -349,9 +349,13 @@ func Escape(sql string) string {
 }
 
 // PrintPacketData print packet data. just for debug.
-func PrintPacketData(data []byte) {
+func PrintPacketData(source string, data []byte) {
 	str := ""
-	for _, byt := range data {
+	maxLength := 100
+	if len(data) < maxLength {
+		maxLength = len(data)
+	}
+	for _, byt := range data[:maxLength] {
 		if byt < 16 {
 			str += fmt.Sprintf(" 0%x", byt)
 
@@ -359,5 +363,5 @@ func PrintPacketData(data []byte) {
 			str += fmt.Sprintf(" %x", byt)
 		}
 	}
-	fmt.Printf("Packet Data:%s\r\n", str)
+	fmt.Printf("Packet Data from %s:\r\n%s\r\n\r\n", source, str)
 }

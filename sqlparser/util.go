@@ -355,22 +355,6 @@ func GetColName(node Expr) string {
 	return ""
 }
 
-// IsColName returns true if the ValExpr is a *ColName.
-func IsColName(node ValExpr) bool {
-	_, ok := node.(*ColName)
-	return ok
-}
-
-// IsValue returns true if the ValExpr is a string, number or value arg.
-// NULL is not considered to be a value.
-func IsValue(node ValExpr) bool {
-	switch node.(type) {
-	case StrVal, NumVal, ValArg:
-		return true
-	}
-	return false
-}
-
 // Contains is a convenience function that returns
 // true if str matches any of the values.
 func Contains(arr interface{}, item interface{}) bool {
@@ -403,7 +387,7 @@ func SplitSQLStatement(multiSQL string) []string {
 
 // IsSystemDB is system db or not.
 func IsSystemDB(db string) bool {
-	println("IsSystemDB, current db=", db)
+	// println("IsSystemDB, current db=", db)
 	return Contains(sysdbs, db)
 }
 

@@ -54,9 +54,9 @@ var (
 	ErrNoSchema   = errors.New("no schema")
 	ErrNoTable    = errors.New("no table")
 
-	ErrNoRouteNode  = errors.New("no route node")
-	ErrNoPlan       = errors.New("statement have no plan")
-	ErrNoStatements = errors.New("no statement to execute")
+	ErrNoRouteNode = errors.New("no route node")
+	ErrNoPlan      = errors.New("statement have no plan")
+	ErrNoStatement = errors.New("no statement to execute")
 
 	ErrSchemaNotExists   = errors.New("schema not exists")
 	ErrDatabaseNotExists = errors.New("database not exists")

@@ -94,6 +94,7 @@ var (
   values      Values
   subquery    *Subquery
   caseExpr    *CaseExpr
+  funcExpr    *FuncExpr
   whens       []*When
   when        *When
   orderBy     OrderBy
@@ -207,6 +208,7 @@ var (
 %type <caseExpr> case_expression
 %type <whens> when_expression_list
 %type <when> when_expression
+%type <funcExpr> function_expression
 %type <valExpr> value_expression_opt else_expression_opt
 %type <valExprs> group_by_opt
 %type <boolExpr> having_opt
@@ -1058,7 +1060,17 @@ value_expression:
       $$ = &UnaryExpr{Operator: $1, Expr: $2}
     }
   }
-| sql_id '(' ')'
+| function_expression
+  {
+    $$ = $1
+  }
+| case_expression
+  {
+    $$ = $1
+  }
+
+function_expression:
+  sql_id '(' ')'
   {
     $$ = &FuncExpr{Name: $1}
   }
@@ -1073,10 +1085,6 @@ value_expression:
 | keyword_as_func '(' select_expression_list ')'
   {
     $$ = &FuncExpr{Name: $1, Exprs: $3}
-  }
-| case_expression
-  {
-    $$ = $1
   }
 
 keyword_as_func:

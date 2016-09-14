@@ -154,7 +154,7 @@ func NewRouter(schemaName string, schemas map[string]*config.SchemaConfig, nodes
 // BuildMergedPlan to merge from plan array.
 func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan Plan, err error) {
 	if len(statements) == 0 {
-		return nil, errors.ErrNoStatements
+		return nil, errors.ErrNoStatement
 	}
 	plans := make([]*normalPlan, len(statements))
 	for i, stmt := range statements {

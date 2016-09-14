@@ -80,7 +80,6 @@ func (p *PacketIO) WriteResultSet(capability uint32, status uint16, r *Result) e
 		if err != nil {
 			return err
 		}
-		// PrintPacketData(total)
 	}
 	return nil
 }

@@ -45,7 +45,12 @@ import (
 func (p *PacketIO) WriteOK(capability uint32, status uint16, r *Result) error {
 	if r == nil {
 		r = &Result{Status: status}
+	} else {
+		// reamain SERVER_MORE_RESULTS_EXISTS from parameter 'status '.
+		r.Status &= ^SERVER_MORE_RESULTS_EXISTS
+		r.Status |= (status & SERVER_MORE_RESULTS_EXISTS)
 	}
+
 	data := make([]byte, 4, 32)
 
 	data = append(data, OK_HEADER)
@@ -57,7 +62,6 @@ func (p *PacketIO) WriteOK(capability uint32, status uint16, r *Result) error {
 		data = append(data, byte(r.Status), byte(r.Status>>8))
 		data = append(data, 0, 0)
 	}
-
 	return p.WritePacket(data)
 }
 
@@ -65,6 +69,10 @@ func (p *PacketIO) WriteOK(capability uint32, status uint16, r *Result) error {
 func (p *PacketIO) WriteOKBatch(total []byte, capability uint32, status uint16, r *Result, direct bool) ([]byte, error) {
 	if r == nil {
 		r = &Result{Status: status}
+	} else {
+		// reamain SERVER_MORE_RESULTS_EXISTS from parameter 'status '.
+		r.Status &= ^SERVER_MORE_RESULTS_EXISTS
+		r.Status |= (status & SERVER_MORE_RESULTS_EXISTS)
 	}
 	data := make([]byte, 4, 32)
 
@@ -77,7 +85,6 @@ func (p *PacketIO) WriteOKBatch(total []byte, capability uint32, status uint16, 
 		data = append(data, byte(r.Status), byte(r.Status>>8))
 		data = append(data, 0, 0)
 	}
-
 	return p.WritePacketBatch(total, data, direct)
 }
 

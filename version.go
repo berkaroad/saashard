@@ -1,6 +1,6 @@
 package saashard
 
 const (
-	Version = "2016-09-12 18:32:46 +0800 @e823e4f"
-	Compile = "2016-09-13 17:06:07 +0800 by go version go1.7 darwin/amd64"
+	Version = "2016-09-13 18:22:21 +0800 @c7a67cb"
+	Compile = "2016-09-14 16:35:18 +0800 by go version go1.7 darwin/amd64"
 )

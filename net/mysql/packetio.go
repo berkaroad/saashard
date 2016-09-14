@@ -139,6 +139,7 @@ func (p *PacketIO) WritePacket(data []byte) error {
 		return errors.ErrBadConn
 	} else {
 		p.Sequence++
+		// PrintPacketData("WritePacket", data)
 		return nil
 	}
 }
@@ -188,6 +189,7 @@ func (p *PacketIO) WritePacketBatch(total, data []byte, direct bool) ([]byte, er
 		} else if n != len(total) {
 			return nil, errors.ErrBadConn
 		}
+		// PrintPacketData("WritePacketBatch", total)
 	}
 	return total, nil
 }

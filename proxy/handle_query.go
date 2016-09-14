@@ -104,7 +104,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 	dataNode string, isSlave bool,
 	queryDataNodes map[sqlparser.Statement][]string) (err error) {
 	resultCount := len(statements)
-
+	println("resultCount=", resultCount)
 	node := c.proxy.nodes[dataNode]
 	// If in transaction, must exec in the same node.
 	if c.isInTransaction() && node != c.nodeInTrans {
@@ -154,6 +154,8 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			}
 		} else if statements[i] != nil {
 			statement := statements[i]
+			println(sqlparser.String(statement))
+
 			switch v := statement.(type) {
 			case *sqlparser.UseDB:
 				c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
@@ -209,7 +211,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 				} else {
 					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 				}
-				return c.pkg.WriteOK(c.capability, c.status, result)
+				err = c.pkg.WriteOK(c.capability, c.status, nil)
 			default:
 				sql := sqlparser.String(statement)
 				if result, err = mysqlConn.Query(sql); err != nil {
@@ -229,6 +231,8 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			if err != nil {
 				return
 			}
+		} else {
+			return errors.ErrNoStatement
 		}
 	}
 	return err
