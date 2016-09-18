@@ -48,6 +48,7 @@ var (
 	ErrNoMasterDB    = errors.New("no master database")
 	ErrNoSlaveDB     = errors.New("no slave database")
 	ErrNoDatabase    = errors.New("no database")
+	ErrNoIdleConn    = errors.New("exceed max conn num")
 
 	ErrNoDataHost = errors.New("no data host")
 	ErrNoDataNode = errors.New("no data node")

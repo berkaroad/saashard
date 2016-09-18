@@ -95,7 +95,7 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 		if err != nil {
 			return
 		}
-		return plan.Execute(c.executePlan)
+		return plan.Execute(c.executePlan, c.c.RemoteAddr(), strings.ToLower(c.proxy.logSQL[c.proxy.logSQLIndex]) != golog.LogSqlOff, c.proxy.slowLogTime[c.proxy.slowLogTimeIndex], c.proxy.counter)
 	}
 	return c.pkg.WriteOK(c.capability, c.status, nil)
 }
@@ -104,7 +104,6 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 	dataNode string, isSlave bool,
 	queryDataNodes map[sqlparser.Statement][]string) (err error) {
 	resultCount := len(statements)
-	println("resultCount=", resultCount)
 	node := c.proxy.nodes[dataNode]
 	// If in transaction, must exec in the same node.
 	if c.isInTransaction() && node != c.nodeInTrans {
@@ -117,7 +116,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 		if conn = c.backendSlaveConns[node]; conn == nil {
 			var dbHost *backend.DBHost
 			dbHost = node.DataHost.Slaves[0]
-			if conn, err = dbHost.Connect(node.Database); err != nil {
+			if conn, err = dbHost.GetConnection(node.Database); err != nil {
 				return
 			}
 			c.backendSlaveConns[node] = conn
@@ -126,7 +125,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 		if conn = c.backendMasterConns[node]; conn == nil {
 			var dbHost *backend.DBHost
 			dbHost = node.DataHost.Master
-			if conn, err = dbHost.Connect(node.Database); err != nil {
+			if conn, err = dbHost.GetConnection(node.Database); err != nil {
 				return
 			}
 			c.backendMasterConns[node] = conn

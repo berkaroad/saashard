@@ -42,6 +42,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/berkaroad/saashard/backend"
 	"github.com/berkaroad/saashard/net/mysql"
 )
 
@@ -49,16 +50,21 @@ var (
 	pingPeriod = int64(time.Second * 16)
 )
 
+func init() {
+	backend.CreateConnection = func(dbHost *backend.DBHost) backend.Connection {
+		return new(Conn)
+	}
+}
+
 // Conn proxy <-> mysql server
 type Conn struct {
 	conn net.Conn
 
 	pkg *mysql.PacketIO
 
-	addr     string
-	user     string
-	password string
-	db       string
+	dbHost       *backend.DBHost
+	db           string
+	connectionID uint32
 
 	capability uint32
 
@@ -72,26 +78,17 @@ type Conn struct {
 	pkgErr        error
 }
 
-// NewConn new conn.
-func NewConn(addr string, user string, password string, db string) *Conn {
-	c := new(Conn)
-	c.addr = addr
-	c.user = user
-	c.password = password
-	c.db = db
-
-	//use utf8
-	c.collation = mysql.DEFAULT_COLLATION_ID
-	c.charset = mysql.DEFAULT_CHARSET
-
-	return c
+// GetConnectionID get connection id
+func (c *Conn) GetConnectionID() uint32 {
+	return c.connectionID
 }
 
+// SetConnectionID set connection id
+func (c *Conn) SetConnectionID(id uint32) { c.connectionID = id }
+
 // Connect to mysql
-func (c *Conn) Connect(addr string, user string, password string, db string) error {
-	c.addr = addr
-	c.user = user
-	c.password = password
+func (c *Conn) Connect(dbHost *backend.DBHost, db string) error {
+	c.dbHost = dbHost
 	c.db = db
 
 	//use utf8
@@ -109,11 +106,11 @@ func (c *Conn) Reconnect() error {
 	}
 
 	n := "tcp"
-	if strings.Contains(c.addr, "/") {
+	if strings.Contains(c.dbHost.Addr, "/") {
 		n = "unix"
 	}
 
-	netConn, err := net.Dial(n, c.addr)
+	netConn, err := net.Dial(n, c.dbHost.Addr)
 	if err != nil {
 		return err
 	}
@@ -135,7 +132,7 @@ func (c *Conn) Reconnect() error {
 		return err
 	}
 
-	if err := c.pkg.WriteAuthHandshake(&(c.capability), c.user, c.password, c.db, c.salt, c.collation); err != nil {
+	if err := c.pkg.WriteAuthHandshake(&(c.capability), c.dbHost.User, c.dbHost.Password, c.db, c.salt, c.collation); err != nil {
 		c.conn.Close()
 
 		return err
@@ -172,6 +169,13 @@ func (c *Conn) Close() error {
 	return nil
 }
 
+// ReturnConnection give back connection.
+func (c *Conn) ReturnConnection() {
+	if c.dbHost != nil {
+		c.dbHost.Pool.ReturnConnection(c)
+	}
+}
+
 // Ping db
 func (c *Conn) Ping() error {
 	if err := c.pkg.Ping(c.capability, &(c.status)); err != nil {
@@ -202,7 +206,7 @@ func (c *Conn) GetDB() string {
 
 // GetAddr get addr.
 func (c *Conn) GetAddr() string {
-	return c.addr
+	return c.dbHost.Addr
 }
 
 // Query command.

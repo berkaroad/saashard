@@ -23,10 +23,14 @@
 package route
 
 import (
+	"net"
+	"time"
+
 	"github.com/berkaroad/saashard/config"
 	"github.com/berkaroad/saashard/errors"
 	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/sqlparser"
+	"github.com/berkaroad/saashard/statistic"
 	"github.com/berkaroad/saashard/utils/golog"
 )
 
@@ -43,7 +47,8 @@ type Plan interface {
 	Route
 	Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
 		dataNode string, isSlave bool,
-		queryDataNodes map[sqlparser.Statement][]string) error) error
+		queryDataNodes map[sqlparser.Statement][]string) error,
+		clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) error
 }
 
 type normalPlan struct {
@@ -70,16 +75,31 @@ func (plan *normalPlan) OnSlave() bool {
 // Execute the plan
 func (plan *normalPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
 	dataNode string, isSlave bool,
-	queryDataNodes map[sqlparser.Statement][]string) error) error {
+	queryDataNodes map[sqlparser.Statement][]string) error, clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) error {
 	if executor != nil {
+		var state string
+		startTime := time.Now().UnixNano()
 		err := executor([]sqlparser.Statement{plan.Statement}, []*mysql.Result{plan.Result},
 			plan.nodeName, plan.onSlave,
 			map[sqlparser.Statement][]string{plan.Statement: plan.queryNodeNames})
-
+		execTime := float64(time.Now().UnixNano()-startTime) / float64(time.Millisecond)
+		if err != nil {
+			state = "ERROR"
+		} else {
+			state = "OK"
+		}
 		planSQL := plan.GetPlanSQL()
-		golog.OutputSql("Plan", "Execute on data node '%s': '%s'",
-			plan.nodeName,
-			planSQL)
+		if logSQLEnabled &&
+			execTime > float64(slowLogTime) {
+			counter.IncrSlowLogTotal()
+			golog.OutputSql(state, "%.1fms - %s->%s:OnSlave=%v:%s",
+				execTime,
+				clientAddr,
+				plan.nodeName,
+				plan.onSlave,
+				planSQL,
+			)
+		}
 		return err
 	}
 	return nil
@@ -114,15 +134,30 @@ func (plan *mergedPlan) OnSlave() bool {
 // Execute the plan
 func (plan *mergedPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
 	dataNode string, isSlave bool,
-	queryDataNodes map[sqlparser.Statement][]string) error) error {
+	queryDataNodes map[sqlparser.Statement][]string) error, clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) error {
 	if executor != nil {
+		var state string
+		startTime := time.Now().UnixNano()
 		err := executor(plan.Statements, plan.Results,
 			plan.nodeName, plan.onSlave, plan.queryNodeNames)
-
+		execTime := float64(time.Now().UnixNano()-startTime) / float64(time.Millisecond)
+		if err != nil {
+			state = "ERROR"
+		} else {
+			state = "OK"
+		}
 		planSQL := plan.GetPlanSQL()
-		golog.OutputSql("Plan", "Execute on data node '%s': '%s'",
-			plan.nodeName,
-			planSQL)
+		if logSQLEnabled &&
+			execTime > float64(slowLogTime) {
+			counter.IncrSlowLogTotal()
+			golog.OutputSql(state, "%.1fms - %s->%s:OnSlave=%v:%s",
+				execTime,
+				clientAddr,
+				plan.nodeName,
+				plan.onSlave,
+				planSQL,
+			)
+		}
 		return err
 	}
 	return nil

@@ -26,7 +26,6 @@ import (
 	"strconv"
 	"strings"
 
-	mysqlBackend "github.com/berkaroad/saashard/backend/mysql"
 	"github.com/berkaroad/saashard/config"
 )
 
@@ -47,7 +46,7 @@ func NewDataHost(hostCfg config.HostConfig) *DataHost {
 	h.MaxConnNum = hostCfg.MaxConnNum
 	h.DownAfterNoAlive = hostCfg.DownAfterNoAlive
 	h.PingInterval = hostCfg.PingInterval
-	h.Master = NewDBHost(hostCfg.Master, hostCfg.User, hostCfg.Password, 0)
+	h.Master = NewDBHost(hostCfg.Master, hostCfg.User, hostCfg.Password, 0, h.MaxConnNum)
 
 	if len(hostCfg.Slaves) > 0 {
 		h.Slaves = make([]*DBHost, len(hostCfg.Slaves))
@@ -58,7 +57,7 @@ func NewDataHost(hostCfg config.HostConfig) *DataHost {
 			if len(slaveConfig) > 1 {
 				slaveWeight, _ = strconv.Atoi(slaveConfig[1])
 			}
-			h.Slaves[i] = NewDBHost(slaveConfig[0], hostCfg.User, hostCfg.Password, slaveWeight)
+			h.Slaves[i] = NewDBHost(slaveConfig[0], hostCfg.User, hostCfg.Password, slaveWeight, h.MaxConnNum)
 		}
 	}
 
@@ -67,26 +66,30 @@ func NewDataHost(hostCfg config.HostConfig) *DataHost {
 
 // DBHost db host.
 type DBHost struct {
-	addr     string
-	user     string
-	password string
-	weight   int
+	Addr     string
+	User     string
+	Password string
+	Weight   int
+	Pool     *ConnectionPool
 }
 
 // NewDBHost new db host.
-func NewDBHost(addr string, user, password string, weight int) *DBHost {
+func NewDBHost(addr string, user, password string, weight int, maxConnNum int) *DBHost {
 	h := new(DBHost)
-	h.addr = addr
-	h.user = user
-	h.password = password
-	h.weight = weight
+	h.Addr = addr
+	h.User = user
+	h.Password = password
+	h.Weight = weight
+	h.Pool = NewConnectionPool(uint32(maxConnNum), h)
 	return h
 }
 
-// Connect a backend conn.
-// Need mantain connection pool.
-func (h *DBHost) Connect(database string) (conn Connection, err error) {
-	conn = new(mysqlBackend.Conn)
-	err = conn.Connect(h.addr, h.user, h.password, database)
-	return
+// GetConnection to connect a backend conn.
+func (h *DBHost) GetConnection(database string) (Connection, error) {
+	return h.Pool.GetConnection(database)
+}
+
+// ReturnConnection tu give back a backend conn.
+func (h *DBHost) ReturnConnection(conn Connection) {
+	h.Pool.ReturnConnection(conn)
 }

@@ -22,16 +22,39 @@
 
 package backend
 
+import (
+	"container/list"
+	"fmt"
+	"sync"
+	"sync/atomic"
+	"time"
+
+	"github.com/berkaroad/saashard/errors"
+	"github.com/berkaroad/saashard/utils/golog"
+)
+
+// CreateConnection create connection function, this is default value, must replace it.
+var CreateConnection = func(dbHost *DBHost) Connection { return new(nilConnection) }
+
 // Connection is backend connection.
 type Connection interface {
+	// GetConnectionID get connection id
+	GetConnectionID() uint32
+
+	// SetConnectionID set connection id
+	SetConnectionID(id uint32)
+
 	// Connect db server.
-	Connect(addr string, user string, password string, db string) error
+	Connect(dbHost *DBHost, db string) error
 
 	// Reconnect db server.
 	Reconnect() error
 
 	// Close db server.
 	Close() error
+
+	// ReturnConnection give back connection.
+	ReturnConnection()
 
 	// UseDB to set current db.
 	UseDB(database string) error
@@ -47,4 +70,145 @@ type Connection interface {
 
 	// Rollback transaction
 	Rollback() error
+}
+
+// nilConnection default connection.
+type nilConnection struct{ connectionID uint32 }
+
+// GetConnectionID get connection id
+func (c *nilConnection) GetConnectionID() uint32 {
+	return c.connectionID
+}
+
+// SetConnectionID set connection id
+func (c *nilConnection) SetConnectionID(id uint32) { c.connectionID = id }
+
+// Connect db server.
+func (c *nilConnection) Connect(dbHost *DBHost, db string) error {
+	return nil
+}
+
+// Reconnect db server.
+func (c *nilConnection) Reconnect() error { return nil }
+
+// Close db server.
+func (c *nilConnection) Close() error { return nil }
+
+// ReturnConnection give back connection.
+func (c *nilConnection) ReturnConnection() {}
+
+// UseDB to set current db.
+func (c *nilConnection) UseDB(database string) error { return nil }
+
+// Ping db server.
+func (c *nilConnection) Ping() error { return nil }
+
+// Begin transaction
+func (c *nilConnection) Begin() error { return nil }
+
+// Commit transaction
+func (c *nilConnection) Commit() error { return nil }
+
+// Rollback transaction
+func (c *nilConnection) Rollback() error { return nil }
+
+// ConnectionPool to manage connection pool.
+type ConnectionPool struct {
+	locker      *sync.Mutex
+	MaxPoolSize uint32
+	used        uint32
+	dbHost      *DBHost
+	connections *list.List
+	connids     map[uint32]interface{}
+}
+
+// NewConnectionPool create connection pool
+func NewConnectionPool(maxPoolSize uint32, dbHost *DBHost) *ConnectionPool {
+	p := new(ConnectionPool)
+	p.locker = new(sync.Mutex)
+	p.MaxPoolSize = maxPoolSize
+	p.dbHost = dbHost
+	p.connections = list.New()
+	p.connids = make(map[uint32]interface{})
+	go func() {
+		for {
+			idleCount := p.GetIdleCount()
+			// less or equal then 10%, then warn
+			if p.MaxPoolSize*100/idleCount <= 10 {
+				golog.Warn("backend", "ConnectionPool", fmt.Sprintf("%s 's idle count is less or equal then 10%%, current is %d", p.dbHost.Addr, idleCount), 0)
+			} else {
+				golog.Info("backend", "ConnectionPool", fmt.Sprintf("%s 's idle count is %d", p.dbHost.Addr, idleCount), 0)
+			}
+			time.Sleep(time.Second * 5)
+		}
+	}()
+	return p
+}
+
+// GetIdleCount Get Idle count.
+func (p *ConnectionPool) GetIdleCount() uint32 {
+	return p.MaxPoolSize - p.used
+}
+
+// GetConnection get connection from pool
+func (p *ConnectionPool) GetConnection(database string) (Connection, error) {
+	defer p.locker.Unlock()
+
+	p.locker.Lock()
+	var conn Connection
+	var err error
+	var retryCount int
+	f := func() (Connection, error) {
+		var conn Connection
+		var err error
+		if p.GetIdleCount() > 0 {
+			atomic.AddUint32(&p.used, 1)
+			if p.connections.Len() > 0 {
+				elem := p.connections.Back()
+				p.connections.Remove(elem)
+				conn = elem.Value.(Connection)
+				delete(p.connids, conn.GetConnectionID())
+				err = conn.Reconnect()
+				if err != nil {
+					atomic.AddUint32(&p.used, ^uint32(0))
+					conn = nil
+				}
+			} else {
+				conn = CreateConnection(p.dbHost)
+				err = conn.Connect(p.dbHost, database)
+				if err != nil {
+					atomic.AddUint32(&p.used, ^uint32(0))
+					conn = nil
+				}
+				if conn.GetConnectionID() == 0 {
+					conn.SetConnectionID(p.used)
+				}
+			}
+		} else {
+			time.Sleep(time.Second)
+			err = errors.ErrNoIdleConn
+		}
+		return conn, err
+	}
+	conn, err = f()
+	retryCount++
+	for ; err != nil && retryCount <= 3; retryCount++ {
+		conn, err = f()
+	}
+
+	return conn, err
+}
+
+// ReturnConnection give back connection to pool
+func (p *ConnectionPool) ReturnConnection(conn Connection) {
+	defer p.locker.Unlock()
+
+	p.locker.Lock()
+	if conn != nil && conn.GetConnectionID() > 0 {
+		if _, exists := p.connids[conn.GetConnectionID()]; !exists {
+			p.connections.PushFront(conn)
+			p.connids[conn.GetConnectionID()] = nil
+			atomic.AddUint32(&p.used, ^uint32(0))
+		}
+	}
 }

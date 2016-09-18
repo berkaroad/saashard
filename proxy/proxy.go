@@ -37,6 +37,7 @@
 package proxy
 
 import (
+	"fmt"
 	"net"
 	"runtime"
 	"strconv"
@@ -45,6 +46,8 @@ import (
 	"time"
 
 	"github.com/berkaroad/saashard/backend"
+	// Import mysql backend
+	_ "github.com/berkaroad/saashard/backend/mysql"
 	"github.com/berkaroad/saashard/config"
 	"github.com/berkaroad/saashard/errors"
 	"github.com/berkaroad/saashard/net/mysql"
@@ -105,19 +108,19 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	}
 
 	if err := p.parseHosts(); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	if err := p.parseNodes(); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	if err := p.parseSchemas(); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	if err := p.parseAllowIps(); err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	var err error
@@ -164,38 +167,44 @@ func (p *Server) Close() {
 }
 
 // Ping backend
-func (p *Server) Ping() {
-	go func() {
-		for true {
-			hosts := p.hosts
-			for _, host := range hosts {
-				pingInterval := host.PingInterval
-				if pingInterval < 5 {
-					pingInterval = 5
-				}
-				pingInterval -= 5
+// func (p *Server) Ping() {
+// 	go func() {
+// 		for true {
+// 			hosts := p.hosts
+// 			for _, host := range hosts {
+// 				pingInterval := host.PingInterval
+// 				if pingInterval < 5 {
+// 					pingInterval = 5
+// 				}
+// 				pingInterval -= 5
 
-				if conn, err := host.Master.Connect(""); err != nil {
-					// downtime ++
-				} else if err := conn.Ping(); err != nil {
-					// downtime ++
-				}
-				time.Sleep(time.Second * time.Duration(pingInterval))
+// 				if conn, err := host.Master.GetConnection(""); err != nil {
+// 					// downtime ++
+// 				} else {
+// 					if err := conn.Ping(); err != nil {
+// 						// downtime ++
+// 					}
+// 					host.Master.ReturnConnection(conn)
+// 				}
+// 				time.Sleep(time.Second * time.Duration(pingInterval))
 
-				for _, slave := range host.Slaves {
-					if conn, err := slave.Connect(""); err != nil {
-						// downtime ++
-					} else if err := conn.Ping(); err != nil {
-						// downtime ++
-					}
-					time.Sleep(time.Second * time.Duration(pingInterval))
-				}
-			}
-			println("Ping")
-			time.Sleep(time.Second * 5)
-		}
-	}()
-}
+// 				for _, slave := range host.Slaves {
+// 					if conn, err := slave.GetConnection(""); err != nil {
+// 						// downtime ++
+// 					} else {
+// 						if err := conn.Ping(); err != nil {
+// 							// downtime ++
+// 						}
+// 						slave.ReturnConnection(conn)
+// 					}
+// 					time.Sleep(time.Second * time.Duration(pingInterval))
+// 				}
+// 			}
+// 			println("Ping")
+// 			time.Sleep(time.Second * 5)
+// 		}
+// 	}()
+// }
 
 func (p *Server) onConn(c net.Conn) {
 	p.counter.IncrClientConns()
@@ -308,7 +317,7 @@ func (p *Server) parseNodes() error {
 			if host, ok := p.hosts[nodeCfg.Host]; ok {
 				p.nodes[nodeCfg.Name] = backend.NewDataNode(nodeCfg, host)
 			} else {
-				return errors.ErrNoDataHost
+				return fmt.Errorf("data host '%s' not exists", nodeCfg.Host)
 			}
 		}
 	}
@@ -324,11 +333,11 @@ func (p *Server) parseSchemas() error {
 		schema := schemaConfig
 		if p.schemas[schema.Name] == nil {
 			if len(schema.Nodes) == 0 {
-				return errors.ErrNoDataNode
+				return fmt.Errorf("no data node in schema '%s'", schema.Name)
 			}
 			for _, nodeInSchema := range schema.Nodes {
 				if p.nodes[nodeInSchema] == nil {
-					return errors.ErrNoDataNode
+					return fmt.Errorf("data node '%s' not exists", nodeInSchema)
 				}
 			}
 			p.schemas[schema.Name] = &schema

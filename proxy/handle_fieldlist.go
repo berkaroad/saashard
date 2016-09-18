@@ -59,7 +59,7 @@ func (c *ClientConn) handleFieldList(data []byte) error {
 		if conn = c.backendSlaveConns[node]; conn == nil {
 			var dbHost *backend.DBHost
 			dbHost = node.DataHost.Slaves[0]
-			if conn, err = dbHost.Connect(node.Database); err != nil {
+			if conn, err = dbHost.GetConnection(node.Database); err != nil {
 				return err
 			}
 			c.backendSlaveConns[node] = conn
@@ -68,7 +68,7 @@ func (c *ClientConn) handleFieldList(data []byte) error {
 		if conn = c.backendMasterConns[node]; conn == nil {
 			var dbHost *backend.DBHost
 			dbHost = node.DataHost.Master
-			if conn, err = dbHost.Connect(node.Database); err != nil {
+			if conn, err = dbHost.GetConnection(node.Database); err != nil {
 				return err
 			}
 			c.backendMasterConns[node] = conn

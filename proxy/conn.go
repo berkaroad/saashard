@@ -211,10 +211,10 @@ func (c *ClientConn) Close() error {
 	c.nodeInTrans = nil
 	for _, conn := range c.backendMasterConns {
 		conn.Rollback()
-		conn.Close()
+		conn.ReturnConnection()
 	}
 	for _, conn := range c.backendSlaveConns {
-		conn.Close()
+		conn.ReturnConnection()
 	}
 
 	c.c.Close()
