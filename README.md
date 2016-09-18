@@ -34,6 +34,7 @@ make run # Run immediately, use ss.yaml config file.
 - Support hint /*! saashard master */ to force execute on master.
 - Support split read and write. (Read balance feature is in 'TODO list'.)
 - Database sharding feature is in 'TODO list'.
+- Support backend connection pool.
 
 ### Unsupported SQL
 

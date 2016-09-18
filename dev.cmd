@@ -15,3 +15,5 @@ go install github.com/berkaroad/saashard/server
 
 go build -o %~dp0bin\saashard.exe github.com/berkaroad/saashard/cmd/saashard
 %~dp0bin\saashard.exe -config %~dp0conf\dev.yaml
+
+@pause
