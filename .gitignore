@@ -27,5 +27,6 @@ _testmain.go
 .DS_Store
 bin
 conf/dev.yaml
+dev.cmd
 cmd/saashard/debug
 sqlparser/*.output
