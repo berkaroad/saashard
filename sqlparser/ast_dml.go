@@ -40,6 +40,41 @@
 
 package sqlparser
 
+// Insert represents an INSERT statement.
+type Insert struct {
+	Comments Comments
+	Ignore   string
+	Table    *TableName
+	Columns  Columns
+	Rows     InsertRows
+	OnDup    OnDup
+}
+
+func (node *Insert) Format(buf *TrackedBuffer) {
+	buf.Fprintf("insert %v%s into %v%v %v%v",
+		node.Comments, node.Ignore,
+		node.Table, node.Columns, node.Rows, node.OnDup)
+}
+func (node *Insert) IStatement() {}
+
+// Update represents an UPDATE statement.
+type Update struct {
+	Comments Comments
+	Table    *TableName
+	Exprs    UpdateExprs
+	Where    *Where
+	OrderBy  OrderBy
+	Limit    *Limit
+}
+
+func (node *Update) Format(buf *TrackedBuffer) {
+	buf.Fprintf("update %v%v set %v%v%v%v",
+		node.Comments, node.Table,
+		node.Exprs, node.Where, node.OrderBy, node.Limit)
+}
+
+func (node *Update) IStatement() {}
+
 // Delete represents a DELETE statement.
 type Delete struct {
 	Comments Comments
@@ -56,3 +91,19 @@ func (node *Delete) Format(buf *TrackedBuffer) {
 }
 
 func (node *Delete) IStatement() {}
+
+// Replace represents an REPLACE statement.
+type Replace struct {
+	Comments Comments
+	Table    *TableName
+	Columns  Columns
+	Rows     InsertRows
+}
+
+func (node *Replace) Format(buf *TrackedBuffer) {
+	buf.Fprintf("replace %vinto %v%v %v",
+		node.Comments,
+		node.Table, node.Columns, node.Rows)
+}
+
+func (node *Replace) IStatement() {}
