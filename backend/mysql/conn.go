@@ -102,7 +102,7 @@ func (c *Conn) Connect(dbHost *backend.DBHost, db string) error {
 func (c *Conn) Reconnect() error {
 	var err error
 	if c.conn != nil {
-		c.conn.Close()
+		c.Close()
 	}
 
 	n := "tcp"
@@ -115,17 +115,18 @@ func (c *Conn) Reconnect() error {
 		return err
 	}
 
-	tcpConn := netConn.(*net.TCPConn)
+	if tcpConn, ok := netConn.(*net.TCPConn); ok {
+		//SetNoDelay controls whether the operating system should delay packet transmission
+		// in hopes of sending fewer packets (Nagle's algorithm).
+		// The default is true (no delay),
+		// meaning that data is sent as soon as possible after a Write.
+		//I set this option false.
+		tcpConn.SetNoDelay(false)
+		tcpConn.SetKeepAlive(true)
+	}
 
-	//SetNoDelay controls whether the operating system should delay packet transmission
-	// in hopes of sending fewer packets (Nagle's algorithm).
-	// The default is true (no delay),
-	// meaning that data is sent as soon as possible after a Write.
-	//I set this option false.
-	tcpConn.SetNoDelay(false)
-	tcpConn.SetKeepAlive(true)
-	c.conn = tcpConn
-	c.pkg = mysql.NewPacketIO(tcpConn)
+	c.conn = netConn
+	c.pkg = mysql.NewPacketIO(netConn)
 
 	if c.capability, c.status, c.collation, err = c.pkg.ReadInitialHandshake(&(c.salt)); err != nil {
 		c.conn.Close()
@@ -224,15 +225,14 @@ func (c *Conn) Execute(command string, args ...interface{}) (*mysql.Result, erro
 	if len(args) == 0 {
 		return c.pkg.Query(c.capability, &(c.status), command)
 	}
-	if s, err := c.Prepare(command); err != nil {
+	s, err := c.Prepare(command)
+	if err != nil {
 		return nil, err
-	} else {
-		var r *mysql.Result
-		r, err = s.Execute(args...)
-		s.Close()
-		return r, err
 	}
-
+	var r *mysql.Result
+	r, err = s.Execute(args...)
+	s.Close()
+	return r, err
 }
 
 // Prepare stmt.

@@ -25,6 +25,7 @@ package backend
 import (
 	"container/list"
 	"fmt"
+	"math"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -127,6 +128,9 @@ func NewConnectionPool(maxPoolSize uint32, dbHost *DBHost) *ConnectionPool {
 	p := new(ConnectionPool)
 	p.locker = new(sync.Mutex)
 	p.MaxPoolSize = maxPoolSize
+	if p.MaxPoolSize == 0 {
+		p.MaxPoolSize = math.MaxUint32
+	}
 	p.dbHost = dbHost
 	p.connections = list.New()
 	p.connids = make(map[uint32]interface{})
@@ -134,7 +138,7 @@ func NewConnectionPool(maxPoolSize uint32, dbHost *DBHost) *ConnectionPool {
 		for {
 			idleCount := p.GetIdleCount()
 			// idleCount is zero, or less or equal then 10%, then warn
-			if idleCount == 0 || p.MaxPoolSize*100/idleCount <= 10 {
+			if idleCount*100/p.MaxPoolSize <= 10 {
 				golog.Warn("backend", "ConnectionPool", fmt.Sprintf("%s 's idle count is less or equal then 10 pecent, current is %d", p.dbHost.Addr, idleCount), 0)
 			} else {
 				golog.Info("backend", "ConnectionPool", fmt.Sprintf("%s 's idle count is %d", p.dbHost.Addr, idleCount), 0)
