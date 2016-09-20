@@ -363,5 +363,5 @@ func PrintPacketData(source string, data []byte) {
 			str += fmt.Sprintf(" %x", byt)
 		}
 	}
-	fmt.Printf("Packet Data from %s:\r\n%s\r\n\r\n", source, str)
+	fmt.Printf("Packet Data from %s:\n%s\n\n", source, str)
 }

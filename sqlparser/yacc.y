@@ -73,14 +73,17 @@ var (
   selStmt     SelectStatement
   setStmt     SetStatement
   showStmt    ShowStatement
+  ddlStmt     DDLStatement
   byt         byte
   bytes       []byte
   bytes2      [][]byte
   str         string
+  boolean     bool
   selectExprs SelectExprs
   selectExpr  SelectExpr
   columns     Columns
   colName     *ColName
+  colNames    ColNames
   tableExprs  TableExprs
   tableExpr   TableExpr
   smTableExpr SimpleTableExpr
@@ -103,13 +106,24 @@ var (
   insRows     InsertRows
   updateExprs UpdateExprs
   updateExpr  *UpdateExpr
+  createDef   CreateDefinition
+  createDefs  CreateDefinitions
+  columnDef   *ColumnDefinition
+  dataType    *DataType
+  idxColName  *IndexColName
+  idxColNames IndexColNames
+  optKeyVal   *OptionKeyValue
+  optKeyVals  OptionKeyValues
+  fiOAfCol    *FirstOrAfterColumn
+  alterSpecs  AlterSpecifications
+  alterSpec   AlterSpecification
 }
 
 %token LEX_ERROR
 %token <empty> SELECT INSERT UPDATE DELETE FROM WHERE GROUP HAVING ORDER BY LIMIT FOR
 %token <empty> ALL DISTINCT AS EXISTS NULL ASC DESC VALUES INTO DUPLICATE KEY DEFAULT SET LOCK
 %token <empty> SHOW EXPLAIN DESCRIBE
-%token <bytes> ID STRING NUMBER VALUE_ARG COMMENT
+%token <bytes> ID STRING NUMBER VALUE_ARG COMMENTS
 %token <empty> '(' '~'
 
 %left <empty> UNION MINUS EXCEPT INTERSECT
@@ -138,13 +152,26 @@ var (
 
 // Charset Tokens
 %token <empty> NAMES CHARSET CHARACTER COLLATION
-%token <bytes> ARMSCII8 ASCII BIG5 BINARY CP1250 CP1251 CP1256 CP1257 CP850 CP852 CP866 CP932
-%token <bytes> DEC8 EUCJPMS EUCKR GB2312 GBK GEOSTD8 GREEK HEBREW HP8 KEYBCS2 KOI8R KOI8U
-%token <bytes> LATIN1 LATIN2 LATIN5 LATIN7 MACCE MACROMAN SJIS SWE7 TIS620 UCS2 EJIS
-%token <bytes> UTF16 UTF16LE UTF32 UTF8 UTF8MB4
+%token <empty> ARMSCII8 ASCII BIG5 BINARY CP1250 CP1251 CP1256 CP1257 CP850 CP852 CP866 CP932
+%token <empty> DEC8 EUCJPMS EUCKR GB2312 GBK GEOSTD8 GREEK HEBREW HP8 KEYBCS2 KOI8R KOI8U
+%token <empty> LATIN1 LATIN2 LATIN5 LATIN7 MACCE MACROMAN SJIS SWE7 TIS620 UCS2 UJIS
+%token <empty> UTF16 UTF16LE UTF32 UTF8 UTF8MB4
+
+// Collation Tokens
+%token <empty> ARMSCII8_GENERAL_CI ARMSCII8_BIN ASCII_GENERAL_CI ASCII_BIN BIG5_CHINESE_CI BIG5_BIN
+%token <empty> CP1250_GENERAL_CI CP1250_BIN CP1251_GENERAL_CI CP1251_GENERAL_CS CP1251_BIN CP1256_GENERAL_CI CP1256_BIN CP1257_GENERAL_CI CP1257_BIN
+%token <empty> CP850_GENERAL_CI CP850_BIN CP852_GENERAL_CI CP852_BIN CP866_GENERAL_CI CP866_BIN CP932_JAPANESE_CI CP932_BIN
+%token <empty> DEC8_SWEDISH_CI DEC8_BIN EUCJPMS_JAPANESE_CI EUCJPMS_BIN EUCKR_KOREAN_CI EUCKR_BIN GB2312_CHINESE_CI GB2312_BIN GBK_CHINESE_CI GBK_BIN
+%token <empty> GEOSTD8_GENERAL_CI GEOSTD8_BIN GREEK_GENERAL_CI GREEK_BIN HEBREW_GENERAL_CI HEBREW_BIN HP8_ENGLISH_CI HP8_BIN
+%token <empty> KEYBCS2_GENERAL_CI KEYBCS2_BIN KOI8R_GENERAL_CI KOI8R_BIN KOI8U_GENERAL_CI KOI8U_BIN
+%token <empty> LATIN1_GENERAL_CI LATIN1_GENERAL_CS LATIN1_BIN LATIN2_GENERAL_CI LATIN2_BIN LATIN5_TURKISH_CI LATIN5_BIN LATIN7_GENERAL_CI LATIN7_GENERAL_CS LATIN7_BIN
+%token <empty> MACCE_GENERAL_CI MACCE_BIN MACROMAN_GENERAL_CI MACROMAN_BIN SJIS_JAPANESE_CI SJIS_BIN SWE7_SWEDISH_CI SWE7_BIN TIS620_THAI_CI TIS620_BIN
+%token <empty> UCS2_GENERAL_CI UCS2_UNICODE_CI UCS2_BIN UJIS_JAPANESE_CI UJIS_BIN UTF16_GENERAL_CI UTF16_UNICODE_CI UTF16_BIN UTF16LE_GENERAL_CI UTF16LE_BIN
+%token <empty> UTF32_GENERAL_CI UTF32_UNICODE_CI UTF32_BIN UTF8_GENERAL_CI UTF8_UNICODE_CI UTF8_BIN UTF8MB4_GENERAL_CI UTF8MB4_UNICODE_CI UTF8MB4_BIN
+
 
 // Scope Tokens
-%token <bytes> SESSION GLOBAL
+%token <empty> SESSION GLOBAL
 
 %token <empty> VARIABLES STATUS
 %token <empty> DATABASES SCHEMAS DATABASE
@@ -165,7 +192,26 @@ var (
 
 // DDL Tokens
 %token <empty> CREATE ALTER DROP RENAME
-%token <empty> TABLE INDEX VIEW TO IGNORE IF UNIQUE USING
+%token <empty> TABLE INDEX VIEW TO IGNORE IF UNIQUE FULLTEXT USING
+%token <empty> BTREE HASH
+
+// Data Type Tokens
+%token <empty> BIT TINYINT SMALLINT MEDIUMINT INT INTEGER BIGINT REAL DOUBLE FLOAT DECIMAL
+%token <empty> DATE TIME TIMESTAMP DATETIME YEAR
+%token <empty> CHAR VARCHAR TINYTEXT TEXT MEDIUMTEXT LONGTEXT
+%token <empty> VARBINARY TINYBLOB BLOB MEDIUMBLOB LONGBLOB
+
+
+%token <empty> ENUM AUTO_INCREMENT ENGINE PRIMARY REFERENCES COMMENT
+%token <empty> COLUMN_FORMAT FIXED DYNAMIC
+%token <empty> DISK MEMORY
+%token <empty> MATCH PARTIAL SIMPLE
+%token <empty> RESTRICT CASCADE
+%token <empty> NO ACTION
+%token <empty> UNSIGNED ZEROFILL
+%token <empty> CONSTRAINT FOREIGN
+%token <empty> FIRST AFTER
+%token <empty> ADD COLUMN CHANGE MODIFY
 
 // Functin
 %token <empty> POSITION
@@ -176,8 +222,9 @@ var (
 %type <selStmt> select_statement
 %type <setStmt> set_statement
 %type <showStmt> show_statement describe_statement
+%type <ddlStmt> create_statement
 %type <statement> insert_statement update_statement delete_statement replace_statement
-%type <statement> create_statement alter_statement rename_statement drop_statement
+%type <statement> alter_statement rename_statement drop_statement
 %type <statement> begin_statement commit_statement rollback_statement 
 %type <statement> use_statement explain_statement admin_statement
 
@@ -208,6 +255,7 @@ var (
 %type <subquery> subquery
 %type <byt> unary_operator
 %type <colName> column_name
+%type <colNames> column_name_list
 %type <caseExpr> case_expression
 %type <whens> when_expression_list
 %type <when> when_expression
@@ -225,12 +273,35 @@ var (
 %type <updateExprs> update_list
 %type <updateExpr> update_expression
 %type <expr> where_or_like_opt
-%type <empty> exists_opt not_exists_opt non_rename_operation to_opt constraint_opt using_opt
+%type <empty> exists_opt not_exists_opt to_opt
+%type <bytes> index_category_opt index_type_opt
+%type <idxColName> index_column_name
+%type <idxColNames> index_column_list
 %type <bytes> sql_id
 %type <empty> force_eof
-%type <bytes> charset_words
+%type <bytes> charset_words collate_words
 %type <bytes> isolation_level
 %type <bytes> scope_opt
+
+%type <valExpr> default_value_opt column_comment_opt
+%type <bytes> unique_or_primary_opt column_format_opt column_storage_opt
+%type <bytes> reference_definition reference_definition_opt reference_match_opt reference_on_delete_or_update_opt reference_option
+%type <bytes> data_type_charset_opt data_type_collate_opt
+%type <createDef> create_definition
+%type <createDefs> create_definition_list
+%type <alterSpec> alter_specification
+%type <alterSpecs> alter_specification_list alter_specification_list_opt
+%type <valExprs> value_list
+%type <boolean> not_null_opt auto_increment_opt data_type_unsigned_opt data_type_zerofill_opt data_type_binary_opt
+%type <columnDef> column_definition
+%type <dataType> data_type
+%type <bytes> constraint_opt
+%type <optKeyVal> table_option
+%type <optKeyVals> table_option_list table_option_list_opt
+
+%type <fiOAfCol> first_or_after_column first_or_after_column_opt
+
+
 %%
 
 any_command:
@@ -254,6 +325,7 @@ command:
 | replace_statement
 | explain_statement
 | create_statement
+  { $$ = $1 }
 | alter_statement
 | rename_statement
 | drop_statement
@@ -433,33 +505,19 @@ use_statement:
   }
 
 create_statement:
-  CREATE TABLE not_exists_opt ID force_eof
+  CREATE TABLE not_exists_opt dml_table_expression '(' create_definition_list ')' table_option_list_opt
   {
-    $$ = &DDL{Action: AST_CREATE, NewName: $4}
+    $$ = &CreateTable{Table: $4, CreateDefs: $6, TableOptions: $8 }
   }
-| CREATE constraint_opt INDEX sql_id using_opt ON ID force_eof
+| CREATE index_category_opt INDEX sql_id index_type_opt ON dml_table_expression '(' index_column_list ')'
   {
-    // Change this to an alter statement
-    $$ = &DDL{Action: AST_ALTER, Table: $7, NewName: $7}
-  }
-| CREATE VIEW sql_id force_eof
-  {
-    $$ = &DDL{Action: AST_CREATE, NewName: $3}
+    $$ = &CreateIndex{IndexCategory: $2, Name: $4, IndexType: $5, Table: $7, IndexColumns: $9 }
   }
 
 alter_statement:
-  ALTER ignore_opt TABLE ID non_rename_operation force_eof
+  ALTER ignore_opt TABLE dml_table_expression alter_specification_list_opt
   {
-    $$ = &DDL{Action: AST_ALTER, Ignore: $2, Table: $4, NewName: $4}
-  }
-| ALTER ignore_opt TABLE ID RENAME to_opt ID
-  {
-    // Change this to a rename statement
-    $$ = &DDL{Action: AST_RENAME, Ignore: $2, Table: $4, NewName: $7}
-  }
-| ALTER VIEW sql_id force_eof
-  {
-    $$ = &DDL{Action: AST_ALTER, Table: $3, NewName: $3}
+    $$ = &AlterTable{Ignore: $2, Table: $4, AlterSpecs: $5}
   }
 
 rename_statement:
@@ -477,10 +535,6 @@ drop_statement:
   {
     // Change this to an alter statement
     $$ = &DDL{Action: AST_ALTER, Table: $5, NewName: $5}
-  }
-| DROP VIEW exists_opt sql_id force_eof
-  {
-    $$ = &DDL{Action: AST_DROP, Table: $4}
   }
 
 show_statement:
@@ -648,7 +702,7 @@ comment_list:
   {
     $$ = nil
   }
-| comment_list COMMENT
+| comment_list COMMENTS
   {
     $$ = append($1, $2)
   }
@@ -853,6 +907,16 @@ index_list:
     $$ = [][]byte{$1}
   }
 | index_list ',' sql_id
+  {
+    $$ = append($1, $3)
+  }
+
+value_list:
+  value
+  {
+    $$ = ValExprs{$1}
+  }
+| value_list ',' value
   {
     $$ = append($1, $3)
   }
@@ -1158,6 +1222,12 @@ else_expression_opt:
     $$ = $2
   }
 
+column_name_list:
+  column_name
+  { $$ = ColNames{$1} }
+| column_name_list ',' column_name
+  { $$ = append($1, $3) }
+
 column_name:
   sql_id
   {
@@ -1339,32 +1409,44 @@ ignore_opt:
 | IGNORE
   { $$ = AST_IGNORE }
 
-non_rename_operation:
-  ALTER
-  { $$ = struct{}{} }
-| DEFAULT
-  { $$ = struct{}{} }
-| DROP
-  { $$ = struct{}{} }
-| ORDER
-  { $$ = struct{}{} }
-| ID
-  { $$ = struct{}{} }
-
 to_opt:
   { $$ = struct{}{} }
 | TO
   { $$ = struct{}{} }
 
-constraint_opt:
-  { $$ = struct{}{} }
+index_category_opt:
+  { $$ = nil }
 | UNIQUE
-  { $$ = struct{}{} }
+  { $$ = []byte("unique") }
+| FULLTEXT
+  { $$ = []byte("fulltext") }
 
-using_opt:
-  { $$ = struct{}{} }
-| USING sql_id
-  { $$ = struct{}{} }
+index_column_list:
+  index_column_name
+  {
+    $$ = IndexColNames{$1}
+  }
+| index_column_list ',' index_column_name
+  {
+    $$ = append($1, $3)
+  }
+
+index_column_name:
+  column_name asc_desc_opt
+  {
+    $$ = &IndexColName{ColumnName: $1, AscOrDesc: $2}
+  }
+| column_name '(' NUMBER ')' asc_desc_opt
+  {
+    $$ = &IndexColName{ColumnName: $1, Length: NumVal($3), AscOrDesc: $5}
+  }
+
+index_type_opt:
+  { $$ = nil }
+| USING BTREE
+  { $$ = []byte("btree") }
+| USING HASH
+  { $$ = []byte("hash") }
 
 sql_id:
   ID
@@ -1450,7 +1532,7 @@ charset_words:
   { $$ = []byte("tis620") }
 | UCS2
   { $$ = []byte("ucs2") }
-| EJIS
+| UJIS
   { $$ = []byte("ujis") }
 | UTF16
   { $$ = []byte("utf16") }
@@ -1462,6 +1544,183 @@ charset_words:
   { $$ = []byte("utf8") }
 | UTF8MB4
   { $$ = []byte("utf8mb4") }
+
+collate_words:
+  ARMSCII8_GENERAL_CI
+  { $$ = []byte("armscii8_general_ci") }
+| ARMSCII8_BIN
+  { $$ = []byte("armscii8_bin") }
+| ASCII_GENERAL_CI
+  { $$ = []byte("ascii_general_ci") }
+| ASCII_BIN
+  { $$ = []byte("ascii_bin") }
+| BIG5_CHINESE_CI
+  { $$ = []byte("big5_chinese_ci") }
+| BIG5_BIN
+  { $$ = []byte("big5_bin") }
+| BINARY
+  { $$ = []byte("binary") }
+| CP1250_GENERAL_CI
+  { $$ = []byte("cp1250_general_ci") }
+| CP1250_BIN
+  { $$ = []byte("cp1250_bin") }
+| CP1251_GENERAL_CI
+  { $$ = []byte("cp1251_chinese_ci") }
+| CP1251_GENERAL_CS
+  { $$ = []byte("cp1251_chinese_cs") }
+| CP1251_BIN
+  { $$ = []byte("cp1251_bin") }
+| CP1256_GENERAL_CI
+  { $$ = []byte("cp1256_chinese_ci") }
+| CP1256_BIN
+  { $$ = []byte("cp1256_bin") }
+| CP1257_GENERAL_CI
+  { $$ = []byte("cp1257_chinese_ci") }
+| CP1257_BIN
+  { $$ = []byte("cp1257_bin") }
+| CP850_GENERAL_CI
+  { $$ = []byte("cp850_chinese_ci") }
+| CP850_BIN
+  { $$ = []byte("cp850_bin") }
+| CP852_GENERAL_CI
+  { $$ = []byte("cp852_chinese_ci") }
+| CP852_BIN
+  { $$ = []byte("cp852_bin") }
+| CP866_GENERAL_CI
+  { $$ = []byte("cp866_chinese_ci") }
+| CP866_BIN
+  { $$ = []byte("cp866_bin") }
+| CP932_JAPANESE_CI
+  { $$ = []byte("cp932_japanese_ci") }
+| CP932_BIN
+  { $$ = []byte("cp932_bin") }
+| DEC8_SWEDISH_CI
+  { $$ = []byte("dec8_swedish_ci") }
+| DEC8_BIN
+  { $$ = []byte("dec8_bin") }
+| EUCJPMS_JAPANESE_CI
+  { $$ = []byte("eucjpms_japanese_ci") }
+| EUCJPMS_BIN
+  { $$ = []byte("eucjpms_bin") }
+| EUCKR_KOREAN_CI
+  { $$ = []byte("euckr_korean_ci") }
+| EUCKR_BIN
+  { $$ = []byte("euckr_bin") }
+| GB2312_CHINESE_CI
+  { $$ = []byte("gb2312_chinese_ci") }
+| GB2312_BIN
+  { $$ = []byte("gb2312_bin") }
+| GBK_CHINESE_CI
+  { $$ = []byte("gbk_chinese_ci") }
+| GBK_BIN
+  { $$ = []byte("gbk_bin") }
+| GEOSTD8_GENERAL_CI
+  { $$ = []byte("geostd8_general_ci") }
+| GEOSTD8_BIN
+  { $$ = []byte("geostd8_bin") }
+| GREEK_GENERAL_CI
+  { $$ = []byte("greek_general_ci") }
+| GREEK_BIN
+  { $$ = []byte("greek_bin") }
+| HEBREW_GENERAL_CI
+  { $$ = []byte("hebrew_general_ci") }
+| HEBREW_BIN
+  { $$ = []byte("hebrew_bin") }
+| HP8_ENGLISH_CI
+  { $$ = []byte("hp8_english_ci") }
+| HP8_BIN
+  { $$ = []byte("hp8_bin") }
+| KEYBCS2_GENERAL_CI
+  { $$ = []byte("keybcs2_general_ci") }
+| KEYBCS2_BIN
+  { $$ = []byte("keybcs2_bin") }
+| KOI8R_GENERAL_CI
+  { $$ = []byte("koi8r_general_ci") }
+| KOI8R_BIN
+  { $$ = []byte("koi8r_bin") }
+| KOI8U_GENERAL_CI
+  { $$ = []byte("koi8u_general_ci") }
+| KOI8U_BIN
+  { $$ = []byte("koi8u_bin") }
+| LATIN1_GENERAL_CI
+  { $$ = []byte("latin1_general_ci") }
+| LATIN1_GENERAL_CS
+  { $$ = []byte("latin1_general_cs") }
+| LATIN1_BIN
+  { $$ = []byte("latin1_bin") }
+| LATIN2_GENERAL_CI
+  { $$ = []byte("latin2_general_ci") }
+| LATIN2_BIN
+  { $$ = []byte("latin2_bin") }
+| LATIN5_TURKISH_CI
+  { $$ = []byte("latin5_turkish_ci") }
+| LATIN5_BIN
+  { $$ = []byte("latin5_bin") }
+| LATIN7_GENERAL_CI
+  { $$ = []byte("latin7_general_ci") }
+| LATIN7_GENERAL_CS
+  { $$ = []byte("latin7_general_cs") }
+| LATIN7_BIN
+  { $$ = []byte("latin7_bin") }
+| MACCE_GENERAL_CI
+  { $$ = []byte("macce_general_ci") }
+| MACCE_BIN
+  { $$ = []byte("macce_bin") }
+| MACROMAN_GENERAL_CI
+  { $$ = []byte("macroman_general_ci") }
+| MACROMAN_BIN
+  { $$ = []byte("macroman_bin") }
+| SJIS_JAPANESE_CI
+  { $$ = []byte("sjis_japanese_ci") }
+| SJIS_BIN
+  { $$ = []byte("sjis_bin") }
+| SWE7_SWEDISH_CI
+  { $$ = []byte("swe7_swedish_ci") }
+| SWE7_BIN
+  { $$ = []byte("swe7_bin") }
+| TIS620_THAI_CI
+  { $$ = []byte("tis620_thai_ci") }
+| TIS620_BIN
+  { $$ = []byte("tis620_bin") }
+| UCS2_GENERAL_CI
+  { $$ = []byte("ucs2_general_ci") }
+| UCS2_UNICODE_CI
+  { $$ = []byte("ucs2_unicode_ci") }
+| UCS2_BIN
+  { $$ = []byte("ucs2_bin") }
+| UJIS_JAPANESE_CI
+  { $$ = []byte("ujis_japanese_ci") }
+| UJIS_BIN
+  { $$ = []byte("ujis_bin") }
+| UTF16_GENERAL_CI
+  { $$ = []byte("utf16_general_ci") }
+| UTF16_UNICODE_CI
+  { $$ = []byte("utf16_unicode_ci") }
+| UTF16_BIN
+  { $$ = []byte("utf16_bin") }
+| UTF16LE_GENERAL_CI
+  { $$ = []byte("utf16le_general_ci") }
+| UTF16LE_BIN
+  { $$ = []byte("utf16le_bin") }
+| UTF32_GENERAL_CI
+  { $$ = []byte("utf32_general_ci") }
+| UTF32_UNICODE_CI
+  { $$ = []byte("utf32_unicode_ci") }
+| UTF32_BIN
+  { $$ = []byte("utf32_bin") }
+| UTF8_GENERAL_CI
+  { $$ = []byte("utf8_general_ci") }
+| UTF8_UNICODE_CI
+  { $$ = []byte("utf8_unicode_ci") }
+| UTF8_BIN
+  { $$ = []byte("utf8_bin") }
+| UTF8MB4_GENERAL_CI
+  { $$ = []byte("utf8mb4_general_ci") }
+| UTF8MB4_UNICODE_CI
+  { $$ = []byte("utf8mb4_unicode_ci") }
+| UTF8MB4_BIN
+  { $$ = []byte("utf8mb4_bin") }
+
 
 isolation_level:
   READ COMMITTED
@@ -1489,4 +1748,525 @@ where_or_like_opt:
 | WHERE boolean_expression
   {
     $$ = &WhereExpr{Expr:$2}
+  }
+
+create_definition_list:
+  create_definition
+  {
+    $$ = CreateDefinitions{ $1 }
+  }
+| create_definition_list ',' create_definition
+  {
+    $$ = append($1, $3)
+  }
+
+create_definition:
+  column_name column_definition
+  {
+    $$ = &CreateColumnDefinition{ColumnName: $1, ColumnDef: $2 }
+  }
+| constraint_opt PRIMARY KEY index_type_opt '(' index_column_list ')'
+  {
+    $$ = &CreatePrimaryKeyDefinition{Symbol: $1, IndexType: $4, IndexColumns: $6}
+  }
+| INDEX sql_id index_type_opt '(' index_column_list ')'
+  {
+    $$ = &CreateIndexDefinition{Name: $2, IndexType: $3, IndexColumns: $5}
+  }
+| KEY sql_id index_type_opt '(' index_column_list ')'
+  {
+    $$ = &CreateIndexDefinition{Name: $2, IndexType: $3, IndexColumns: $5}
+  }
+| constraint_opt UNIQUE sql_id index_type_opt '(' index_column_list ')'
+  {
+    $$ = &CreateUniqueIndexDefinition{Symbol: $1, Name: $3, IndexType: $4, IndexColumns: $6}
+  }
+| constraint_opt UNIQUE INDEX sql_id index_type_opt '(' index_column_list ')'
+  {
+    $$ = &CreateUniqueIndexDefinition{Symbol: $1, Name: $4, IndexType: $5, IndexColumns: $7}
+  }
+| constraint_opt UNIQUE KEY sql_id index_type_opt '(' index_column_list ')'
+  {
+    $$ = &CreateUniqueIndexDefinition{Symbol: $1, Name: $4, IndexType: $5, IndexColumns: $7}
+  }
+| constraint_opt FOREIGN KEY '(' index_column_list ')' reference_definition
+  {
+    $$ = &CreateForeignKeyDefinition{Symbol: $1, IndexColumns: $5, ReferenceDef: $7}
+  }
+
+column_definition:
+  data_type not_null_opt default_value_opt auto_increment_opt unique_or_primary_opt column_comment_opt column_format_opt column_storage_opt reference_definition_opt
+  {
+    $$ = &ColumnDefinition{Type: $1,
+          IsNotNull: $2,
+          DefaultValue: $3,
+          IsAutoIncrement: $4,
+          UniqueOrKey: $5,
+          ColumnComment: $6,
+          ColumnFormat: $7,
+          ColumnStorage: $8,
+          ReferenceDef: $9 }
+  }
+
+data_type:
+  BIT
+  {
+    $$ = &DataType{ TypeName: "bit" } 
+  }
+| BIT '(' NUMBER ')'
+  {
+    $$ = &DataType{ TypeName: "bit(" + string($3) + ")" } 
+  }
+| TINYINT data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "tinyint", IsUnsigned: $2, IsZeroFill: $3 } 
+  }
+| TINYINT '(' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "tinyint(" + string($3) + ")", IsUnsigned: $5, IsZeroFill: $6 } 
+  }
+| SMALLINT data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "smallint", IsUnsigned: $2, IsZeroFill: $3 } 
+  }
+| SMALLINT '(' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "smallint(" + string($3) + ")", IsUnsigned: $5, IsZeroFill: $6 } 
+  }
+| MEDIUMINT data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "mediumint", IsUnsigned: $2, IsZeroFill: $3 } 
+  }
+| MEDIUMINT '(' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "mediumint(" + string($3) + ")", IsUnsigned: $5, IsZeroFill: $6 } 
+  }
+| INT data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "int", IsUnsigned: $2, IsZeroFill: $3 } 
+  }
+| INT '(' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "int(" + string($3) + ")", IsUnsigned: $5, IsZeroFill: $6 } 
+  }
+| INTEGER data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "integer", IsUnsigned: $2, IsZeroFill: $3 } 
+  }
+| INTEGER '(' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "integer(" + string($3) + ")", IsUnsigned: $5, IsZeroFill: $6 } 
+  }
+| BIGINT data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "bigint", IsUnsigned: $2, IsZeroFill: $3 } 
+  }
+| BIGINT '(' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "bigint(" + string($3) + ")", IsUnsigned: $5, IsZeroFill: $6 } 
+  }
+| REAL data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "real", IsUnsigned: $2, IsZeroFill: $3 } 
+  }
+| REAL '(' NUMBER ',' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "real(" + string($3) + "," + string($5) + ")", IsUnsigned: $7, IsZeroFill: $8 } 
+  }
+| DOUBLE data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "double", IsUnsigned: $2, IsZeroFill: $3 } 
+  }
+| DOUBLE '(' NUMBER ',' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "double(" + string($3) + "," + string($5) + ")", IsUnsigned: $7, IsZeroFill: $8 } 
+  }
+| FLOAT data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "float", IsUnsigned: $2, IsZeroFill: $3 } 
+  }
+| FLOAT '(' NUMBER ',' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "float(" + string($3) + "," + string($5) + ")", IsUnsigned: $7, IsZeroFill: $8 } 
+  }
+| DECIMAL data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "decimal", IsUnsigned: $2, IsZeroFill: $3 } 
+  }
+| DECIMAL '(' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "decimal(" + string($3) + ")", IsUnsigned: $5, IsZeroFill: $6 } 
+  }
+| DECIMAL '(' NUMBER ',' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
+  { 
+    $$ = &DataType{ TypeName: "decimal(" + string($3) + "," + string($5) + ")", IsUnsigned: $7, IsZeroFill: $8 } 
+  }
+| DATE
+  {
+    $$ = &DataType{ TypeName: "date" }
+  }
+| TIME
+  {
+    $$ = &DataType{ TypeName: "time" }
+  }
+| TIME '(' NUMBER ')'
+  {
+    $$ = &DataType{ TypeName: "time(" + string($3) + ")" }
+  }
+| TIMESTAMP
+  {
+    $$ = &DataType{ TypeName: "timestamp" }
+  }
+| TIMESTAMP '(' NUMBER ')'
+  {
+    $$ = &DataType{ TypeName: "timestamp(" + string($3) + ")" }
+  }
+| DATETIME
+  {
+    $$ = &DataType{ TypeName: "datetime" }
+  }
+| DATETIME '(' NUMBER ')'
+  {
+    $$ = &DataType{ TypeName: "datetime(" + string($3) + ")" }
+  }
+| YEAR
+  {
+    $$ = &DataType{ TypeName: "year" }
+  }
+| CHAR data_type_binary_opt data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{ TypeName: "char", IsBinary: $2, Charset: $3, Collate: $4 }
+  }
+| CHAR '(' NUMBER ')' data_type_binary_opt data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{ TypeName: "char(" + string($3) + ")", IsBinary: $5, Charset: $6, Collate: $7 }
+  }
+| VARCHAR '(' NUMBER ')' data_type_binary_opt data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{ TypeName: "varchar(" + string($3) + ")", IsBinary: $5, Charset: $6, Collate: $7 }
+  }
+| BINARY
+  {
+    $$ = &DataType{TypeName: "binary"}
+  }
+| BINARY '(' NUMBER ')'
+  {
+    $$ = &DataType{TypeName: "binary(" + string($3) + ")"}
+  }
+| VARBINARY '(' NUMBER ')'
+  {
+    $$ = &DataType{TypeName: "varbinary(" + string($3) + ")"}
+  }
+| TINYBLOB
+  {
+    $$ = &DataType{TypeName: "tinyblob"}
+  }
+| BLOB
+  {
+    $$ = &DataType{TypeName: "blob"}
+  }
+| MEDIUMBLOB
+  {
+    $$ = &DataType{TypeName: "mediumblob"}
+  }
+| LONGBLOB
+  {
+    $$ = &DataType{TypeName: "longblob"}
+  }
+| TINYTEXT data_type_binary_opt data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{TypeName: "tinytext", IsBinary: $2, Charset: $3, Collate: $4 }
+  }
+| TEXT data_type_binary_opt data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{TypeName: "text", IsBinary: $2, Charset: $3, Collate: $4 }
+  }
+| MEDIUMTEXT data_type_binary_opt data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{TypeName: "mediumtext", IsBinary: $2, Charset: $3, Collate: $4 }
+  }
+| LONGTEXT data_type_binary_opt data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{TypeName: "longtext", IsBinary: $2, Charset: $3, Collate: $4 }
+  }
+| ENUM '(' value_list ')' data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{TypeName: "enum(" + String($3) + ")", Charset: $5, Collate: $6 }
+  }
+| SET '(' value_list ')' data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{TypeName: "set(" + String($3) + ")", Charset: $5, Collate: $6 }
+  }
+  
+not_null_opt:
+  { $$ = false }
+| NULL
+  { $$ = false }
+| NOT NULL
+  { $$ = true }
+
+default_value_opt:
+  { $$ = nil}
+| DEFAULT value
+  { $$ = $2 }
+
+auto_increment_opt:
+  { $$ = false }
+| AUTO_INCREMENT
+  { $$ = true }
+
+unique_or_primary_opt:
+  { $$ = nil }
+| UNIQUE
+  { $$ = []byte("unique key") }
+| UNIQUE KEY
+  { $$ = []byte("unique key") }
+| KEY
+  { $$ = []byte("primary key") }
+| PRIMARY KEY
+  { $$ = []byte("primary key") }
+
+column_comment_opt:
+  { $$ = nil }
+| COMMENT STRING
+  {
+    $$ = StrVal($2)
+  }
+
+column_format_opt:
+  { $$ = nil }
+| COLUMN_FORMAT FIXED
+  { $$ = []byte("fixed") }
+| COLUMN_FORMAT DYNAMIC
+  { $$ = []byte("dynamic") }
+| COLUMN_FORMAT DEFAULT
+  { $$ = []byte("default") }
+
+column_storage_opt:
+  { $$ = nil }
+| STORAGE DISK
+  { $$ = []byte("disk") }
+| STORAGE MEMORY
+  { $$ = []byte("memory") }
+| STORAGE DEFAULT
+  { $$ = []byte("default") }
+
+reference_definition_opt:
+  { $$ = nil }
+| reference_definition
+  { $$ = $1 }
+
+reference_definition:
+  REFERENCES dml_table_expression '(' index_column_list ')' reference_match_opt reference_on_delete_or_update_opt
+  { $$ = []byte("references " + String($2) + "(" + String($4) + ")" + string($6) + string($7) ) }
+
+reference_match_opt:
+  { $$ = nil}
+| MATCH FULL
+  { $$ = []byte("match full") }
+| MATCH PARTIAL
+  { $$ = []byte("match partial") }
+| MATCH SIMPLE
+  { $$ = []byte("match simple") }
+
+reference_on_delete_or_update_opt:
+  { $$ = nil }
+| ON DELETE reference_option
+  { $$ = []byte("on delete " + string($3)) }
+| ON UPDATE reference_option
+  { $$ = []byte("on update " + string($3)) }
+| ON DELETE reference_option ON UPDATE reference_option
+  { $$ = []byte("on delete " + string($3) + " on update " + string($6)) }
+
+reference_option:
+  RESTRICT
+  { $$ = []byte("restrict") }
+| CASCADE
+  { $$ = []byte("cascade") }
+| SET NULL
+  { $$ = []byte("set null") }
+| NO ACTION
+  { $$ = []byte("no action") }
+
+data_type_unsigned_opt:
+  { $$ = false}
+| UNSIGNED
+  { $$ = true }
+
+data_type_zerofill_opt:
+  { $$ = false }
+| ZEROFILL
+  { $$ = true }
+
+data_type_binary_opt:
+  { $$ = false }
+| BINARY
+  { $$ = true }
+
+data_type_charset_opt:
+  { $$ = nil }
+| CHARACTER SET charset_words
+  { $$ = $3 }
+
+data_type_collate_opt:
+  { $$ = nil }
+| COLLATE collate_words
+  { $$ = $2 }
+
+constraint_opt:
+  { $$ = nil }
+| CONSTRAINT sql_id
+  { $$ = $2 }
+
+table_option_list_opt:
+  { $$ = nil }
+| table_option_list
+  { $$ = $1 }
+
+table_option_list:
+  table_option
+  { $$ = OptionKeyValues{$1} }
+| table_option_list table_option
+  { $$ = append($1, $2) }
+| table_option_list ',' table_option
+  { $$ = append($1, $3) }
+
+table_option:
+  ENGINE '=' sql_id
+  {
+    $$ = &OptionKeyValue{Key: "engine", Value: string($3)}
+  }
+| AUTO_INCREMENT '=' NUMBER
+  {
+    $$ = &OptionKeyValue{Key: "auto_increment", Value: string($3)}
+  }
+| DEFAULT CHARACTER SET '=' charset_words
+  {
+    $$ = &OptionKeyValue{Key: "charset", Value: string($5)}
+  }
+| CHARACTER SET '=' charset_words
+  {
+    $$ = &OptionKeyValue{Key: "charset", Value: string($4)}
+  }
+| DEFAULT CHARSET '=' charset_words
+  {
+    $$ = &OptionKeyValue{Key: "charset", Value: string($4)}
+  }
+| CHARSET '=' charset_words
+  {
+    $$ = &OptionKeyValue{Key: "charset", Value: string($3)}
+  }
+| DEFAULT COLLATE '=' collate_words
+  {
+    $$ = &OptionKeyValue{Key: "collate", Value: string($4)}
+  }
+| COLLATE '=' collate_words
+  {
+    $$ = &OptionKeyValue{Key: "collate", Value: string($3)}
+  }
+| COMMENT '=' STRING
+  {
+    $$ = &OptionKeyValue{Key: "comment", Value: String(StrVal($3))}
+  }
+
+alter_specification_list_opt:
+  { $$ = nil }
+| alter_specification_list
+  { $$ = $1 }
+
+alter_specification_list:
+  alter_specification
+  { $$ = AlterSpecifications{$1} }
+| alter_specification_list ',' alter_specification
+  { $$ = append($1, $3) }
+
+alter_specification:
+  table_option_list
+  {
+    $$ = $1
+  }
+| ADD COLUMN column_name column_definition first_or_after_column_opt
+  {
+    $$ = &AddOrModifyColumnSpec{Action: "add", ColumnName: $3, ColumnDef: $4, FirstOrAfterColumn: $5 }
+  }
+| ADD INDEX sql_id index_type_opt '(' index_column_list ')'
+  {
+    $$ = &AddIndexSpec{Name: $3, IndexType: $4, IndexColumns: $6}
+  }
+| ADD KEY sql_id index_type_opt '(' index_column_list ')'
+  {
+    $$ = &AddIndexSpec{Name: $3, IndexType: $4, IndexColumns: $6}
+  }
+| ADD constraint_opt PRIMARY KEY index_type_opt '(' index_column_list ')'
+  {
+    $$ = &AddPrimaryKeySpec{Symbol: $2, IndexType: $5, IndexColumns: $7}
+  }
+// | ADD constraint_opt UNIQUE sql_id index_type_opt '(' index_column_list ')'
+//   {}
+// | ADD constraint_opt UNIQUE INDEX sql_id index_type_opt '(' index_column_list ')'
+//   {}
+// | ADD constraint_opt UNIQUE KEY sql_id index_type_opt '(' index_column_list ')'
+//   {}
+// | ADD constraint_opt FOREIGN KEY  '(' index_column_list ')' reference_definition 
+//   {}
+| CHANGE COLUMN column_name column_name column_definition first_or_after_column_opt
+  {
+    $$ = &ChangeColumnSpec{OldColumnName: $3, ColumnName: $4, ColumnDef: $5, FirstOrAfterColumn: $6 }
+  }
+| MODIFY COLUMN column_name column_definition first_or_after_column_opt
+  {
+    $$ = &AddOrModifyColumnSpec{Action: "modify", ColumnName: $3, ColumnDef: $4, FirstOrAfterColumn: $5 }
+  }
+| DROP COLUMN column_name
+  {
+    $$ = &DropColumnSpec{ColumnName: $3}
+  }
+| DROP PRIMARY KEY
+  {
+    $$ = &DropPrimaryKeySpec{}
+  }
+| DROP INDEX sql_id
+  {
+    $$ = &DropIndexSpec{Name: $3}
+  }
+| DROP KEY sql_id
+  {
+    $$ = &DropIndexSpec{Name: $3}
+  }
+// | DROP FOREIGN KEY sql_id
+//   {}
+// | DISABLE KEYS
+//   {}
+// | ENABLE KEYS
+//   {}
+| ORDER BY column_name_list
+  {
+    $$ = &OrderByColumnsSpec{Columns: $3}
+  }
+// | CONVERT TO CHARACTER SET charset_words
+//   {}
+// | CONVERT TO CHARACTER SET charset_words COLLATE collate_words
+//   {}
+// | DEFAULT CHARACTER SET '=' charset_name
+//   {}
+// | DEFAULT CHARACTER SET '=' charset_name COLLATE '=' collate_words
+//   {}
+// | CHARACTER SET '=' charset_name
+//   {}
+// | CHARACTER SET '=' charset_name COLLATE '=' collate_words
+//   {}
+
+first_or_after_column_opt:
+  { $$ = nil }
+| first_or_after_column
+  { $$ = $1 }
+
+first_or_after_column:
+  FIRST column_name
+  {
+    $$ = &FirstOrAfterColumn{FirstOrAfter: "first", ColumnName: $2}
+  }
+| AFTER column_name
+  {
+    $$ = &FirstOrAfterColumn{FirstOrAfter: "after", ColumnName: $2}
   }

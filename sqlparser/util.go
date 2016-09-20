@@ -187,6 +187,29 @@ func CheckTableExprs(tabExprs TableExprs, tableNames interface{}) (err error) {
 	return err
 }
 
+// IsOnlySystemDBInTableExprs only system db in table exprs.
+func IsOnlySystemDBInTableExprs(tabExprs TableExprs) bool {
+	var onlySystemDB = true
+	for _, tabExpr := range tabExprs {
+		if aliasedTabExpr, ok := tabExpr.(*AliasedTableExpr); ok {
+			if tabName, ok := aliasedTabExpr.Expr.(*TableName); ok {
+				db := strings.ToLower(string(tabName.Qualifier))
+				if !IsSystemDB(db) {
+					onlySystemDB = false
+					break
+				}
+			} else {
+				onlySystemDB = false
+				break
+			}
+		} else {
+			onlySystemDB = false
+			break
+		}
+	}
+	return onlySystemDB
+}
+
 // CheckTableExprsInSelect remove db and check table's name.
 func CheckTableExprsInSelect(stmt SelectStatement, tableNames interface{}) (err error) {
 	switch selStmt := stmt.(type) {

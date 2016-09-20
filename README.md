@@ -43,6 +43,10 @@ select (case t1.f1 when '0' then 'hello' else 'world' end) f1 from t1
 select f1,f2,f3 into t2 from t1
 ```
 
+```
+VIEW, FUNCTION or PROCEDURE, TRIGGER not supported
+```
+
 ## Code Structure
 
 ```

@@ -336,8 +336,15 @@ func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err 
 	case *sqlparser.Replace:
 		realPlan, err = r.buildReplacePlan(v)
 
-	// case sqlparser.Comments:
-	// 	realPlan, err = nil, errors.ErrNoPlan
+	case *sqlparser.DDL:
+		println(sqlparser.String(v))
+		realPlan, err = nil, errors.ErrNoPlan
+	case *sqlparser.CreateTable:
+		println(sqlparser.String(v))
+		realPlan, err = nil, errors.ErrNoPlan
+	case *sqlparser.CreateIndex:
+		println(sqlparser.String(v))
+		realPlan, err = nil, errors.ErrNoPlan
 	default:
 		realPlan, err = nil, errors.ErrNoPlan
 	}

@@ -38,6 +38,29 @@ func TestParseSelect(t *testing.T) {
 	sql = "select * from info_goods where POSITION('1000001' in value_text)=1"
 	sql = "select * from info_goods where locate('1000001', value_text)=1"
 	// sql = "show slave status"
+
+	sql = `CREATE TABLE sys_admin_user_permission (
+  user_permission_id int(11) NOT NULL AUTO_INCREMENT,
+  client_id int(11) NOT NULL COMMENT '客户id',
+  user_id int(11) NOT NULL COMMENT '用户id',
+  permission_id int(11) NOT NULL COMMENT '对应sys_permission_page的permission_id',
+  permission_value int(11) NOT NULL COMMENT '权限值',
+  operator_id int(11) NOT NULL DEFAULT '0' COMMENT '创建人',
+  modifier_id int(11) NOT NULL DEFAULT '0' COMMENT '修改人',
+  data_created datetime NOT NULL COMMENT '创建时间',
+  data_lasted datetime NOT NULL COMMENT '修改时间',
+  PRIMARY KEY (user_permission_id),
+  KEY client_id (client_id),
+  KEY user_id (user_id),
+  CONSTRAINT fk_sys_admin_user_permission_client_id FOREIGN KEY (client_id) REFERENCES sys_admin_client (client_id),
+  CONSTRAINT fk_sys_admin_user_permission_user_id FOREIGN KEY (user_id) REFERENCES sys_admin_user (user_id)
+) ENGINE=InnoDB AUTO_INCREMENT=32683 DEFAULT CHARSET=utf8 COMMENT='用户权限值表'`
+
+	sql = "create index XXX   USING btree on     table1(col1(5) ASC,col2 DESC)"
+
+	sql = `ALTER TABLE sub_category
+ADD COLUMN sub_categorycolSS VARCHAR(45) NULL AFTER description`
+
 	t.Log(sql)
 	if stmt, err := Parse(sql); err != nil {
 		t.Error(err)

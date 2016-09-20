@@ -128,18 +128,21 @@ func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*norm
 
 func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
+	isOnlySystemDB := false
 	if schemaConfig.ShardEnabled() {
-		var err error
-		if err = sqlparser.CheckTableExprsInSelect(statement, schemaConfig.GetTables()); err != nil {
-			return nil, err
+		if isOnlySystemDB = sqlparser.IsOnlySystemDBInTableExprs(statement.From); !isOnlySystemDB {
+			var err error
+			if err = sqlparser.CheckTableExprsInSelect(statement, schemaConfig.GetTables()); err != nil {
+				return nil, err
+			}
+			var colValue sqlparser.ValExpr
+			if colValue, err = sqlparser.CheckColumnInSelect(statement, schemaConfig.ShardKey); err != nil {
+				return nil, err
+			} else if colValue == nil {
+				return nil, errors.ErrWhereOrJoinOnKey
+			}
+			println("Select ShardKey=", sqlparser.String(colValue))
 		}
-		var colValue sqlparser.ValExpr
-		if colValue, err = sqlparser.CheckColumnInSelect(statement, schemaConfig.ShardKey); err != nil {
-			return nil, err
-		} else if colValue == nil {
-			return nil, errors.ErrWhereOrJoinOnKey
-		}
-		println("Select ShardKey=", sqlparser.String(colValue))
 	}
 	hint := ReadHint(&statement.Comments)
 
@@ -147,6 +150,9 @@ func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, erro
 
 	plan.nodeName = schemaConfig.Nodes[0]
 	plan.onSlave = true && !hint.OnMaster && !r.InTrans
+	if isOnlySystemDB {
+		plan.anyNode = true
+	}
 	plan.Statement = statement
 
 	return plan, nil

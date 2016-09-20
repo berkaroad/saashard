@@ -71,7 +71,7 @@ func (p *PacketIO) WriteInitialHandshake(connectionID uint32, salt []byte, colla
 
 	//capability flag lower 2 bytes, using default capability here
 	data = append(data, byte(capability), byte(capability>>8))
-	// fmt.Printf("Server write capability part1 to client %d, %d \r\n", byte(capability), byte(capability>>8))
+	// fmt.Printf("Server write capability part1 to client %d, %d \n", byte(capability), byte(capability>>8))
 
 	//charset, utf-8 default
 	data = append(data, uint8(collationID))
@@ -82,7 +82,7 @@ func (p *PacketIO) WriteInitialHandshake(connectionID uint32, salt []byte, colla
 	//below 13 byte may not be used
 	//capability flag upper 2 bytes, using default capability here
 	data = append(data, byte(capability>>16), byte(capability>>24))
-	// fmt.Printf("Server write capability part2 to client %d, %d \r\n", byte(capability>>16), byte(capability>>24))
+	// fmt.Printf("Server write capability part2 to client %d, %d \n", byte(capability>>16), byte(capability>>24))
 
 	//filter [0x15], for wireshark dump, value is 0x15
 	data = append(data, 0x15)
@@ -130,7 +130,7 @@ func (p *PacketIO) ReadInitialHandshake(salt *[]byte) (capability uint32, status
 
 	//capability lower 2 bytes
 	capability = uint32(binary.LittleEndian.Uint16(data[pos : pos+2]))
-	// fmt.Printf("Read capability part1 from server %d, %d \r\n", data[pos:pos+1], data[pos+1:pos+2])
+	// fmt.Printf("Read capability part1 from server %d, %d \n", data[pos:pos+1], data[pos+1:pos+2])
 	pos += 2
 
 	if len(data) > pos {
@@ -142,7 +142,7 @@ func (p *PacketIO) ReadInitialHandshake(salt *[]byte) (capability uint32, status
 		pos += 2
 
 		capability = uint32(binary.LittleEndian.Uint16(data[pos:pos+2]))<<16 | capability
-		// fmt.Printf("Read capability part2 from server %d, %d \r\n", data[pos:pos+1], data[pos+1:pos+2])
+		// fmt.Printf("Read capability part2 from server %d, %d \n", data[pos:pos+1], data[pos+1:pos+2])
 
 		pos += 2
 
@@ -193,7 +193,7 @@ func (p *PacketIO) WriteAuthHandshake(capability *uint32, user, password, db str
 	data[6] = byte(*capability >> 16)
 	data[7] = byte(*capability >> 24)
 
-	// fmt.Printf("Client write capability to server %d, %d, %d, %d \r\n", byte(*capability), byte(*capability>>8), byte(*capability>>16), byte(*capability>>24))
+	// fmt.Printf("Client write capability to server %d, %d, %d, %d \n", byte(*capability), byte(*capability>>8), byte(*capability>>16), byte(*capability>>24))
 
 	//MaxPacketSize [32 bit] (none)
 	//data[8] = 0x00

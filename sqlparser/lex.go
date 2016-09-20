@@ -130,19 +130,89 @@ var keywords = map[string]int{
 	"set":       SET,
 	"lock":      LOCK,
 
-	"create": CREATE,
-	"alter":  ALTER,
-	"rename": RENAME,
-	"drop":   DROP,
-	"table":  TABLE,
-	"index":  INDEX,
-	"view":   VIEW,
-	"to":     TO,
-	"ignore": IGNORE,
-	"if":     IF,
-	"unique": UNIQUE,
-	"using":  USING,
+	"create":   CREATE,
+	"alter":    ALTER,
+	"rename":   RENAME,
+	"drop":     DROP,
+	"table":    TABLE,
+	"index":    INDEX,
+	"view":     VIEW,
+	"to":       TO,
+	"ignore":   IGNORE,
+	"if":       IF,
+	"unique":   UNIQUE,
+	"fulltext": FULLTEXT,
+	"btree":    BTREE,
+	"hash":     HASH,
 
+	// Data Type
+	"bit":        BIT,
+	"tinyint":    TINYINT,
+	"smallint":   SMALLINT,
+	"mediumint":  MEDIUMINT,
+	"int":        INT,
+	"integer":    INTEGER,
+	"bigint":     BIGINT,
+	"real":       REAL,
+	"double":     DOUBLE,
+	"float":      FLOAT,
+	"decimal":    DECIMAL,
+	"date":       DATE,
+	"time":       TIME,
+	"timestamp":  TIMESTAMP,
+	"datetime":   DATETIME,
+	"year":       YEAR,
+	"char":       CHAR,
+	"varchar":    VARCHAR,
+	"tinytext":   TINYTEXT,
+	"text":       TEXT,
+	"mediumtext": MEDIUMTEXT,
+	"longtext":   LONGTEXT,
+	"varbinary":  VARBINARY,
+	"tinyblob":   TINYBLOB,
+	"blob":       BLOB,
+	"mediumblob": MEDIUMBLOB,
+	"longblob":   LONGBLOB,
+
+	"enum":           ENUM,
+	"auto_increment": AUTO_INCREMENT,
+	"engine":         ENGINE,
+	"primary":        PRIMARY,
+	"references":     REFERENCES,
+	"comment":        COMMENT,
+
+	"column_format": COLUMN_FORMAT,
+	"fixed":         FIXED,
+	"dynamic":       DYNAMIC,
+
+	"disk":   DISK,
+	"memory": MEMORY,
+
+	"match":   MATCH,
+	"partial": PARTIAL,
+	"simple":  SIMPLE,
+
+	"restrict": RESTRICT,
+	"cascade":  CASCADE,
+
+	"no":     NO,
+	"action": ACTION,
+
+	"unsigned": UNSIGNED,
+	"zerofill": ZEROFILL,
+
+	"constraint": CONSTRAINT,
+	"foreign":    FOREIGN,
+
+	"first": FIRST,
+	"after": AFTER,
+
+	"add":    ADD,
+	"column": COLUMN,
+	"change": CHANGE,
+	"modify": MODIFY,
+
+	"using":    USING,
 	"begin":    BEGIN,
 	"rollback": ROLLBACK,
 	"commit":   COMMIT,
@@ -229,12 +299,100 @@ var keywords = map[string]int{
 	"swe7":     SWE7,
 	"tis620":   TIS620,
 	"ucs2":     UCS2,
-	"ujis":     EJIS,
+	"ujis":     UJIS,
 	"utf16":    UTF16,
 	"utf16le":  UTF16LE,
 	"utf32":    UTF32,
 	"utf8":     UTF8,
 	"utf8mb4":  UTF8MB4,
+
+	// collate
+	"armscii8_general_ci": ARMSCII8_GENERAL_CI,
+	"armscii8_bin":        ARMSCII8_BIN,
+	"ascii_general_ci":    ASCII_GENERAL_CI,
+	"ascii_bin":           ASCII_BIN,
+	"big5_chinese_ci":     BIG5_CHINESE_CI,
+	"big5_bin":            BIG5_BIN,
+	"cp1250_general_ci":   CP1250_GENERAL_CI,
+	"cp1250_bin":          CP1250_BIN,
+	"cp1251_chinese_ci":   CP1251_GENERAL_CI,
+	"cp1251_chinese_cs":   CP1251_GENERAL_CS,
+	"cp1251_bin":          CP1251_BIN,
+	"cp1256_chinese_ci":   CP1256_GENERAL_CI,
+	"cp1256_bin":          CP1256_BIN,
+	"cp1257_chinese_ci":   CP1257_GENERAL_CI,
+	"cp1257_bin":          CP1257_BIN,
+	"cp850_chinese_ci":    CP850_GENERAL_CI,
+	"cp850_bin":           CP850_BIN,
+	"cp852_chinese_ci":    CP852_GENERAL_CI,
+	"cp852_bin":           CP852_BIN,
+	"cp866_chinese_ci":    CP866_GENERAL_CI,
+	"cp866_bin":           CP866_BIN,
+	"cp932_japanese_ci":   CP932_JAPANESE_CI,
+	"cp932_bin":           CP932_BIN,
+	"dec8_swedish_ci":     DEC8_SWEDISH_CI,
+	"dec8_bin":            DEC8_BIN,
+	"eucjpms_japanese_ci": EUCJPMS_JAPANESE_CI,
+	"eucjpms_bin":         EUCJPMS_BIN,
+	"euckr_korean_ci":     EUCKR_KOREAN_CI,
+	"euckr_bin":           EUCKR_BIN,
+	"gb2312_chinese_ci":   GB2312_CHINESE_CI,
+	"gb2312_bin":          GB2312_BIN,
+	"gbk_chinese_ci":      GBK_CHINESE_CI,
+	"gbk_bin":             GBK_BIN,
+	"geostd8_general_ci":  GEOSTD8_GENERAL_CI,
+	"geostd8_bin":         GEOSTD8_BIN,
+	"greek_general_ci":    GREEK_GENERAL_CI,
+	"greek_bin":           GREEK_BIN,
+	"hebrew_general_ci":   HEBREW_GENERAL_CI,
+	"hebrew_bin":          HEBREW_BIN,
+	"hp8_english_ci":      HP8_ENGLISH_CI,
+	"hp8_bin":             HP8_BIN,
+	"keybcs2_general_ci":  KEYBCS2_GENERAL_CI,
+	"keybcs2_bin":         KEYBCS2_BIN,
+	"koi8r_general_ci":    KOI8R_GENERAL_CI,
+	"koi8r_bin":           KOI8R_BIN,
+	"koi8u_general_ci":    KOI8U_GENERAL_CI,
+	"koi8u_bin":           KOI8U_BIN,
+	"latin1_general_ci":   LATIN1_GENERAL_CI,
+	"latin1_general_cs":   LATIN1_GENERAL_CS,
+	"latin1_bin":          LATIN1_BIN,
+	"latin2_general_ci":   LATIN2_GENERAL_CI,
+	"latin2_bin":          LATIN2_BIN,
+	"latin5_turkish_ci":   LATIN5_TURKISH_CI,
+	"latin5_bin":          LATIN5_BIN,
+	"latin7_general_ci":   LATIN7_GENERAL_CI,
+	"latin7_general_cs":   LATIN7_GENERAL_CS,
+	"latin7_bin":          LATIN7_BIN,
+	"macce_general_ci":    MACCE_GENERAL_CI,
+	"macce_bin":           MACCE_BIN,
+	"macroman_general_ci": MACROMAN_GENERAL_CI,
+	"macroman_bin":        MACROMAN_BIN,
+	"sjis_japanese_ci":    SJIS_JAPANESE_CI,
+	"sjis_bin":            SJIS_BIN,
+	"swe7_swedish_ci":     SWE7_SWEDISH_CI,
+	"swe7_bin":            SWE7_BIN,
+	"tis620_thai_ci":      TIS620_THAI_CI,
+	"tis620_bin":          TIS620_BIN,
+	"ucs2_general_ci":     UCS2_GENERAL_CI,
+	"ucs2_unicode_ci":     UCS2_UNICODE_CI,
+	"ucs2_bin":            UCS2_BIN,
+	"ujis_japanese_ci":    UJIS_JAPANESE_CI,
+	"ujis_bin":            UJIS_BIN,
+	"utf16_general_ci":    UTF16_GENERAL_CI,
+	"utf16_unicode_ci":    UTF16_UNICODE_CI,
+	"utf16_bin":           UTF16_BIN,
+	"utf16le_general_ci":  UTF16LE_GENERAL_CI,
+	"utf16le_bin":         UTF16LE_BIN,
+	"utf32_general_ci":    UTF32_GENERAL_CI,
+	"utf32_unicode_ci":    UTF32_UNICODE_CI,
+	"utf32_bin":           UTF32_BIN,
+	"utf8_general_ci":     UTF8_GENERAL_CI,
+	"utf8_unicode_ci":     UTF8_UNICODE_CI,
+	"utf8_bin":            UTF8_BIN,
+	"utf8mb4_general_ci":  UTF8MB4_GENERAL_CI,
+	"utf8mb4_unicode_ci":  UTF8MB4_UNICODE_CI,
+	"utf8mb4_bin":         UTF8MB4_BIN,
 
 	//for admin
 	"admin": ADMIN,
@@ -245,14 +403,14 @@ var keywords = map[string]int{
 // This function is used by go yacc.
 func (tkn *Tokenizer) Lex(lval *yySymType) int {
 	typ, val := tkn.Scan()
-	for typ == COMMENT {
+	for typ == COMMENTS {
 		if tkn.AllowComments {
 			break
 		}
 		typ, val = tkn.Scan()
 	}
 	switch typ {
-	case ID, STRING, NUMBER, VALUE_ARG, COMMENT:
+	case ID, STRING, NUMBER, VALUE_ARG, COMMENTS:
 		lval.bytes = val
 	}
 	tkn.errorToken = val
@@ -507,7 +665,7 @@ func (tkn *Tokenizer) scanCommentType1(prefix string) (int, []byte) {
 		}
 		tkn.Next(buffer)
 	}
-	return COMMENT, buffer.Bytes()
+	return COMMENTS, buffer.Bytes()
 }
 
 func (tkn *Tokenizer) scanCommentType2() (int, []byte) {
@@ -527,7 +685,7 @@ func (tkn *Tokenizer) scanCommentType2() (int, []byte) {
 		}
 		tkn.Next(buffer)
 	}
-	return COMMENT, buffer.Bytes()
+	return COMMENTS, buffer.Bytes()
 }
 
 func (tkn *Tokenizer) next() {

@@ -61,6 +61,6 @@ func ReadHint(comments *sqlparser.Comments) *Hint {
 			([][]byte)(*comments)[i] = []byte("")
 		}
 	}
-	//fmt.Printf("Hints.Nodes='%s'; Hints.OnMaster='%v'\r\n", strings.Join(hint.Nodes, ","), hint.OnMaster)
+	//fmt.Printf("Hints.Nodes='%s'; Hints.OnMaster='%v'\n", strings.Join(hint.Nodes, ","), hint.OnMaster)
 	return hint
 }

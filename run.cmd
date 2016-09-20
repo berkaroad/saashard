@@ -1,4 +1,9 @@
 @echo off
+
+go get github.com/go-yaml/yaml
+
+go tool yacc -o %~dp0sqlparser\yacc.go -v %~dp0sqlparser\yacc.output %~dp0sqlparser\yacc.y && gofmt -w %~dp0sqlparser\yacc.go
+
 go install github.com/berkaroad/saashard/utils/golog
 go install github.com/berkaroad/saashard/config
 go install github.com/berkaroad/saashard/errors
