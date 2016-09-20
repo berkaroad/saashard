@@ -273,12 +273,12 @@ var (
 %type <updateExprs> update_list
 %type <updateExpr> update_expression
 %type <expr> where_or_like_opt
-%type <empty> exists_opt not_exists_opt to_opt
+%type <empty> exists_opt not_exists_opt
 %type <bytes> index_category_opt index_type_opt
 %type <idxColName> index_column_name
 %type <idxColNames> index_column_list
 %type <bytes> sql_id
-%type <empty> force_eof
+// %type <empty> force_eof
 %type <bytes> charset_words collate_words
 %type <bytes> isolation_level
 %type <bytes> scope_opt
@@ -1409,11 +1409,6 @@ ignore_opt:
 | IGNORE
   { $$ = AST_IGNORE }
 
-to_opt:
-  { $$ = struct{}{} }
-| TO
-  { $$ = struct{}{} }
-
 index_category_opt:
   { $$ = nil }
 | UNIQUE
@@ -1458,10 +1453,10 @@ sql_id:
     $$ = []byte("database")
   }
 
-force_eof:
-{
-  ForceEOF(yylex)
-}
+// force_eof:
+// {
+//   ForceEOF(yylex)
+// }
 
 charset_words:
   ARMSCII8
@@ -2128,8 +2123,6 @@ table_option_list:
   { $$ = OptionKeyValues{$1} }
 | table_option_list table_option
   { $$ = append($1, $2) }
-| table_option_list ',' table_option
-  { $$ = append($1, $3) }
 
 table_option:
   ENGINE '=' sql_id
