@@ -68,7 +68,7 @@ func (r *Router) buildShowEnginesPlan(statement *sqlparser.ShowEngines) (*normal
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	plan.anyNode = true
@@ -80,7 +80,7 @@ func (r *Router) buildShowPluginsPlan(statement *sqlparser.ShowPlugins) (*normal
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	plan.anyNode = true
@@ -93,7 +93,7 @@ func (r *Router) buildShowProcessListPlan(statement *sqlparser.ShowProcessList) 
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 
@@ -105,7 +105,7 @@ func (r *Router) buildShowFullProcessListPlan(statement *sqlparser.ShowFullProce
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 
@@ -117,7 +117,7 @@ func (r *Router) buildShowSlaveStatusPlan(statement *sqlparser.ShowSlaveStatus) 
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	plan.anyNode = true
@@ -129,7 +129,7 @@ func (r *Router) buildShowProfilesPlan(statement *sqlparser.ShowProfiles) (*norm
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	plan.anyNode = true
@@ -141,7 +141,7 @@ func (r *Router) buildShowCharsetPlan(statement *sqlparser.ShowCharset) (*normal
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	plan.anyNode = true
@@ -153,7 +153,7 @@ func (r *Router) buildShowCollationPlan(statement *sqlparser.ShowCollation) (*no
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	plan.anyNode = true
@@ -166,7 +166,7 @@ func (r *Router) buildShowVariablesPlan(statement *sqlparser.ShowVariables) (*no
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 
@@ -226,7 +226,7 @@ func (r *Router) buildShowStatusPlan(statement *sqlparser.ShowStatus) (*normalPl
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	return plan, nil
@@ -237,7 +237,7 @@ func (r *Router) buildShowDatabasesPlan(statement *sqlparser.ShowDatabases) (*no
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	plan.anyNode = true
@@ -276,7 +276,7 @@ func (r *Router) buildShowTablesPlan(statement *sqlparser.ShowTables) (*normalPl
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	if schemaConfig.ShardEnabled() {
@@ -323,7 +323,7 @@ func (r *Router) buildShowFullTablesPlan(statement *sqlparser.ShowFullTables) (*
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 
@@ -394,7 +394,7 @@ func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normal
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 
@@ -426,7 +426,7 @@ func (r *Router) buildShowFullColumnsPlan(statement *sqlparser.ShowFullColumns) 
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 
@@ -458,7 +458,7 @@ func (r *Router) buildShowIndexPlan(statement *sqlparser.ShowIndex) (*normalPlan
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 
@@ -479,7 +479,7 @@ func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*norm
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	if schemaConfig.ShardEnabled() {
@@ -638,7 +638,7 @@ func (r *Router) buildShowProcedureStatusPlan(statement *sqlparser.ShowProcedure
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 
@@ -794,7 +794,7 @@ func (r *Router) buildShowFunctionStatusPlan(statement *sqlparser.ShowFunctionSt
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	if !schemaConfig.ShardEnabled() {
@@ -959,7 +959,7 @@ func (r *Router) buildShowCreateDatabasePlan(statement *sqlparser.ShowCreateData
 
 	plan := new(normalPlan)
 
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 
@@ -989,7 +989,7 @@ func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) 
 		return nil, errors.ErrTableNotExists
 	}
 
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 
@@ -1019,7 +1019,7 @@ func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*
 		return nil, errors.ErrTableNotExists
 	}
 
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 
@@ -1046,7 +1046,7 @@ func (r *Router) buildShowCreateTriggerPlan(statement *sqlparser.ShowCreateTrigg
 		trigger := string(statement.Name.Name)
 		trigger = strings.Trim(strings.ToLower(trigger), "`")
 
-		plan.nodeName = schemaConfig.Nodes[0]
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
 		plan.onSlave = true && !r.InTrans
 		plan.Statement = statement
 
@@ -1075,7 +1075,7 @@ func (r *Router) buildShowCreateProcedurePlan(statement *sqlparser.ShowCreatePro
 		procedure := string(statement.Name.Name)
 		procedure = strings.Trim(strings.ToLower(procedure), "`")
 
-		plan.nodeName = schemaConfig.Nodes[0]
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
 		plan.onSlave = true && !r.InTrans
 		plan.Statement = statement
 
@@ -1104,7 +1104,7 @@ func (r *Router) buildShowCreateFunctionPlan(statement *sqlparser.ShowCreateFunc
 		function := string(statement.Name.Name)
 		function = strings.Trim(strings.ToLower(function), "`")
 
-		plan.nodeName = schemaConfig.Nodes[0]
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
 		plan.onSlave = true && !r.InTrans
 		plan.Statement = statement
 

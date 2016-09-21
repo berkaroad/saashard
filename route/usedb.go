@@ -28,7 +28,7 @@ func (r *Router) buildUseDBPlan(statement *sqlparser.UseDB) (*normalPlan, error)
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.anyNode = true
 	plan.Statement = statement

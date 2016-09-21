@@ -625,37 +625,3 @@ func (node *EnableKeysSpec) Format(buf *TrackedBuffer) {
 }
 
 func (node *EnableKeysSpec) IAlterSpecification() {}
-
-// DDL represents a CREATE, ALTER, DROP or RENAME statement.
-// Table is set for AST_ALTER, AST_DROP, AST_RENAME.
-// NewName is set for AST_ALTER, AST_CREATE, AST_RENAME.
-
-type DDL struct {
-	Action string
-	//or alter and rename
-	Ignore  string
-	Table   []byte
-	NewName []byte
-}
-
-const (
-	AST_CREATE = "create"
-	AST_ALTER  = "alter"
-	AST_DROP   = "drop"
-	AST_RENAME = "rename"
-)
-
-func (node *DDL) Format(buf *TrackedBuffer) {
-	switch node.Action {
-	case AST_CREATE:
-		buf.Fprintf("%s table %s", node.Action, node.NewName)
-	case AST_RENAME:
-		buf.Fprintf("%s %s table %s %s", node.Action, node.Ignore, node.Table, node.NewName)
-	case AST_ALTER:
-		buf.Fprintf("%s %s table %s", node.Action, node.Ignore, node.Table)
-	default:
-		buf.Fprintf("%s table %s", node.Action, node.Table)
-	}
-}
-
-func (*DDL) IStatement() {}

@@ -28,7 +28,7 @@ func (r *Router) buildTransactionPlan(statement sqlparser.TransactionStatement) 
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.Statement = statement
 	plan.anyNode = true
 

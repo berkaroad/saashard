@@ -24,6 +24,7 @@ package route
 
 import (
 	"net"
+	"strings"
 	"time"
 
 	"github.com/berkaroad/saashard/config"
@@ -37,8 +38,7 @@ import (
 // Route info
 type Route interface {
 	GetPlanSQL() string
-	GetNodeName() string
-	// OnSlave to execute at slave or not.
+	GetNodeNames() []string
 	OnSlave() bool
 }
 
@@ -46,7 +46,7 @@ type Route interface {
 type Plan interface {
 	Route
 	Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
-		dataNode string, isSlave bool,
+		dataNodes []string, isSlave bool,
 		queryDataNodes map[sqlparser.Statement][]string) error,
 		clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) error
 }
@@ -54,7 +54,7 @@ type Plan interface {
 type normalPlan struct {
 	Statement      sqlparser.Statement
 	Result         *mysql.Result // If has result then get it, or execute plan.
-	nodeName       string
+	nodeNames      []string
 	queryNodeNames []string
 	onSlave        bool // Execute at slave or master.
 	anyNode        bool // Can execute at any node or not.
@@ -64,8 +64,8 @@ func (plan *normalPlan) GetPlanSQL() string {
 	return sqlparser.String(plan.Statement)
 }
 
-func (plan *normalPlan) GetNodeName() string {
-	return plan.nodeName
+func (plan *normalPlan) GetNodeNames() []string {
+	return plan.nodeNames
 }
 
 func (plan *normalPlan) OnSlave() bool {
@@ -74,13 +74,13 @@ func (plan *normalPlan) OnSlave() bool {
 
 // Execute the plan
 func (plan *normalPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
-	dataNode string, isSlave bool,
+	dataNodes []string, isSlave bool,
 	queryDataNodes map[sqlparser.Statement][]string) error, clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) error {
 	if executor != nil {
 		var state string
 		startTime := time.Now().UnixNano()
 		err := executor([]sqlparser.Statement{plan.Statement}, []*mysql.Result{plan.Result},
-			plan.nodeName, plan.onSlave,
+			plan.nodeNames, plan.onSlave,
 			map[sqlparser.Statement][]string{plan.Statement: plan.queryNodeNames})
 		execTime := float64(time.Now().UnixNano()-startTime) / float64(time.Millisecond)
 		if err != nil {
@@ -95,7 +95,7 @@ func (plan *normalPlan) Execute(executor func(statements []sqlparser.Statement, 
 			golog.OutputSql(state, "%.1fms - %s->%s:OnSlave=%v:%s",
 				execTime,
 				clientAddr,
-				plan.nodeName,
+				strings.Join(plan.nodeNames, ","),
 				plan.onSlave,
 				planSQL,
 			)
@@ -109,7 +109,7 @@ func (plan *normalPlan) Execute(executor func(statements []sqlparser.Statement, 
 type mergedPlan struct {
 	Statements     []sqlparser.Statement
 	Results        []*mysql.Result
-	nodeName       string
+	nodeNames      []string
 	queryNodeNames map[sqlparser.Statement][]string // select or union will use.
 	onSlave        bool                             // Execute at slave or master.
 	anyNode        bool                             // Can execute at any node or not.
@@ -123,8 +123,8 @@ func (plan *mergedPlan) GetPlanSQL() string {
 	return planSQL
 }
 
-func (plan *mergedPlan) GetNodeName() string {
-	return plan.nodeName
+func (plan *mergedPlan) GetNodeNames() []string {
+	return plan.nodeNames
 }
 
 func (plan *mergedPlan) OnSlave() bool {
@@ -133,13 +133,13 @@ func (plan *mergedPlan) OnSlave() bool {
 
 // Execute the plan
 func (plan *mergedPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
-	dataNode string, isSlave bool,
+	dataNodes []string, isSlave bool,
 	queryDataNodes map[sqlparser.Statement][]string) error, clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) error {
 	if executor != nil {
 		var state string
 		startTime := time.Now().UnixNano()
 		err := executor(plan.Statements, plan.Results,
-			plan.nodeName, plan.onSlave, plan.queryNodeNames)
+			plan.nodeNames, plan.onSlave, plan.queryNodeNames)
 		execTime := float64(time.Now().UnixNano()-startTime) / float64(time.Millisecond)
 		if err != nil {
 			state = "ERROR"
@@ -153,7 +153,7 @@ func (plan *mergedPlan) Execute(executor func(statements []sqlparser.Statement, 
 			golog.OutputSql(state, "%.1fms - %s->%s:OnSlave=%v:%s",
 				execTime,
 				clientAddr,
-				plan.nodeName,
+				strings.Join(plan.nodeNames, ","),
 				plan.onSlave,
 				planSQL,
 			)
@@ -207,7 +207,7 @@ func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan Plan, 
 	mergedPlan.Statements = make([]sqlparser.Statement, planCount)
 	mergedPlan.Results = make([]*mysql.Result, planCount)
 	firstNormalPlan := plans[0]
-	mergedPlan.nodeName = firstNormalPlan.nodeName
+	mergedPlan.nodeNames = firstNormalPlan.nodeNames
 	mergedPlan.queryNodeNames = make(map[sqlparser.Statement][]string)
 	mergedPlan.onSlave = firstNormalPlan.onSlave
 	mergedPlan.anyNode = firstNormalPlan.anyNode
@@ -219,13 +219,17 @@ func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan Plan, 
 			if currentPlan.Result != nil {
 				mergedPlan.Results[i+1] = currentPlan.Result
 			} else {
+				// couldn't execute multi-query that exists more than one data node.
+				if len(mergedPlan.nodeNames) > 1 {
+					return nil, errors.ErrExecInMulti
+				}
 				// couldn't execute in any node and exists more than one data node.
-				if !mergedPlan.anyNode && mergedPlan.nodeName != currentPlan.nodeName {
+				if !mergedPlan.anyNode && mergedPlan.nodeNames[0] != currentPlan.nodeNames[0] {
 					return nil, errors.ErrExecInMulti
 				}
 				// if last plan can execute in any node, override it
 				if mergedPlan.anyNode {
-					mergedPlan.nodeName = currentPlan.nodeName
+					mergedPlan.nodeNames = currentPlan.nodeNames
 					mergedPlan.anyNode = currentPlan.anyNode
 				}
 				// if last plan use slave, override it
@@ -247,8 +251,6 @@ func (r *Router) BuildMergedPlan(statements ...sqlparser.Statement) (plan Plan, 
 
 // BuildNormalPlan to build plan
 func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err error) {
-	originalSQL := sqlparser.String(statement)
-	planSQL := originalSQL
 	var realPlan *normalPlan
 	switch v := statement.(type) {
 	case *sqlparser.UseDB:
@@ -336,28 +338,19 @@ func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err 
 	case *sqlparser.Replace:
 		realPlan, err = r.buildReplacePlan(v)
 
-	case *sqlparser.DDL:
-		println(sqlparser.String(v))
-		realPlan, err = nil, errors.ErrNoPlan
 	case *sqlparser.CreateTable:
-		println(sqlparser.String(v))
-		realPlan, err = nil, errors.ErrNoPlan
+		realPlan, err = r.buildCreateTablePlan(v)
 	case *sqlparser.CreateIndex:
-		println(sqlparser.String(v))
-		realPlan, err = nil, errors.ErrNoPlan
+		realPlan, err = r.buildCreateIndexPlan(v)
+	case *sqlparser.RenameTable:
+		realPlan, err = r.buildRenameTablePlan(v)
+	case *sqlparser.DropTable:
+		realPlan, err = r.buildDropTablePlan(v)
+	case *sqlparser.DropIndex:
+		realPlan, err = r.buildDropIndexPlan(v)
 	default:
 		realPlan, err = nil, errors.ErrNoPlan
 	}
 	plan = realPlan
-	planSQL = sqlparser.String(statement)
-	if realPlan != nil {
-		golog.Debug("route", "BuildNormalPlan", "Plan to execute", r.ConnectionID,
-			"data node",
-			realPlan.nodeName,
-			"originalSQL",
-			originalSQL,
-			"planSQL",
-			planSQL)
-	}
 	return
 }

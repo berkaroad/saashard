@@ -24,6 +24,7 @@ package route
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/berkaroad/saashard/net/mysql"
@@ -34,7 +35,7 @@ func (r *Router) buildExplainPlan(statement *sqlparser.Explain) (*normalPlan, er
 	schemaConfig := r.Schemas[r.SchemaName]
 	plan := new(normalPlan)
 
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = true && !r.InTrans
 	plan.Statement = statement
 	plan.anyNode = true
@@ -46,7 +47,7 @@ func (r *Router) buildExplainPlan(statement *sqlparser.Explain) (*normalPlan, er
 	result.Resultset.Fields[0] = &mysql.Field{Schema: []byte(""),
 		Table:        []byte(""),
 		OrgTable:     []byte(""),
-		Name:         []byte("node_name"),
+		Name:         []byte("data_nodes"),
 		OrgName:      []byte(""),
 		Charset:      uint16(mysql.DEFAULT_COLLATION_ID),
 		ColumnLength: 192,
@@ -96,7 +97,7 @@ func (r *Router) buildExplainPlan(statement *sqlparser.Explain) (*normalPlan, er
 		row.AppendNullValue()
 		row.AppendStringValue(err.Error())
 	} else {
-		row.AppendStringValue(innerPlan.GetNodeName())
+		row.AppendStringValue(strings.Join(innerPlan.GetNodeNames(), ", "))
 		row.AppendBooleanValue(innerPlan.OnSlave())
 		row.AppendStringValue(innerPlan.GetPlanSQL())
 	}

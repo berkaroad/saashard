@@ -101,136 +101,138 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 }
 
 func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*mysql.Result,
-	dataNode string, isSlave bool,
+	dataNodes []string, isSlave bool,
 	queryDataNodes map[sqlparser.Statement][]string) (err error) {
 	resultCount := len(statements)
-	node := c.proxy.nodes[dataNode]
-	// If in transaction, must exec in the same node.
-	if c.isInTransaction() && node != c.nodeInTrans {
-		return errors.ErrTransInMulti
-	}
-
-	var conn backend.Connection
-	// Get backend conn from slave or master.
-	if !c.isInTransaction() && isSlave && len(node.DataHost.Slaves) > 0 {
-		if conn = c.backendSlaveConns[node]; conn == nil {
-			var dbHost *backend.DBHost
-			dbHost = node.DataHost.Slaves[0]
-			if conn, err = dbHost.GetConnection(node.Database); err != nil {
-				return
-			}
-			c.backendSlaveConns[node] = conn
-		}
-	} else {
-		if conn = c.backendMasterConns[node]; conn == nil {
-			var dbHost *backend.DBHost
-			dbHost = node.DataHost.Master
-			if conn, err = dbHost.GetConnection(node.Database); err != nil {
-				return
-			}
-			c.backendMasterConns[node] = conn
-		}
-	}
-
-	var mysqlConn = conn.(*mysqlBackend.Conn)
-	mysqlConn.UseDB(node.Database)
-	var moreResult = true
-
-	var result *mysql.Result
-	for i := 0; i < resultCount; i++ {
-		if i == resultCount-1 {
-			moreResult = false
+	for _, dataNode := range dataNodes {
+		node := c.proxy.nodes[dataNode]
+		// If in transaction, must exec in the same node.
+		if c.isInTransaction() && node != c.nodeInTrans {
+			return errors.ErrTransInMulti
 		}
 
-		if results[i] != nil {
-			if results[i].Resultset == nil {
-				err = c.pkg.WriteOK(c.capability, c.status, results[i])
-			} else {
-				err = c.pkg.WriteResultSet(c.capability, c.status, results[i])
-			}
-			if err != nil {
-				return
-			}
-		} else if statements[i] != nil {
-			statement := statements[i]
-
-			switch v := statement.(type) {
-			case *sqlparser.UseDB:
-				c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
-				return c.handleInitDB(v.DB)
-			case *sqlparser.Begin:
-				sql := sqlparser.String(statement)
-				if result, err = mysqlConn.Query(sql); err != nil {
+		var conn backend.Connection
+		// Get backend conn from slave or master.
+		if !c.isInTransaction() && isSlave && len(node.DataHost.Slaves) > 0 {
+			if conn = c.backendSlaveConns[node]; conn == nil {
+				var dbHost *backend.DBHost
+				dbHost = node.DataHost.Slaves[0]
+				if conn, err = dbHost.GetConnection(node.Database); err != nil {
 					return
 				}
-				c.status |= mysql.SERVER_STATUS_IN_TRANS
-				c.nodeInTrans = node
-				c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
-				return c.pkg.WriteOK(c.capability, c.status, result)
-			case *sqlparser.Commit:
-				sql := sqlparser.String(statement)
-				if result, err = mysqlConn.Query(sql); err != nil {
-					return
-				}
-				c.status &= ^mysql.SERVER_STATUS_IN_TRANS
-				c.nodeInTrans = nil
-				c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
-				return c.pkg.WriteOK(c.capability, c.status, result)
-			case *sqlparser.Rollback:
-				sql := sqlparser.String(statement)
-				if result, err = mysqlConn.Query(sql); err != nil {
-					return
-				}
-				c.status &= ^mysql.SERVER_STATUS_IN_TRANS
-				c.nodeInTrans = nil
-				c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
-				return c.pkg.WriteOK(c.capability, c.status, result)
-			case *sqlparser.SetVariable:
-				sql := sqlparser.String(statement)
-				if result, err = mysqlConn.Query(sql); err != nil {
-					return
-				}
-				for _, varNameVal := range v.Exprs {
-					if string(varNameVal.Name.Name) == "autocommit" {
-						autoCommit := sqlparser.String(varNameVal.Expr)
-						if autoCommit == "0" {
-							c.status &= ^mysql.SERVER_STATUS_AUTOCOMMIT
-							c.nodeInTrans = node
-						} else {
-							c.status |= mysql.SERVER_STATUS_AUTOCOMMIT
-							c.status &= ^mysql.SERVER_STATUS_IN_TRANS
-							c.nodeInTrans = nil
-						}
-						break
-					}
-				}
-				if moreResult {
-					c.status |= mysql.SERVER_MORE_RESULTS_EXISTS
-				} else {
-					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
-				}
-				err = c.pkg.WriteOK(c.capability, c.status, nil)
-			default:
-				sql := sqlparser.String(statement)
-				if result, err = mysqlConn.Query(sql); err != nil {
-					return
-				}
-				if moreResult {
-					c.status |= mysql.SERVER_MORE_RESULTS_EXISTS
-				} else {
-					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
-				}
-				if result.Resultset == nil {
-					err = c.pkg.WriteOK(c.capability, c.status, result)
-				} else {
-					err = c.pkg.WriteResultSet(c.capability, c.status, result)
-				}
-			}
-			if err != nil {
-				return
+				c.backendSlaveConns[node] = conn
 			}
 		} else {
-			return errors.ErrNoStatement
+			if conn = c.backendMasterConns[node]; conn == nil {
+				var dbHost *backend.DBHost
+				dbHost = node.DataHost.Master
+				if conn, err = dbHost.GetConnection(node.Database); err != nil {
+					return
+				}
+				c.backendMasterConns[node] = conn
+			}
+		}
+
+		var mysqlConn = conn.(*mysqlBackend.Conn)
+		mysqlConn.UseDB(node.Database)
+		var moreResult = true
+
+		var result *mysql.Result
+		for i := 0; i < resultCount; i++ {
+			if i == resultCount-1 {
+				moreResult = false
+			}
+
+			if results[i] != nil {
+				if results[i].Resultset == nil {
+					err = c.pkg.WriteOK(c.capability, c.status, results[i])
+				} else {
+					err = c.pkg.WriteResultSet(c.capability, c.status, results[i])
+				}
+				if err != nil {
+					return
+				}
+			} else if statements[i] != nil {
+				statement := statements[i]
+
+				switch v := statement.(type) {
+				case *sqlparser.UseDB:
+					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
+					return c.handleInitDB(v.DB)
+				case *sqlparser.Begin:
+					sql := sqlparser.String(statement)
+					if result, err = mysqlConn.Query(sql); err != nil {
+						return
+					}
+					c.status |= mysql.SERVER_STATUS_IN_TRANS
+					c.nodeInTrans = node
+					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
+					return c.pkg.WriteOK(c.capability, c.status, result)
+				case *sqlparser.Commit:
+					sql := sqlparser.String(statement)
+					if result, err = mysqlConn.Query(sql); err != nil {
+						return
+					}
+					c.status &= ^mysql.SERVER_STATUS_IN_TRANS
+					c.nodeInTrans = nil
+					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
+					return c.pkg.WriteOK(c.capability, c.status, result)
+				case *sqlparser.Rollback:
+					sql := sqlparser.String(statement)
+					if result, err = mysqlConn.Query(sql); err != nil {
+						return
+					}
+					c.status &= ^mysql.SERVER_STATUS_IN_TRANS
+					c.nodeInTrans = nil
+					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
+					return c.pkg.WriteOK(c.capability, c.status, result)
+				case *sqlparser.SetVariable:
+					sql := sqlparser.String(statement)
+					if result, err = mysqlConn.Query(sql); err != nil {
+						return
+					}
+					for _, varNameVal := range v.Exprs {
+						if string(varNameVal.Name.Name) == "autocommit" {
+							autoCommit := sqlparser.String(varNameVal.Expr)
+							if autoCommit == "0" {
+								c.status &= ^mysql.SERVER_STATUS_AUTOCOMMIT
+								c.nodeInTrans = node
+							} else {
+								c.status |= mysql.SERVER_STATUS_AUTOCOMMIT
+								c.status &= ^mysql.SERVER_STATUS_IN_TRANS
+								c.nodeInTrans = nil
+							}
+							break
+						}
+					}
+					if moreResult {
+						c.status |= mysql.SERVER_MORE_RESULTS_EXISTS
+					} else {
+						c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
+					}
+					err = c.pkg.WriteOK(c.capability, c.status, nil)
+				default:
+					sql := sqlparser.String(statement)
+					if result, err = mysqlConn.Query(sql); err != nil {
+						return
+					}
+					if moreResult {
+						c.status |= mysql.SERVER_MORE_RESULTS_EXISTS
+					} else {
+						c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
+					}
+					if result.Resultset == nil {
+						err = c.pkg.WriteOK(c.capability, c.status, result)
+					} else {
+						err = c.pkg.WriteResultSet(c.capability, c.status, result)
+					}
+				}
+				if err != nil {
+					return
+				}
+			} else {
+				return errors.ErrNoStatement
+			}
 		}
 	}
 	return err

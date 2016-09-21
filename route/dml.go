@@ -51,7 +51,7 @@ func (r *Router) buildInsertPlan(statement *sqlparser.Insert) (*normalPlan, erro
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.Statement = statement
 	return plan, nil
 }
@@ -93,7 +93,7 @@ func (r *Router) buildUpdatePlan(statement *sqlparser.Update) (*normalPlan, erro
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.Statement = statement
 
 	return plan, nil
@@ -126,7 +126,7 @@ func (r *Router) buildDeletePlan(statement *sqlparser.Delete) (*normalPlan, erro
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.Statement = statement
 
 	return plan, nil
@@ -153,7 +153,7 @@ func (r *Router) buildReplacePlan(statement *sqlparser.Replace) (*normalPlan, er
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.Statement = statement
 
 	return plan, nil

@@ -430,6 +430,22 @@ explain_statement:
   {
     $$= &Explain{Statement: $2}
   }
+| EXPLAIN create_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
+| EXPLAIN alter_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
+| EXPLAIN rename_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
+| EXPLAIN drop_statement
+  {
+    $$= &Explain{Statement: $2}
+  }
 
 set_statement:
   SET comments_list_opt scope_opt update_list

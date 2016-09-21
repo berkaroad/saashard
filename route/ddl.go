@@ -21,3 +21,67 @@
 // SOFTWARE.
 
 package route
+
+import "github.com/berkaroad/saashard/sqlparser"
+
+func (r *Router) buildCreateTablePlan(statement *sqlparser.CreateTable) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	statement.Table.Qualifier = nil
+	if schemaConfig.ShardEnabled() {
+	}
+
+	plan := new(normalPlan)
+	plan.nodeNames = schemaConfig.Nodes
+	plan.Statement = statement
+	return plan, nil
+}
+
+func (r *Router) buildCreateIndexPlan(statement *sqlparser.CreateIndex) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	statement.Table.Qualifier = nil
+
+	plan := new(normalPlan)
+	if schemaConfig.ShardEnabled() {
+	}
+
+	plan.nodeNames = schemaConfig.Nodes
+	plan.Statement = statement
+	return plan, nil
+}
+
+func (r *Router) buildRenameTablePlan(statement *sqlparser.RenameTable) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	statement.OldName.Qualifier = nil
+	statement.NewName.Qualifier = nil
+	if schemaConfig.ShardEnabled() {
+	}
+
+	plan := new(normalPlan)
+	plan.nodeNames = schemaConfig.Nodes
+	plan.Statement = statement
+	return plan, nil
+}
+
+func (r *Router) buildDropTablePlan(statement *sqlparser.DropTable) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	statement.Name.Qualifier = nil
+	if schemaConfig.ShardEnabled() {
+	}
+
+	plan := new(normalPlan)
+	plan.nodeNames = schemaConfig.Nodes
+	plan.Statement = statement
+	return plan, nil
+}
+
+func (r *Router) buildDropIndexPlan(statement *sqlparser.DropIndex) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	statement.Table.Qualifier = nil
+	if schemaConfig.ShardEnabled() {
+	}
+
+	plan := new(normalPlan)
+	plan.nodeNames = schemaConfig.Nodes
+	plan.Statement = statement
+	return plan, nil
+}

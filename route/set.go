@@ -29,7 +29,7 @@ func (r *Router) buildSetCharsetPlan(statement *sqlparser.SetCharset) (*normalPl
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = false
 	plan.anyNode = true
 	plan.Statement = statement
@@ -41,7 +41,7 @@ func (r *Router) buildSetNamesPlan(statement *sqlparser.SetNames) (*normalPlan, 
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = false
 	plan.anyNode = true
 	plan.Statement = statement
@@ -53,7 +53,7 @@ func (r *Router) buildSetVariablePlan(statement *sqlparser.SetVariable) (*normal
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = false
 	plan.anyNode = true
 	plan.Statement = statement
@@ -65,7 +65,7 @@ func (r *Router) buildSetTransactionIsolationLevelPlan(statement *sqlparser.SetT
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeName = schemaConfig.Nodes[0]
+	plan.nodeNames = []string{schemaConfig.Nodes[0]}
 	plan.onSlave = false
 	plan.anyNode = true
 	plan.Statement = statement
