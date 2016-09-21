@@ -222,13 +222,12 @@ var (
 %type <selStmt> select_statement
 %type <setStmt> set_statement
 %type <showStmt> show_statement describe_statement
-%type <ddlStmt> create_statement alter_statement rename_statement
-%type <statement> insert_statement update_statement delete_statement replace_statement
-%type <statement> drop_statement
+%type <ddlStmt> create_statement alter_statement rename_statement drop_statement
+%type <statement> insert_statement update_statement delete_statement replace_statement 
 %type <statement> begin_statement commit_statement rollback_statement 
 %type <statement> use_statement explain_statement admin_statement
 
-%type <bytes2> comment_opt comment_list
+%type <bytes2> comments_list_opt comments_list
 %type <str> union_op
 %type <str> distinct_opt
 %type <str> ignore_opt
@@ -284,7 +283,8 @@ var (
 
 %type <valExpr> default_value_opt column_comment_opt
 %type <bytes> unique_or_primary_opt column_format_opt column_storage_opt
-%type <bytes> reference_definition reference_definition_opt reference_match_opt reference_on_delete_or_update_opt reference_option
+%type <bytes> reference_definition reference_definition_opt reference_match_opt
+%type <bytes> reference_on_delete_or_update_opt reference_option reference_option_opt
 %type <bytes> data_type_charset_opt data_type_collate_opt
 %type <createDef> create_definition
 %type <createDefs> create_definition_list
@@ -330,20 +330,21 @@ command:
 | rename_statement
   { $$ = $1 }
 | drop_statement
+  { $$ = $1 }
 | begin_statement
 | commit_statement
 | rollback_statement
 | use_statement
 | admin_statement
-| comment_list
+| comments_list
   { $$ = nil }
 
 select_statement:
-  SELECT comment_opt distinct_opt select_expression_list limit_opt
+  SELECT comments_list_opt distinct_opt select_expression_list limit_opt
   {
     $$ = &SimpleSelect{Comments: Comments($2), Distinct: $3, SelectExprs: $4, Limit: $5}
   }
-| SELECT comment_opt distinct_opt select_expression_list FROM table_expression_list where_expression_opt group_by_opt having_opt order_by_opt limit_opt lock_opt
+| SELECT comments_list_opt distinct_opt select_expression_list FROM table_expression_list where_expression_opt group_by_opt having_opt order_by_opt limit_opt lock_opt
   {
     $$ = &Select{Comments: Comments($2), Distinct: $3, SelectExprs: $4, From: $6, Where: NewWhere(AST_WHERE, $7), GroupBy: GroupBy($8), Having: NewWhere(AST_HAVING, $9), OrderBy: $10, Limit: $11, Lock: $12}
   }
@@ -353,11 +354,11 @@ select_statement:
   }
 
 insert_statement:
-  INSERT comment_opt ignore_opt INTO table_name column_list_opt row_list on_dup_opt
+  INSERT comments_list_opt ignore_opt INTO table_name column_list_opt row_list on_dup_opt
   {
     $$ = &Insert{Comments: Comments($2), Ignore:$3, Table: $5, Columns: $6, Rows: $7, OnDup: OnDup($8)}
   }
-| INSERT comment_opt ignore_opt INTO table_name SET update_list on_dup_opt
+| INSERT comments_list_opt ignore_opt INTO table_name SET update_list on_dup_opt
   {
     cols := make(Columns, 0, len($7))
     vals := make(ValTuple, 0, len($7))
@@ -369,11 +370,11 @@ insert_statement:
   }
 
 replace_statement:
-  REPLACE comment_opt INTO table_name column_list_opt row_list
+  REPLACE comments_list_opt INTO table_name column_list_opt row_list
   {
     $$ = &Replace{Comments: Comments($2), Table: $4, Columns: $5, Rows: $6}
   }
-| REPLACE comment_opt INTO table_name SET update_list
+| REPLACE comments_list_opt INTO table_name SET update_list
   {
     cols := make(Columns, 0, len($6))
     vals := make(ValTuple, 0, len($6))
@@ -385,13 +386,13 @@ replace_statement:
   }
 
 update_statement:
-  UPDATE comment_opt table_name SET update_list where_expression_opt order_by_opt limit_opt
+  UPDATE comments_list_opt table_name SET update_list where_expression_opt order_by_opt limit_opt
   {
     $$ = &Update{Comments: Comments($2), Table: $3, Exprs: $5, Where: NewWhere(AST_WHERE, $6), OrderBy: $7, Limit: $8}
   }
 
 delete_statement:
-  DELETE comment_opt FROM table_name where_expression_opt order_by_opt limit_opt
+  DELETE comments_list_opt FROM table_name where_expression_opt order_by_opt limit_opt
   {
     $$ = &Delete{Comments: Comments($2), Table: $4, Where: NewWhere(AST_WHERE, $5), OrderBy: $6, Limit: $7}
   }
@@ -431,7 +432,7 @@ explain_statement:
   }
 
 set_statement:
-  SET comment_opt scope_opt update_list
+  SET comments_list_opt scope_opt update_list
   {
     $$ = &SetVariable{
           Comments: Comments($2), 
@@ -439,28 +440,28 @@ set_statement:
           Exprs: $4,
         }
   }
-| SET comment_opt CHARACTER SET charset_words
+| SET comments_list_opt CHARACTER SET charset_words
   {
     $$ = &SetCharset{
 	        Comments: Comments($2), 
 	        Charset: string($5),
 	    }
   }
-| SET comment_opt CHARSET charset_words
+| SET comments_list_opt CHARSET charset_words
   {
     $$ = &SetCharset{
 	        Comments: Comments($2), 
 	        Charset: string($4),
 	    }
   }
-| SET comment_opt NAMES charset_words 
+| SET comments_list_opt NAMES charset_words 
   {
     $$ = &SetNames{
           Comments: Comments($2), 
           Names: string($4),
         }
   }
-| SET comment_opt NAMES charset_words COLLATE STRING
+| SET comments_list_opt NAMES charset_words COLLATE STRING
   {
     $$ = &SetNames{
 	        Comments: Comments($2), 
@@ -468,7 +469,7 @@ set_statement:
           Collate: string($6),
 	    }
   }
-| SET comment_opt scope_opt TRANSACTION ISOLATION LEVEL isolation_level
+| SET comments_list_opt scope_opt TRANSACTION ISOLATION LEVEL isolation_level
   {
     $$ = &SetTransactionIsolationLevel{
 	        Comments: Comments($2),
@@ -528,133 +529,133 @@ rename_statement:
   }
 
 drop_statement:
-  DROP TABLE exists_opt ID
+  DROP TABLE exists_opt table_name reference_option_opt
   {
-    $$ = &DDL{Action: AST_DROP, Table: $4}
+    $$ = &DropTable{Name: $4, RefOption: $5}
   }
-| DROP INDEX sql_id ON ID
+| DROP INDEX sql_id ON table_name
   {
-    $$ = &DDL{Action: AST_ALTER, Table: $5, NewName: $5}
+    $$ = &DropIndex{Name: $3, Table: $5}
   }
 
 show_statement:
-  SHOW comment_opt CHARACTER SET where_or_like_opt
+  SHOW comments_list_opt CHARACTER SET where_or_like_opt
   {
     $$ = &ShowCharset{Comments : Comments($2), LikeOrWhere : $5}
   }
-| SHOW comment_opt CHARSET where_or_like_opt
+| SHOW comments_list_opt CHARSET where_or_like_opt
   {
     $$ = &ShowCharset{Comments : Comments($2), LikeOrWhere : $4}
   }
-| SHOW comment_opt COLLATION where_or_like_opt
+| SHOW comments_list_opt COLLATION where_or_like_opt
   {
     $$ = &ShowCollation{Comments : Comments($2), LikeOrWhere : $4}
   }
-| SHOW comment_opt scope_opt VARIABLES where_or_like_opt
+| SHOW comments_list_opt scope_opt VARIABLES where_or_like_opt
   {
     $$ = &ShowVariables{Comments : Comments($2), Scope: string($3), LikeOrWhere : $5}
   }
-| SHOW comment_opt scope_opt STATUS where_or_like_opt
+| SHOW comments_list_opt scope_opt STATUS where_or_like_opt
   {
     $$ = &ShowStatus{Comments : Comments($2), Scope: string($3), LikeOrWhere : $5}
   }
-| SHOW comment_opt DATABASES where_or_like_opt
+| SHOW comments_list_opt DATABASES where_or_like_opt
   {
     $$ = &ShowDatabases{Comments : Comments($2), LikeOrWhere : $4}
   }
-| SHOW comment_opt SCHEMAS where_or_like_opt
+| SHOW comments_list_opt SCHEMAS where_or_like_opt
   {
     $$ = &ShowDatabases{Comments : Comments($2), LikeOrWhere : $4}
   }
-| SHOW comment_opt TABLES where_or_like_opt
+| SHOW comments_list_opt TABLES where_or_like_opt
   {
     $$ = &ShowTables{Comments : Comments($2), LikeOrWhere : $4}
   }
-| SHOW comment_opt TABLES FROM table_name where_or_like_opt
+| SHOW comments_list_opt TABLES FROM table_name where_or_like_opt
   {
     $$ = &ShowTables{Comments : Comments($2), From : $5, LikeOrWhere : $6}
   }
-| SHOW comment_opt FULL TABLES where_or_like_opt
+| SHOW comments_list_opt FULL TABLES where_or_like_opt
   {
     $$ = &ShowFullTables{Comments : Comments($2), LikeOrWhere : $5}
   }
-| SHOW comment_opt FULL TABLES FROM table_name where_or_like_opt
+| SHOW comments_list_opt FULL TABLES FROM table_name where_or_like_opt
   {
     $$ = &ShowFullTables{Comments : Comments($2), From : $6, LikeOrWhere : $7}
   }
-| SHOW comment_opt COLUMNS FROM table_name where_or_like_opt
+| SHOW comments_list_opt COLUMNS FROM table_name where_or_like_opt
   {
     $$ = &ShowColumns{Comments : Comments($2), From : $5, LikeOrWhere : $6}
   }
-| SHOW comment_opt FIELDS FROM table_name where_or_like_opt
+| SHOW comments_list_opt FIELDS FROM table_name where_or_like_opt
   {
     $$ = &ShowColumns{Comments : Comments($2), From : $5, LikeOrWhere : $6}
   }
-| SHOW comment_opt FULL COLUMNS FROM table_name where_or_like_opt
+| SHOW comments_list_opt FULL COLUMNS FROM table_name where_or_like_opt
   {
     $$ = &ShowFullColumns{Comments : Comments($2), From : $6, LikeOrWhere : $7}
   }
-| SHOW comment_opt FULL FIELDS FROM table_name where_or_like_opt
+| SHOW comments_list_opt FULL FIELDS FROM table_name where_or_like_opt
   {
     $$ = &ShowFullColumns{Comments : Comments($2), From : $6, LikeOrWhere : $7}
   }
-| SHOW comment_opt PROCEDURE STATUS where_or_like_opt
+| SHOW comments_list_opt PROCEDURE STATUS where_or_like_opt
   {
     $$ = &ShowProcedureStatus{Comments : Comments($2), LikeOrWhere : $5}
   }
-| SHOW comment_opt FUNCTION STATUS where_or_like_opt
+| SHOW comments_list_opt FUNCTION STATUS where_or_like_opt
   {
     $$ = &ShowFunctionStatus{Comments : Comments($2), LikeOrWhere : $5}
   }
-| SHOW comment_opt INDEX FROM table_name where_expression_opt
+| SHOW comments_list_opt INDEX FROM table_name where_expression_opt
   {
     $$ = &ShowIndex{Comments : Comments($2), From : $5, Where : $6}
   }
-| SHOW comment_opt INDEXES FROM table_name where_expression_opt
+| SHOW comments_list_opt INDEXES FROM table_name where_expression_opt
   {
     $$ = &ShowIndex{Comments : Comments($2), From : $5, Where : $6}
   }
-| SHOW comment_opt KEYS FROM table_name where_expression_opt
+| SHOW comments_list_opt KEYS FROM table_name where_expression_opt
   {
     $$ = &ShowIndex{Comments : Comments($2), From : $5, Where : $6}
   }
-| SHOW comment_opt TRIGGERS FROM table_name where_or_like_opt
+| SHOW comments_list_opt TRIGGERS FROM table_name where_or_like_opt
   {
     $$ = &ShowTriggers{Comments : Comments($2), From : $5, LikeOrWhere : $6}
   }
-| SHOW comment_opt CREATE DATABASE table_name
+| SHOW comments_list_opt CREATE DATABASE table_name
   {
     $$ = &ShowCreateDatabase{Comments : Comments($2), Name : $5}
   }
-| SHOW comment_opt CREATE TABLE table_name
+| SHOW comments_list_opt CREATE TABLE table_name
   {
     $$ = &ShowCreateTable{Comments : Comments($2), Name : $5}
   }
-| SHOW comment_opt CREATE VIEW table_name
+| SHOW comments_list_opt CREATE VIEW table_name
   {
     $$ = &ShowCreateView{Comments : Comments($2), Name : $5}
   }
-| SHOW comment_opt CREATE PROCEDURE table_name
+| SHOW comments_list_opt CREATE PROCEDURE table_name
   {
     $$ = &ShowCreateProcedure{Comments : Comments($2), Name : $5}
   }
-| SHOW comment_opt CREATE FUNCTION table_name
+| SHOW comments_list_opt CREATE FUNCTION table_name
   {
     $$ = &ShowCreateFunction{Comments : Comments($2), Name : $5}
   }
-| SHOW comment_opt CREATE TRIGGER table_name
+| SHOW comments_list_opt CREATE TRIGGER table_name
   {
     $$ = &ShowCreateTrigger{Comments : Comments($2), Name : $5}
   }
-| SHOW comment_opt PROCESSLIST
+| SHOW comments_list_opt PROCESSLIST
   {
     $$ = &ShowProcessList{Comments : Comments($2)}
   }
-| SHOW comment_opt FULL PROCESSLIST
+| SHOW comments_list_opt FULL PROCESSLIST
   {
     $$ = &ShowFullProcessList{Comments : Comments($2)}
   }
-| SHOW comment_opt SLAVE STATUS
+| SHOW comments_list_opt SLAVE STATUS
   {
     $$ = &ShowSlaveStatus{Comments : Comments($2)}
   }
@@ -676,7 +677,7 @@ show_statement:
   }
 
 describe_statement:
-  DESCRIBE comment_opt table_name
+  DESCRIBE comments_list_opt table_name
   {
     $$ = &ShowColumns{Comments : Comments($2), From : $3}
   }
@@ -688,21 +689,21 @@ admin_statement:
 | ADMIN HELP
   { $$ = nil }
 
-comment_opt:
+comments_list_opt:
   {
     SetAllowComments(yylex, true)
   }
-  comment_list
+  comments_list
   {
     $$ = $2
     SetAllowComments(yylex, false)
   }
 
-comment_list:
+comments_list:
   {
     $$ = nil
   }
-| comment_list COMMENTS
+| comments_list COMMENTS
   {
     $$ = append($1, $2)
   }
@@ -2066,6 +2067,11 @@ reference_on_delete_or_update_opt:
   { $$ = []byte("on update " + string($3)) }
 | ON DELETE reference_option ON UPDATE reference_option
   { $$ = []byte("on delete " + string($3) + " on update " + string($6)) }
+
+reference_option_opt:
+  { $$ = nil }
+| reference_option
+  { $$ = $1 }
 
 reference_option:
   RESTRICT

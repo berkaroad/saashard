@@ -102,6 +102,34 @@ func (node *RenameTable) Format(buf *TrackedBuffer) {
 func (node *RenameTable) IStatement()    {}
 func (node *RenameTable) IDDLStatement() {}
 
+// DropTable drop table
+type DropTable struct {
+	Name      *TableName
+	RefOption []byte
+}
+
+// Format DropTable
+func (node *DropTable) Format(buf *TrackedBuffer) {
+	buf.Fprintf("drop table if exists %v %s", node.Name, node.RefOption)
+}
+
+func (node *DropTable) IStatement()    {}
+func (node *DropTable) IDDLStatement() {}
+
+// DropIndex drop index
+type DropIndex struct {
+	Name  []byte
+	Table *TableName
+}
+
+// Format DropIndex
+func (node *DropIndex) Format(buf *TrackedBuffer) {
+	buf.Fprintf("drop index %s on %v", node.Name, node.Table)
+}
+
+func (node *DropIndex) IStatement()    {}
+func (node *DropIndex) IDDLStatement() {}
+
 // CreateDefinitions create definition list.
 type CreateDefinitions []CreateDefinition
 
