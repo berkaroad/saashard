@@ -166,6 +166,7 @@ func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, erro
 
 func (r *Router) buildUnionPlan(statement *sqlparser.Union) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
+	nodeIndex := 0
 	if schemaConfig.ShardEnabled() {
 		var err error
 		if err = sqlparser.CheckTableExprsInSelect(statement, schemaConfig.GetTables()); err != nil {
@@ -177,7 +178,12 @@ func (r *Router) buildUnionPlan(statement *sqlparser.Union) (*normalPlan, error)
 		} else if colValue == nil {
 			return nil, errors.ErrWhereOrJoinOnKey
 		}
-		println("Union ShardKey=", sqlparser.String(colValue))
+
+		algo := ParseShardAlgorithm(schemaConfig.ShardAlgo)
+		nodeIndex, err = algo(sqlparser.String(colValue), len(schemaConfig.Nodes))
+		if err != nil {
+			return nil, err
+		}
 	}
 	var hint *Hint
 	switch left := statement.Left.(type) {
@@ -188,7 +194,7 @@ func (r *Router) buildUnionPlan(statement *sqlparser.Union) (*normalPlan, error)
 	}
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	plan.nodeNames = []string{schemaConfig.Nodes[nodeIndex]}
 	plan.onSlave = true && !r.InTrans
 	if hint != nil {
 		plan.onSlave = plan.onSlave && !hint.OnMaster
