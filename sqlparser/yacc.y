@@ -83,7 +83,6 @@ var (
   selectExpr  SelectExpr
   columns     Columns
   colName     *ColName
-  colNames    ColNames
   tableExprs  TableExprs
   tableExpr   TableExpr
   smTableExpr SimpleTableExpr
@@ -212,6 +211,7 @@ var (
 %token <empty> CONSTRAINT FOREIGN
 %token <empty> FIRST AFTER
 %token <empty> ADD COLUMN CHANGE MODIFY
+%token <empty> ENABLE DISABLE
 
 // Functin
 %token <empty> POSITION
@@ -222,9 +222,9 @@ var (
 %type <selStmt> select_statement
 %type <setStmt> set_statement
 %type <showStmt> show_statement describe_statement
-%type <ddlStmt> create_statement
+%type <ddlStmt> create_statement alter_statement
 %type <statement> insert_statement update_statement delete_statement replace_statement
-%type <statement> alter_statement rename_statement drop_statement
+%type <statement> rename_statement drop_statement
 %type <statement> begin_statement commit_statement rollback_statement 
 %type <statement> use_statement explain_statement admin_statement
 
@@ -242,7 +242,7 @@ var (
 %type <smTableExpr> simple_table_expression
 %type <tableName> dml_table_expression
 %type <indexHints> index_hint_list
-%type <bytes2> index_list
+%type <bytes2> sql_id_list
 %type <boolExpr> where_expression_opt
 %type <boolExpr> boolean_expression condition
 %type <str> compare
@@ -255,7 +255,6 @@ var (
 %type <subquery> subquery
 %type <byt> unary_operator
 %type <colName> column_name
-%type <colNames> column_name_list
 %type <caseExpr> case_expression
 %type <whens> when_expression_list
 %type <when> when_expression
@@ -327,6 +326,7 @@ command:
 | create_statement
   { $$ = $1 }
 | alter_statement
+  { $$ = $1 }
 | rename_statement
 | drop_statement
 | begin_statement
@@ -501,7 +501,7 @@ rollback_statement:
 use_statement:
   USE sql_id
   {
-	$$= &UseDB{DB : string($2)}
+	  $$ = &UseDB{DB : string($2)}
   }
 
 create_statement:
@@ -533,7 +533,6 @@ drop_statement:
   }
 | DROP INDEX sql_id ON ID
   {
-    // Change this to an alter statement
     $$ = &DDL{Action: AST_ALTER, Table: $5, NewName: $5}
   }
 
@@ -888,25 +887,25 @@ index_hint_list:
   {
     $$ = nil
   }
-| USE INDEX '(' index_list ')'
+| USE INDEX '(' sql_id_list ')'
   {
     $$ = &IndexHints{Type: AST_USE, Indexes: $4}
   }
-| IGNORE INDEX '(' index_list ')'
+| IGNORE INDEX '(' sql_id_list ')'
   {
     $$ = &IndexHints{Type: AST_IGNORE, Indexes: $4}
   }
-| FORCE INDEX '(' index_list ')'
+| FORCE INDEX '(' sql_id_list ')'
   {
     $$ = &IndexHints{Type: AST_FORCE, Indexes: $4}
   }
 
-index_list:
+sql_id_list:
   sql_id
   {
     $$ = [][]byte{$1}
   }
-| index_list ',' sql_id
+| sql_id_list ',' sql_id
   {
     $$ = append($1, $3)
   }
@@ -1221,12 +1220,6 @@ else_expression_opt:
   {
     $$ = $2
   }
-
-column_name_list:
-  column_name
-  { $$ = ColNames{$1} }
-| column_name_list ',' column_name
-  { $$ = append($1, $3) }
 
 column_name:
   sql_id
@@ -2194,14 +2187,22 @@ alter_specification:
   {
     $$ = &AddPrimaryKeySpec{Symbol: $2, IndexType: $5, IndexColumns: $7}
   }
-// | ADD constraint_opt UNIQUE sql_id index_type_opt '(' index_column_list ')'
-//   {}
-// | ADD constraint_opt UNIQUE INDEX sql_id index_type_opt '(' index_column_list ')'
-//   {}
-// | ADD constraint_opt UNIQUE KEY sql_id index_type_opt '(' index_column_list ')'
-//   {}
-// | ADD constraint_opt FOREIGN KEY  '(' index_column_list ')' reference_definition 
-//   {}
+| ADD constraint_opt UNIQUE sql_id index_type_opt '(' index_column_list ')'
+  {
+    $$ = &AddUniqueIndexSpec{Symbol: $2, Name: $4, IndexType: $5, IndexColumns: $7}
+  }
+| ADD constraint_opt UNIQUE INDEX sql_id index_type_opt '(' index_column_list ')'
+  {
+    $$ = &AddUniqueIndexSpec{Symbol: $2, Name: $5, IndexType: $6, IndexColumns: $8}
+  }
+| ADD constraint_opt UNIQUE KEY sql_id index_type_opt '(' index_column_list ')'
+  {
+    $$ = &AddUniqueIndexSpec{Symbol: $2, Name: $5, IndexType: $6, IndexColumns: $8}
+  }
+| ADD constraint_opt FOREIGN KEY  '(' index_column_list ')' reference_definition 
+  {
+    $$ = &AddForeignKeySpec{Symbol: $2, IndexColumns: $6, ReferenceDef: $8}
+  }
 | CHANGE COLUMN column_name column_name column_definition first_or_after_column_opt
   {
     $$ = &ChangeColumnSpec{OldColumnName: $3, ColumnName: $4, ColumnDef: $5, FirstOrAfterColumn: $6 }
@@ -2226,28 +2227,18 @@ alter_specification:
   {
     $$ = &DropIndexSpec{Name: $3}
   }
-// | DROP FOREIGN KEY sql_id
-//   {}
-// | DISABLE KEYS
-//   {}
-// | ENABLE KEYS
-//   {}
-| ORDER BY column_name_list
+| DROP FOREIGN KEY sql_id
   {
-    $$ = &OrderByColumnsSpec{Columns: $3}
+    $$ = &DropForeignKeySpec{Name: $4}
   }
-// | CONVERT TO CHARACTER SET charset_words
-//   {}
-// | CONVERT TO CHARACTER SET charset_words COLLATE collate_words
-//   {}
-// | DEFAULT CHARACTER SET '=' charset_name
-//   {}
-// | DEFAULT CHARACTER SET '=' charset_name COLLATE '=' collate_words
-//   {}
-// | CHARACTER SET '=' charset_name
-//   {}
-// | CHARACTER SET '=' charset_name COLLATE '=' collate_words
-//   {}
+| DISABLE KEYS
+  {
+    $$ = &DisableKeysSpec{}
+  }
+| ENABLE KEYS
+  {
+    $$ = &EnableKeysSpec{}
+  }
 
 first_or_after_column_opt:
   { $$ = nil }

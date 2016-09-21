@@ -212,6 +212,9 @@ var keywords = map[string]int{
 	"change": CHANGE,
 	"modify": MODIFY,
 
+	"enable":  ENABLE,
+	"disable": DISABLE,
+
 	"using":    USING,
 	"begin":    BEGIN,
 	"rollback": ROLLBACK,

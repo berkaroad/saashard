@@ -428,18 +428,6 @@ func (node *DropColumnSpec) Format(buf *TrackedBuffer) {
 
 func (node *DropColumnSpec) IAlterSpecification() {}
 
-// OrderByColumnsSpec order by column list specification
-type OrderByColumnsSpec struct {
-	Columns ColNames
-}
-
-// Format OrderByColumnsSpec
-func (node *OrderByColumnsSpec) Format(buf *TrackedBuffer) {
-	buf.Fprintf("order by %v", node.Columns)
-}
-
-func (node *OrderByColumnsSpec) IAlterSpecification() {}
-
 // AddIndexSpec add index specification
 type AddIndexSpec struct {
 	Name         []byte
@@ -510,6 +498,91 @@ func (node *DropPrimaryKeySpec) Format(buf *TrackedBuffer) {
 }
 
 func (node *DropPrimaryKeySpec) IAlterSpecification() {}
+
+// AddUniqueIndexSpec add unique index specification
+type AddUniqueIndexSpec struct {
+	Symbol       []byte
+	Name         []byte
+	IndexType    []byte
+	IndexColumns IndexColNames
+}
+
+// Format AddUniqueIndexSpec
+func (node *AddUniqueIndexSpec) Format(buf *TrackedBuffer) {
+	buf.Fprintf("add ", nil)
+	if node.Symbol != nil {
+		buf.Fprintf("constraint ", nil)
+		escape(buf, node.Symbol)
+		buf.Fprintf(" ", nil)
+	}
+	buf.Fprintf("unique key", nil)
+	if node.Name != nil {
+		buf.Fprintf(" ", nil)
+		escape(buf, node.Name)
+	}
+	indexType := ""
+	if node.IndexType != nil {
+		indexType = " using " + string(node.IndexType)
+	}
+	buf.Fprintf("%s(%v)", indexType, node.IndexColumns)
+}
+
+func (node *AddUniqueIndexSpec) IAlterSpecification() {}
+
+// AddForeignKeySpec add foreign key specification
+type AddForeignKeySpec struct {
+	Symbol       []byte
+	IndexColumns IndexColNames
+	ReferenceDef []byte
+}
+
+// Format AddForeignKeySpec
+func (node *AddForeignKeySpec) Format(buf *TrackedBuffer) {
+	buf.Fprintf("add ", nil)
+	if node.Symbol != nil {
+		buf.Fprintf("constraint ", nil)
+		escape(buf, node.Symbol)
+		buf.Fprintf(" ", nil)
+	}
+	buf.Fprintf("foreign key(%v) %s", node.IndexColumns, node.ReferenceDef)
+}
+
+func (node *AddForeignKeySpec) IAlterSpecification() {}
+
+// DropForeignKeySpec drop foreign key specification
+type DropForeignKeySpec struct {
+	Name []byte
+}
+
+// Format DropForeignKeySpec
+func (node *DropForeignKeySpec) Format(buf *TrackedBuffer) {
+	buf.Fprintf("drop foreign key ", nil)
+	escape(buf, node.Name)
+}
+
+func (node *DropForeignKeySpec) IAlterSpecification() {}
+
+// DisableKeysSpec disable keys specification
+type DisableKeysSpec struct {
+}
+
+// Format DisableKeysSpec
+func (node *DisableKeysSpec) Format(buf *TrackedBuffer) {
+	buf.Fprintf("disable keys", nil)
+}
+
+func (node *DisableKeysSpec) IAlterSpecification() {}
+
+// EnableKeysSpec enable keys specification
+type EnableKeysSpec struct {
+}
+
+// Format EnableKeysSpec
+func (node *EnableKeysSpec) Format(buf *TrackedBuffer) {
+	buf.Fprintf("enable keys", nil)
+}
+
+func (node *EnableKeysSpec) IAlterSpecification() {}
 
 // DDL represents a CREATE, ALTER, DROP or RENAME statement.
 // Table is set for AST_ALTER, AST_DROP, AST_RENAME.
