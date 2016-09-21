@@ -88,6 +88,20 @@ func (node *AlterTable) Format(buf *TrackedBuffer) {
 func (node *AlterTable) IStatement()    {}
 func (node *AlterTable) IDDLStatement() {}
 
+// RenameTable rename table
+type RenameTable struct {
+	OldName *TableName
+	NewName *TableName
+}
+
+// Format RenameTable
+func (node *RenameTable) Format(buf *TrackedBuffer) {
+	buf.Fprintf("rename table %v %v", node.OldName, node.NewName)
+}
+
+func (node *RenameTable) IStatement()    {}
+func (node *RenameTable) IDDLStatement() {}
+
 // CreateDefinitions create definition list.
 type CreateDefinitions []CreateDefinition
 

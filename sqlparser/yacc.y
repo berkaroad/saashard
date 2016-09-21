@@ -222,9 +222,9 @@ var (
 %type <selStmt> select_statement
 %type <setStmt> set_statement
 %type <showStmt> show_statement describe_statement
-%type <ddlStmt> create_statement alter_statement
+%type <ddlStmt> create_statement alter_statement rename_statement
 %type <statement> insert_statement update_statement delete_statement replace_statement
-%type <statement> rename_statement drop_statement
+%type <statement> drop_statement
 %type <statement> begin_statement commit_statement rollback_statement 
 %type <statement> use_statement explain_statement admin_statement
 
@@ -240,7 +240,7 @@ var (
 %type <tableExpr> table_expression
 %type <str> join_type
 %type <smTableExpr> simple_table_expression
-%type <tableName> dml_table_expression
+%type <tableName> table_name
 %type <indexHints> index_hint_list
 %type <bytes2> sql_id_list
 %type <boolExpr> where_expression_opt
@@ -328,6 +328,7 @@ command:
 | alter_statement
   { $$ = $1 }
 | rename_statement
+  { $$ = $1 }
 | drop_statement
 | begin_statement
 | commit_statement
@@ -352,11 +353,11 @@ select_statement:
   }
 
 insert_statement:
-  INSERT comment_opt ignore_opt INTO dml_table_expression column_list_opt row_list on_dup_opt
+  INSERT comment_opt ignore_opt INTO table_name column_list_opt row_list on_dup_opt
   {
     $$ = &Insert{Comments: Comments($2), Ignore:$3, Table: $5, Columns: $6, Rows: $7, OnDup: OnDup($8)}
   }
-| INSERT comment_opt ignore_opt INTO dml_table_expression SET update_list on_dup_opt
+| INSERT comment_opt ignore_opt INTO table_name SET update_list on_dup_opt
   {
     cols := make(Columns, 0, len($7))
     vals := make(ValTuple, 0, len($7))
@@ -368,11 +369,11 @@ insert_statement:
   }
 
 replace_statement:
-  REPLACE comment_opt INTO dml_table_expression column_list_opt row_list
+  REPLACE comment_opt INTO table_name column_list_opt row_list
   {
     $$ = &Replace{Comments: Comments($2), Table: $4, Columns: $5, Rows: $6}
   }
-| REPLACE comment_opt INTO dml_table_expression SET update_list
+| REPLACE comment_opt INTO table_name SET update_list
   {
     cols := make(Columns, 0, len($6))
     vals := make(ValTuple, 0, len($6))
@@ -384,13 +385,13 @@ replace_statement:
   }
 
 update_statement:
-  UPDATE comment_opt dml_table_expression SET update_list where_expression_opt order_by_opt limit_opt
+  UPDATE comment_opt table_name SET update_list where_expression_opt order_by_opt limit_opt
   {
     $$ = &Update{Comments: Comments($2), Table: $3, Exprs: $5, Where: NewWhere(AST_WHERE, $6), OrderBy: $7, Limit: $8}
   }
 
 delete_statement:
-  DELETE comment_opt FROM dml_table_expression where_expression_opt order_by_opt limit_opt
+  DELETE comment_opt FROM table_name where_expression_opt order_by_opt limit_opt
   {
     $$ = &Delete{Comments: Comments($2), Table: $4, Where: NewWhere(AST_WHERE, $5), OrderBy: $6, Limit: $7}
   }
@@ -505,25 +506,25 @@ use_statement:
   }
 
 create_statement:
-  CREATE TABLE not_exists_opt dml_table_expression '(' create_definition_list ')' table_option_list_opt
+  CREATE TABLE not_exists_opt table_name '(' create_definition_list ')' table_option_list_opt
   {
     $$ = &CreateTable{Table: $4, CreateDefs: $6, TableOptions: $8 }
   }
-| CREATE index_category_opt INDEX sql_id index_type_opt ON dml_table_expression '(' index_column_list ')'
+| CREATE index_category_opt INDEX sql_id index_type_opt ON table_name '(' index_column_list ')'
   {
     $$ = &CreateIndex{IndexCategory: $2, Name: $4, IndexType: $5, Table: $7, IndexColumns: $9 }
   }
 
 alter_statement:
-  ALTER ignore_opt TABLE dml_table_expression alter_specification_list_opt
+  ALTER ignore_opt TABLE table_name alter_specification_list_opt
   {
     $$ = &AlterTable{Ignore: $2, Table: $4, AlterSpecs: $5}
   }
 
 rename_statement:
-  RENAME TABLE ID TO ID
+  RENAME TABLE table_name TO table_name
   {
-    $$ = &DDL{Action: AST_RENAME, Table: $3, NewName: $5}
+    $$ = &RenameTable{OldName: $3, NewName: $5}
   }
 
 drop_statement:
@@ -569,7 +570,7 @@ show_statement:
   {
     $$ = &ShowTables{Comments : Comments($2), LikeOrWhere : $4}
   }
-| SHOW comment_opt TABLES FROM dml_table_expression where_or_like_opt
+| SHOW comment_opt TABLES FROM table_name where_or_like_opt
   {
     $$ = &ShowTables{Comments : Comments($2), From : $5, LikeOrWhere : $6}
   }
@@ -577,23 +578,23 @@ show_statement:
   {
     $$ = &ShowFullTables{Comments : Comments($2), LikeOrWhere : $5}
   }
-| SHOW comment_opt FULL TABLES FROM dml_table_expression where_or_like_opt
+| SHOW comment_opt FULL TABLES FROM table_name where_or_like_opt
   {
     $$ = &ShowFullTables{Comments : Comments($2), From : $6, LikeOrWhere : $7}
   }
-| SHOW comment_opt COLUMNS FROM dml_table_expression where_or_like_opt
+| SHOW comment_opt COLUMNS FROM table_name where_or_like_opt
   {
     $$ = &ShowColumns{Comments : Comments($2), From : $5, LikeOrWhere : $6}
   }
-| SHOW comment_opt FIELDS FROM dml_table_expression where_or_like_opt
+| SHOW comment_opt FIELDS FROM table_name where_or_like_opt
   {
     $$ = &ShowColumns{Comments : Comments($2), From : $5, LikeOrWhere : $6}
   }
-| SHOW comment_opt FULL COLUMNS FROM dml_table_expression where_or_like_opt
+| SHOW comment_opt FULL COLUMNS FROM table_name where_or_like_opt
   {
     $$ = &ShowFullColumns{Comments : Comments($2), From : $6, LikeOrWhere : $7}
   }
-| SHOW comment_opt FULL FIELDS FROM dml_table_expression where_or_like_opt
+| SHOW comment_opt FULL FIELDS FROM table_name where_or_like_opt
   {
     $$ = &ShowFullColumns{Comments : Comments($2), From : $6, LikeOrWhere : $7}
   }
@@ -605,43 +606,43 @@ show_statement:
   {
     $$ = &ShowFunctionStatus{Comments : Comments($2), LikeOrWhere : $5}
   }
-| SHOW comment_opt INDEX FROM dml_table_expression where_expression_opt
+| SHOW comment_opt INDEX FROM table_name where_expression_opt
   {
     $$ = &ShowIndex{Comments : Comments($2), From : $5, Where : $6}
   }
-| SHOW comment_opt INDEXES FROM dml_table_expression where_expression_opt
+| SHOW comment_opt INDEXES FROM table_name where_expression_opt
   {
     $$ = &ShowIndex{Comments : Comments($2), From : $5, Where : $6}
   }
-| SHOW comment_opt KEYS FROM dml_table_expression where_expression_opt
+| SHOW comment_opt KEYS FROM table_name where_expression_opt
   {
     $$ = &ShowIndex{Comments : Comments($2), From : $5, Where : $6}
   }
-| SHOW comment_opt TRIGGERS FROM dml_table_expression where_or_like_opt
+| SHOW comment_opt TRIGGERS FROM table_name where_or_like_opt
   {
     $$ = &ShowTriggers{Comments : Comments($2), From : $5, LikeOrWhere : $6}
   }
-| SHOW comment_opt CREATE DATABASE dml_table_expression
+| SHOW comment_opt CREATE DATABASE table_name
   {
     $$ = &ShowCreateDatabase{Comments : Comments($2), Name : $5}
   }
-| SHOW comment_opt CREATE TABLE dml_table_expression
+| SHOW comment_opt CREATE TABLE table_name
   {
     $$ = &ShowCreateTable{Comments : Comments($2), Name : $5}
   }
-| SHOW comment_opt CREATE VIEW dml_table_expression
+| SHOW comment_opt CREATE VIEW table_name
   {
     $$ = &ShowCreateView{Comments : Comments($2), Name : $5}
   }
-| SHOW comment_opt CREATE PROCEDURE dml_table_expression
+| SHOW comment_opt CREATE PROCEDURE table_name
   {
     $$ = &ShowCreateProcedure{Comments : Comments($2), Name : $5}
   }
-| SHOW comment_opt CREATE FUNCTION dml_table_expression
+| SHOW comment_opt CREATE FUNCTION table_name
   {
     $$ = &ShowCreateFunction{Comments : Comments($2), Name : $5}
   }
-| SHOW comment_opt CREATE TRIGGER dml_table_expression
+| SHOW comment_opt CREATE TRIGGER table_name
   {
     $$ = &ShowCreateTrigger{Comments : Comments($2), Name : $5}
   }
@@ -675,7 +676,7 @@ show_statement:
   }
 
 describe_statement:
-  DESCRIBE comment_opt dml_table_expression
+  DESCRIBE comment_opt table_name
   {
     $$ = &ShowColumns{Comments : Comments($2), From : $3}
   }
@@ -873,7 +874,7 @@ ID
     $$ = $1
   }
 
-dml_table_expression:
+table_name:
 ID
   {
     $$ = &TableName{Name: $1}
@@ -2045,7 +2046,7 @@ reference_definition_opt:
   { $$ = $1 }
 
 reference_definition:
-  REFERENCES dml_table_expression '(' index_column_list ')' reference_match_opt reference_on_delete_or_update_opt
+  REFERENCES table_name '(' index_column_list ')' reference_match_opt reference_on_delete_or_update_opt
   { $$ = []byte("references " + String($2) + "(" + String($4) + ")" + string($6) + string($7) ) }
 
 reference_match_opt:
