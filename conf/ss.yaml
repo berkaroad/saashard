@@ -93,7 +93,7 @@ schemas :
     password : 123456
     # shard
     shard_key : tenantid
-    shard_type : hash
+    shard_algo : hash
     nodes: ["db1_node1", "db1_node2"]
 
 - 

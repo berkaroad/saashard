@@ -35,6 +35,7 @@ make run # Run immediately, use ss.yaml config file.
 - Support split read and write. (Read balance feature is in 'TODO list'.)
 - Database sharding feature is in 'TODO list'.
 - Support backend connection pool.
+- Support maintain table struct, index.
 
 ### Unsupported SQL
 

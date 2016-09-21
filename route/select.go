@@ -129,6 +129,7 @@ func (r *Router) buildSimpleSelectPlan(statement *sqlparser.SimpleSelect) (*norm
 func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	isOnlySystemDB := false
+	nodeIndex := 0
 	if schemaConfig.ShardEnabled() {
 		if isOnlySystemDB = sqlparser.IsOnlySystemDBInTableExprs(statement.From); !isOnlySystemDB {
 			var err error
@@ -141,14 +142,19 @@ func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, erro
 			} else if colValue == nil {
 				return nil, errors.ErrWhereOrJoinOnKey
 			}
-			println("Select ShardKey=", sqlparser.String(colValue))
+
+			algo := ParseShardAlgorithm(schemaConfig.ShardAlgo)
+			nodeIndex, err = algo(sqlparser.String(colValue), len(schemaConfig.Nodes))
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
 
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	plan.nodeNames = []string{schemaConfig.Nodes[nodeIndex]}
 	plan.onSlave = true && !hint.OnMaster && !r.InTrans
 	if isOnlySystemDB {
 		plan.anyNode = true

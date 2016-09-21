@@ -86,7 +86,7 @@ type SchemaConfig struct {
 	User      string        `yaml:"user"`
 	Password  string        `yaml:"password"`
 	ShardKey  string        `yaml:"shard_key"`
-	ShardType string        `yaml:"shard_type"`
+	ShardAlgo string        `yaml:"shard_algo"`
 	Nodes     []string      `yaml:"nodes"`
 	Tables    []TableConfig `yaml:"tables"`
 
