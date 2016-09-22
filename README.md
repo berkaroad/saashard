@@ -14,7 +14,7 @@ cd $GOPATH/src/github.com/berkaroad/saashard
 ```
 
 ### Binary release
-[binary release](http://github.com/berkaroad/saashard-binary)
+[http://github.com/berkaroad/saashard-binary](http://github.com/berkaroad/saashard-binary)
 
 ### Compile
 
