@@ -41,16 +41,21 @@ make run # Run immediately, use ss.yaml config file.
 ### Unsupported SQL
 
 ```
-select (case t1.f1 when '0' then 'hello' else 'world' end) f1 from t1 -- Not supported, but you can replace it to above
-select (case when t1.f1='0' then 'hello' else 'world' end) f1 from t1 -- This is supported
+/* Not supported, but you can replace it to above */
+select (case t1.f1 when '0' then 'hello' else 'world' end) f1 from t1;
+
+/* This is supported */
+select (case when t1.f1='0' then 'hello' else 'world' end) f1 from t1;
 ```
 
 ```
-select f1,f2,f3 into t2 from t1 -- Not supported, because this is dml statement, and couldn't get shard key's value.
+/* Not supported, because this is dml statement, and couldn't get shard key's value. */
+select f1,f2,f3 into t2 from t1
 ```
 
 ```
-VIEW, FUNCTION, PROCEDURE or TRIGGER not supported -- Not supported, because it couldn't get shard key's value from those.
+/* Not supported, because it couldn't get shard key's value from those. */
+VIEW, FUNCTION, PROCEDURE or TRIGGER not supported
 ```
 
 ## Logical Architecture
