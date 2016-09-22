@@ -55,6 +55,6 @@ VIEW, FUNCTION, PROCEDURE or TRIGGER not supported -- Not supported, because it 
 
 ## Logical Architecture
 
-![logical architecture](http://github.com/berkaroad/saashard/docs/images/logical_arch.png "logical architecture")
+![logical architecture](docs/images/logical_arch.png "logical architecture")
 
-![logical schema](http://github.com/berkaroad/saashard/docs/images/logical_schema.png "logical schema")
+![logical schema](docs/images/logical_schema.png "logical schema")
