@@ -1,4 +1,4 @@
-//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1
+//line yacc.y:2
 
 // Copyright 2012, Google Inc. All rights reserved.
 // Use of this source code is governed by a BSD-style
@@ -44,7 +44,7 @@ package sqlparser
 
 import __yyfmt__ "fmt"
 
-//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:43
+//line yacc.y:42
 import "bytes"
 
 // SetParseTree to build ast.
@@ -69,7 +69,7 @@ var (
 	VALUES_BYTES = []byte("values")
 )
 
-//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:70
+//line yacc.y:70
 type yySymType struct {
 	yys         int
 	empty       struct{}
@@ -1804,91 +1804,91 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:308
+		//line yacc.y:308
 		{
 			SetParseTree(yylex, yyDollar[1].statement)
 		}
 	case 2:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:314
+		//line yacc.y:314
 		{
 			yyVAL.statement = yyDollar[1].selStmt
 		}
 	case 3:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:316
+		//line yacc.y:316
 		{
 			yyVAL.statement = yyDollar[1].setStmt
 		}
 	case 4:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:318
+		//line yacc.y:318
 		{
 			yyVAL.statement = yyDollar[1].showStmt
 		}
 	case 5:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:320
+		//line yacc.y:320
 		{
 			yyVAL.statement = yyDollar[1].showStmt
 		}
 	case 11:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:327
+		//line yacc.y:327
 		{
 			yyVAL.statement = yyDollar[1].ddlStmt
 		}
 	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:329
+		//line yacc.y:329
 		{
 			yyVAL.statement = yyDollar[1].ddlStmt
 		}
 	case 13:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:331
+		//line yacc.y:331
 		{
 			yyVAL.statement = yyDollar[1].ddlStmt
 		}
 	case 14:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:333
+		//line yacc.y:333
 		{
 			yyVAL.statement = yyDollar[1].ddlStmt
 		}
 	case 20:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:340
+		//line yacc.y:340
 		{
 			yyVAL.statement = nil
 		}
 	case 21:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:344
+		//line yacc.y:344
 		{
 			yyVAL.selStmt = &SimpleSelect{Comments: Comments(yyDollar[2].bytes2), Distinct: yyDollar[3].str, SelectExprs: yyDollar[4].selectExprs, Limit: yyDollar[5].limit}
 		}
 	case 22:
 		yyDollar = yyS[yypt-12 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:348
+		//line yacc.y:348
 		{
 			yyVAL.selStmt = &Select{Comments: Comments(yyDollar[2].bytes2), Distinct: yyDollar[3].str, SelectExprs: yyDollar[4].selectExprs, From: yyDollar[6].tableExprs, Where: NewWhere(AST_WHERE, yyDollar[7].boolExpr), GroupBy: GroupBy(yyDollar[8].valExprs), Having: NewWhere(AST_HAVING, yyDollar[9].boolExpr), OrderBy: yyDollar[10].orderBy, Limit: yyDollar[11].limit, Lock: yyDollar[12].str}
 		}
 	case 23:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:352
+		//line yacc.y:352
 		{
 			yyVAL.selStmt = &Union{Type: yyDollar[2].str, Left: yyDollar[1].selStmt, Right: yyDollar[3].selStmt}
 		}
 	case 24:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:358
+		//line yacc.y:358
 		{
 			yyVAL.statement = &Insert{Comments: Comments(yyDollar[2].bytes2), Ignore: yyDollar[3].str, Table: yyDollar[5].tableName, Columns: yyDollar[6].columns, Rows: yyDollar[7].insRows, OnDup: OnDup(yyDollar[8].updateExprs)}
 		}
 	case 25:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:362
+		//line yacc.y:362
 		{
 			cols := make(Columns, 0, len(yyDollar[7].updateExprs))
 			vals := make(ValTuple, 0, len(yyDollar[7].updateExprs))
@@ -1900,13 +1900,13 @@ yydefault:
 		}
 	case 26:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:374
+		//line yacc.y:374
 		{
 			yyVAL.statement = &Replace{Comments: Comments(yyDollar[2].bytes2), Table: yyDollar[4].tableName, Columns: yyDollar[5].columns, Rows: yyDollar[6].insRows}
 		}
 	case 27:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:378
+		//line yacc.y:378
 		{
 			cols := make(Columns, 0, len(yyDollar[6].updateExprs))
 			vals := make(ValTuple, 0, len(yyDollar[6].updateExprs))
@@ -1918,91 +1918,91 @@ yydefault:
 		}
 	case 28:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:390
+		//line yacc.y:390
 		{
 			yyVAL.statement = &Update{Comments: Comments(yyDollar[2].bytes2), Table: yyDollar[3].tableName, Exprs: yyDollar[5].updateExprs, Where: NewWhere(AST_WHERE, yyDollar[6].boolExpr), OrderBy: yyDollar[7].orderBy, Limit: yyDollar[8].limit}
 		}
 	case 29:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:396
+		//line yacc.y:396
 		{
 			yyVAL.statement = &Delete{Comments: Comments(yyDollar[2].bytes2), Table: yyDollar[4].tableName, Where: NewWhere(AST_WHERE, yyDollar[5].boolExpr), OrderBy: yyDollar[6].orderBy, Limit: yyDollar[7].limit}
 		}
 	case 30:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:402
+		//line yacc.y:402
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].selStmt}
 		}
 	case 31:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:406
+		//line yacc.y:406
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].statement}
 		}
 	case 32:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:410
+		//line yacc.y:410
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].statement}
 		}
 	case 33:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:414
+		//line yacc.y:414
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].statement}
 		}
 	case 34:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:418
+		//line yacc.y:418
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].statement}
 		}
 	case 35:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:422
+		//line yacc.y:422
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].setStmt}
 		}
 	case 36:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:426
+		//line yacc.y:426
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].showStmt}
 		}
 	case 37:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:430
+		//line yacc.y:430
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].showStmt}
 		}
 	case 38:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:434
+		//line yacc.y:434
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].ddlStmt}
 		}
 	case 39:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:438
+		//line yacc.y:438
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].ddlStmt}
 		}
 	case 40:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:442
+		//line yacc.y:442
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].ddlStmt}
 		}
 	case 41:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:446
+		//line yacc.y:446
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].ddlStmt}
 		}
 	case 42:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:452
+		//line yacc.y:452
 		{
 			yyVAL.setStmt = &SetVariable{
 				Comments: Comments(yyDollar[2].bytes2),
@@ -2012,7 +2012,7 @@ yydefault:
 		}
 	case 43:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:460
+		//line yacc.y:460
 		{
 			yyVAL.setStmt = &SetCharset{
 				Comments: Comments(yyDollar[2].bytes2),
@@ -2021,7 +2021,7 @@ yydefault:
 		}
 	case 44:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:467
+		//line yacc.y:467
 		{
 			yyVAL.setStmt = &SetCharset{
 				Comments: Comments(yyDollar[2].bytes2),
@@ -2030,7 +2030,7 @@ yydefault:
 		}
 	case 45:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:474
+		//line yacc.y:474
 		{
 			yyVAL.setStmt = &SetNames{
 				Comments: Comments(yyDollar[2].bytes2),
@@ -2039,7 +2039,7 @@ yydefault:
 		}
 	case 46:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:481
+		//line yacc.y:481
 		{
 			yyVAL.setStmt = &SetNames{
 				Comments: Comments(yyDollar[2].bytes2),
@@ -2049,7 +2049,7 @@ yydefault:
 		}
 	case 47:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:489
+		//line yacc.y:489
 		{
 			yyVAL.setStmt = &SetTransactionIsolationLevel{
 				Comments:       Comments(yyDollar[2].bytes2),
@@ -2059,860 +2059,860 @@ yydefault:
 		}
 	case 48:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:499
+		//line yacc.y:499
 		{
 			yyVAL.statement = &Begin{}
 		}
 	case 49:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:503
+		//line yacc.y:503
 		{
 			yyVAL.statement = &Begin{}
 		}
 	case 50:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:509
+		//line yacc.y:509
 		{
 			yyVAL.statement = &Commit{}
 		}
 	case 51:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:515
+		//line yacc.y:515
 		{
 			yyVAL.statement = &Rollback{}
 		}
 	case 52:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:521
+		//line yacc.y:521
 		{
 			yyVAL.statement = &UseDB{DB: string(yyDollar[2].bytes)}
 		}
 	case 53:
 		yyDollar = yyS[yypt-9 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:527
+		//line yacc.y:527
 		{
 			yyVAL.ddlStmt = &CreateTable{Comments: Comments(yyDollar[2].bytes2), Table: yyDollar[5].tableName, CreateDefs: yyDollar[7].createDefs, TableOptions: yyDollar[9].optKeyVals}
 		}
 	case 54:
 		yyDollar = yyS[yypt-11 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:531
+		//line yacc.y:531
 		{
 			yyVAL.ddlStmt = &CreateIndex{Comments: Comments(yyDollar[2].bytes2), IndexCategory: yyDollar[3].bytes, Name: yyDollar[5].bytes, IndexType: yyDollar[6].bytes, Table: yyDollar[8].tableName, IndexColumns: yyDollar[10].idxColNames}
 		}
 	case 55:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:537
+		//line yacc.y:537
 		{
 			yyVAL.ddlStmt = &AlterTable{Comments: Comments(yyDollar[2].bytes2), Ignore: yyDollar[3].str, Table: yyDollar[5].tableName, AlterSpecs: yyDollar[6].alterSpecs}
 		}
 	case 56:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:543
+		//line yacc.y:543
 		{
 			yyVAL.ddlStmt = &RenameTable{Comments: Comments(yyDollar[2].bytes2), OldName: yyDollar[4].tableName, NewName: yyDollar[6].tableName}
 		}
 	case 57:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:549
+		//line yacc.y:549
 		{
 			yyVAL.ddlStmt = &DropTable{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName, RefOption: yyDollar[6].bytes}
 		}
 	case 58:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:553
+		//line yacc.y:553
 		{
 			yyVAL.ddlStmt = &DropIndex{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[4].bytes, Table: yyDollar[6].tableName}
 		}
 	case 59:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:559
+		//line yacc.y:559
 		{
 			yyVAL.showStmt = &ShowCharset{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 60:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:563
+		//line yacc.y:563
 		{
 			yyVAL.showStmt = &ShowCharset{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[4].expr}
 		}
 	case 61:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:567
+		//line yacc.y:567
 		{
 			yyVAL.showStmt = &ShowCollation{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[4].expr}
 		}
 	case 62:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:571
+		//line yacc.y:571
 		{
 			yyVAL.showStmt = &ShowVariables{Comments: Comments(yyDollar[2].bytes2), Scope: string(yyDollar[3].bytes), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 63:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:575
+		//line yacc.y:575
 		{
 			yyVAL.showStmt = &ShowStatus{Comments: Comments(yyDollar[2].bytes2), Scope: string(yyDollar[3].bytes), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 64:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:579
+		//line yacc.y:579
 		{
 			yyVAL.showStmt = &ShowDatabases{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[4].expr}
 		}
 	case 65:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:583
+		//line yacc.y:583
 		{
 			yyVAL.showStmt = &ShowDatabases{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[4].expr}
 		}
 	case 66:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:587
+		//line yacc.y:587
 		{
 			yyVAL.showStmt = &ShowTables{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[4].expr}
 		}
 	case 67:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:591
+		//line yacc.y:591
 		{
 			yyVAL.showStmt = &ShowTables{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, LikeOrWhere: yyDollar[6].expr}
 		}
 	case 68:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:595
+		//line yacc.y:595
 		{
 			yyVAL.showStmt = &ShowFullTables{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 69:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:599
+		//line yacc.y:599
 		{
 			yyVAL.showStmt = &ShowFullTables{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[6].tableName, LikeOrWhere: yyDollar[7].expr}
 		}
 	case 70:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:603
+		//line yacc.y:603
 		{
 			yyVAL.showStmt = &ShowColumns{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, LikeOrWhere: yyDollar[6].expr}
 		}
 	case 71:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:607
+		//line yacc.y:607
 		{
 			yyVAL.showStmt = &ShowColumns{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, LikeOrWhere: yyDollar[6].expr}
 		}
 	case 72:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:611
+		//line yacc.y:611
 		{
 			yyVAL.showStmt = &ShowFullColumns{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[6].tableName, LikeOrWhere: yyDollar[7].expr}
 		}
 	case 73:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:615
+		//line yacc.y:615
 		{
 			yyVAL.showStmt = &ShowFullColumns{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[6].tableName, LikeOrWhere: yyDollar[7].expr}
 		}
 	case 74:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:619
+		//line yacc.y:619
 		{
 			yyVAL.showStmt = &ShowProcedureStatus{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 75:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:623
+		//line yacc.y:623
 		{
 			yyVAL.showStmt = &ShowFunctionStatus{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 76:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:627
+		//line yacc.y:627
 		{
 			yyVAL.showStmt = &ShowIndex{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, Where: yyDollar[6].boolExpr}
 		}
 	case 77:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:631
+		//line yacc.y:631
 		{
 			yyVAL.showStmt = &ShowIndex{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, Where: yyDollar[6].boolExpr}
 		}
 	case 78:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:635
+		//line yacc.y:635
 		{
 			yyVAL.showStmt = &ShowIndex{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, Where: yyDollar[6].boolExpr}
 		}
 	case 79:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:639
+		//line yacc.y:639
 		{
 			yyVAL.showStmt = &ShowTriggers{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, LikeOrWhere: yyDollar[6].expr}
 		}
 	case 80:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:643
+		//line yacc.y:643
 		{
 			yyVAL.showStmt = &ShowCreateDatabase{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 81:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:647
+		//line yacc.y:647
 		{
 			yyVAL.showStmt = &ShowCreateTable{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 82:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:651
+		//line yacc.y:651
 		{
 			yyVAL.showStmt = &ShowCreateView{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 83:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:655
+		//line yacc.y:655
 		{
 			yyVAL.showStmt = &ShowCreateProcedure{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 84:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:659
+		//line yacc.y:659
 		{
 			yyVAL.showStmt = &ShowCreateFunction{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 85:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:663
+		//line yacc.y:663
 		{
 			yyVAL.showStmt = &ShowCreateTrigger{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 86:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:667
+		//line yacc.y:667
 		{
 			yyVAL.showStmt = &ShowProcessList{Comments: Comments(yyDollar[2].bytes2)}
 		}
 	case 87:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:671
+		//line yacc.y:671
 		{
 			yyVAL.showStmt = &ShowFullProcessList{Comments: Comments(yyDollar[2].bytes2)}
 		}
 	case 88:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:675
+		//line yacc.y:675
 		{
 			yyVAL.showStmt = &ShowSlaveStatus{Comments: Comments(yyDollar[2].bytes2)}
 		}
 	case 89:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:679
+		//line yacc.y:679
 		{
 			yyVAL.showStmt = &ShowEngines{}
 		}
 	case 90:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:683
+		//line yacc.y:683
 		{
 			yyVAL.showStmt = &ShowEngines{}
 		}
 	case 91:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:687
+		//line yacc.y:687
 		{
 			yyVAL.showStmt = &ShowPlugins{}
 		}
 	case 92:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:691
+		//line yacc.y:691
 		{
 			yyVAL.showStmt = &ShowProfiles{}
 		}
 	case 93:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:697
+		//line yacc.y:697
 		{
 			yyVAL.showStmt = &ShowColumns{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[3].tableName}
 		}
 	case 94:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:704
+		//line yacc.y:704
 		{
 			yyVAL.statement = nil
 		}
 	case 95:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:706
+		//line yacc.y:706
 		{
 			yyVAL.statement = nil
 		}
 	case 96:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:709
+		//line yacc.y:709
 		{
 			SetAllowComments(yylex, true)
 		}
 	case 97:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:713
+		//line yacc.y:713
 		{
 			yyVAL.bytes2 = yyDollar[2].bytes2
 			SetAllowComments(yylex, false)
 		}
 	case 98:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:719
+		//line yacc.y:719
 		{
 			yyVAL.bytes2 = nil
 		}
 	case 99:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:723
+		//line yacc.y:723
 		{
 			yyVAL.bytes2 = append(yyDollar[1].bytes2, yyDollar[2].bytes)
 		}
 	case 100:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:729
+		//line yacc.y:729
 		{
 			yyVAL.str = AST_UNION
 		}
 	case 101:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:733
+		//line yacc.y:733
 		{
 			yyVAL.str = AST_UNION_ALL
 		}
 	case 102:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:737
+		//line yacc.y:737
 		{
 			yyVAL.str = AST_SET_MINUS
 		}
 	case 103:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:741
+		//line yacc.y:741
 		{
 			yyVAL.str = AST_EXCEPT
 		}
 	case 104:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:745
+		//line yacc.y:745
 		{
 			yyVAL.str = AST_INTERSECT
 		}
 	case 105:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:750
+		//line yacc.y:750
 		{
 			yyVAL.str = ""
 		}
 	case 106:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:754
+		//line yacc.y:754
 		{
 			yyVAL.str = AST_DISTINCT
 		}
 	case 107:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:760
+		//line yacc.y:760
 		{
 			yyVAL.selectExprs = SelectExprs{yyDollar[1].selectExpr}
 		}
 	case 108:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:764
+		//line yacc.y:764
 		{
 			yyVAL.selectExprs = append(yyVAL.selectExprs, yyDollar[3].selectExpr)
 		}
 	case 109:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:770
+		//line yacc.y:770
 		{
 			yyVAL.selectExpr = &StarExpr{}
 		}
 	case 110:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:774
+		//line yacc.y:774
 		{
 			yyVAL.selectExpr = &NonStarExpr{Expr: yyDollar[1].expr, As: yyDollar[2].bytes}
 		}
 	case 111:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:778
+		//line yacc.y:778
 		{
 			yyVAL.selectExpr = &StarExpr{TableName: yyDollar[1].bytes}
 		}
 	case 112:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:784
+		//line yacc.y:784
 		{
 			yyVAL.expr = yyDollar[1].boolExpr
 		}
 	case 113:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:788
+		//line yacc.y:788
 		{
 			yyVAL.expr = yyDollar[1].valExpr
 		}
 	case 114:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:793
+		//line yacc.y:793
 		{
 			yyVAL.bytes = nil
 		}
 	case 115:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:797
+		//line yacc.y:797
 		{
 			yyVAL.bytes = yyDollar[1].bytes
 		}
 	case 116:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:801
+		//line yacc.y:801
 		{
 			yyVAL.bytes = yyDollar[2].bytes
 		}
 	case 117:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:807
+		//line yacc.y:807
 		{
 			yyVAL.tableExprs = TableExprs{yyDollar[1].tableExpr}
 		}
 	case 118:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:811
+		//line yacc.y:811
 		{
 			yyVAL.tableExprs = append(yyVAL.tableExprs, yyDollar[3].tableExpr)
 		}
 	case 119:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:817
+		//line yacc.y:817
 		{
 			yyVAL.tableExpr = &AliasedTableExpr{Expr: yyDollar[1].smTableExpr, As: yyDollar[2].bytes, Hints: yyDollar[3].indexHints}
 		}
 	case 120:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:821
+		//line yacc.y:821
 		{
 			yyVAL.tableExpr = &ParenTableExpr{Expr: yyDollar[2].tableExpr}
 		}
 	case 121:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:825
+		//line yacc.y:825
 		{
 			yyVAL.tableExpr = &JoinTableExpr{LeftExpr: yyDollar[1].tableExpr, Join: yyDollar[2].str, RightExpr: yyDollar[3].tableExpr, On: yyDollar[5].boolExpr}
 		}
 	case 122:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:830
+		//line yacc.y:830
 		{
 			yyVAL.bytes = nil
 		}
 	case 123:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:834
+		//line yacc.y:834
 		{
 			yyVAL.bytes = yyDollar[1].bytes
 		}
 	case 124:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:838
+		//line yacc.y:838
 		{
 			yyVAL.bytes = yyDollar[2].bytes
 		}
 	case 125:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:844
+		//line yacc.y:844
 		{
 			yyVAL.str = AST_JOIN
 		}
 	case 126:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:848
+		//line yacc.y:848
 		{
 			yyVAL.str = AST_STRAIGHT_JOIN
 		}
 	case 127:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:852
+		//line yacc.y:852
 		{
 			yyVAL.str = AST_LEFT_JOIN
 		}
 	case 128:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:856
+		//line yacc.y:856
 		{
 			yyVAL.str = AST_LEFT_JOIN
 		}
 	case 129:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:860
+		//line yacc.y:860
 		{
 			yyVAL.str = AST_RIGHT_JOIN
 		}
 	case 130:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:864
+		//line yacc.y:864
 		{
 			yyVAL.str = AST_RIGHT_JOIN
 		}
 	case 131:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:868
+		//line yacc.y:868
 		{
 			yyVAL.str = AST_JOIN
 		}
 	case 132:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:872
+		//line yacc.y:872
 		{
 			yyVAL.str = AST_CROSS_JOIN
 		}
 	case 133:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:876
+		//line yacc.y:876
 		{
 			yyVAL.str = AST_NATURAL_JOIN
 		}
 	case 134:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:882
+		//line yacc.y:882
 		{
 			yyVAL.smTableExpr = &TableName{Name: yyDollar[1].bytes}
 		}
 	case 135:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:886
+		//line yacc.y:886
 		{
 			yyVAL.smTableExpr = &TableName{Qualifier: yyDollar[1].bytes, Name: yyDollar[3].bytes}
 		}
 	case 136:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:890
+		//line yacc.y:890
 		{
 			yyVAL.smTableExpr = yyDollar[1].subquery
 		}
 	case 137:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:896
+		//line yacc.y:896
 		{
 			yyVAL.tableName = &TableName{Name: yyDollar[1].bytes}
 		}
 	case 138:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:900
+		//line yacc.y:900
 		{
 			yyVAL.tableName = &TableName{Qualifier: yyDollar[1].bytes, Name: yyDollar[3].bytes}
 		}
 	case 139:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:905
+		//line yacc.y:905
 		{
 			yyVAL.indexHints = nil
 		}
 	case 140:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:909
+		//line yacc.y:909
 		{
 			yyVAL.indexHints = &IndexHints{Type: AST_USE, Indexes: yyDollar[4].bytes2}
 		}
 	case 141:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:913
+		//line yacc.y:913
 		{
 			yyVAL.indexHints = &IndexHints{Type: AST_IGNORE, Indexes: yyDollar[4].bytes2}
 		}
 	case 142:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:917
+		//line yacc.y:917
 		{
 			yyVAL.indexHints = &IndexHints{Type: AST_FORCE, Indexes: yyDollar[4].bytes2}
 		}
 	case 143:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:923
+		//line yacc.y:923
 		{
 			yyVAL.bytes2 = [][]byte{yyDollar[1].bytes}
 		}
 	case 144:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:927
+		//line yacc.y:927
 		{
 			yyVAL.bytes2 = append(yyDollar[1].bytes2, yyDollar[3].bytes)
 		}
 	case 145:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:933
+		//line yacc.y:933
 		{
 			yyVAL.valExprs = ValExprs{yyDollar[1].valExpr}
 		}
 	case 146:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:937
+		//line yacc.y:937
 		{
 			yyVAL.valExprs = append(yyDollar[1].valExprs, yyDollar[3].valExpr)
 		}
 	case 147:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:942
+		//line yacc.y:942
 		{
 			yyVAL.boolExpr = nil
 		}
 	case 148:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:946
+		//line yacc.y:946
 		{
 			yyVAL.boolExpr = yyDollar[2].boolExpr
 		}
 	case 150:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:953
+		//line yacc.y:953
 		{
 			yyVAL.boolExpr = &AndExpr{Left: yyDollar[1].boolExpr, Right: yyDollar[3].boolExpr}
 		}
 	case 151:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:957
+		//line yacc.y:957
 		{
 			yyVAL.boolExpr = &OrExpr{Left: yyDollar[1].boolExpr, Right: yyDollar[3].boolExpr}
 		}
 	case 152:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:961
+		//line yacc.y:961
 		{
 			yyVAL.boolExpr = &NotExpr{Expr: yyDollar[2].boolExpr}
 		}
 	case 153:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:965
+		//line yacc.y:965
 		{
 			yyVAL.boolExpr = &ParenBoolExpr{Expr: yyDollar[2].boolExpr}
 		}
 	case 154:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:971
+		//line yacc.y:971
 		{
 			yyVAL.boolExpr = &ComparisonExpr{Left: yyDollar[1].valExpr, Operator: yyDollar[2].str, Right: yyDollar[3].valExpr}
 		}
 	case 155:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:975
+		//line yacc.y:975
 		{
 			yyVAL.boolExpr = &ComparisonExpr{Left: yyDollar[1].valExpr, Operator: AST_IN, Right: yyDollar[3].tuple}
 		}
 	case 156:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:979
+		//line yacc.y:979
 		{
 			yyVAL.boolExpr = &ComparisonExpr{Left: yyDollar[1].valExpr, Operator: AST_NOT_IN, Right: yyDollar[4].tuple}
 		}
 	case 157:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:983
+		//line yacc.y:983
 		{
 			yyVAL.boolExpr = &ComparisonExpr{Left: yyDollar[1].valExpr, Operator: AST_LIKE, Right: yyDollar[3].valExpr}
 		}
 	case 158:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:987
+		//line yacc.y:987
 		{
 			yyVAL.boolExpr = &ComparisonExpr{Left: yyDollar[1].valExpr, Operator: AST_NOT_LIKE, Right: yyDollar[4].valExpr}
 		}
 	case 159:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:991
+		//line yacc.y:991
 		{
 			yyVAL.boolExpr = &RangeCond{Left: yyDollar[1].valExpr, Operator: AST_BETWEEN, From: yyDollar[3].valExpr, To: yyDollar[5].valExpr}
 		}
 	case 160:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:995
+		//line yacc.y:995
 		{
 			yyVAL.boolExpr = &RangeCond{Left: yyDollar[1].valExpr, Operator: AST_NOT_BETWEEN, From: yyDollar[4].valExpr, To: yyDollar[6].valExpr}
 		}
 	case 161:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:999
+		//line yacc.y:999
 		{
 			yyVAL.boolExpr = &NullCheck{Operator: AST_IS_NULL, Expr: yyDollar[1].valExpr}
 		}
 	case 162:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1003
+		//line yacc.y:1003
 		{
 			yyVAL.boolExpr = &NullCheck{Operator: AST_IS_NOT_NULL, Expr: yyDollar[1].valExpr}
 		}
 	case 163:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1007
+		//line yacc.y:1007
 		{
 			yyVAL.boolExpr = &ExistsExpr{Subquery: yyDollar[2].subquery}
 		}
 	case 164:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1013
+		//line yacc.y:1013
 		{
 			yyVAL.str = AST_EQ
 		}
 	case 165:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1017
+		//line yacc.y:1017
 		{
 			yyVAL.str = AST_LT
 		}
 	case 166:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1021
+		//line yacc.y:1021
 		{
 			yyVAL.str = AST_GT
 		}
 	case 167:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1025
+		//line yacc.y:1025
 		{
 			yyVAL.str = AST_LE
 		}
 	case 168:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1029
+		//line yacc.y:1029
 		{
 			yyVAL.str = AST_GE
 		}
 	case 169:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1033
+		//line yacc.y:1033
 		{
 			yyVAL.str = AST_NE
 		}
 	case 170:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1037
+		//line yacc.y:1037
 		{
 			yyVAL.str = AST_NSE
 		}
 	case 171:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1043
+		//line yacc.y:1043
 		{
 			yyVAL.insRows = yyDollar[2].values
 		}
 	case 172:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1047
+		//line yacc.y:1047
 		{
 			yyVAL.insRows = yyDollar[1].selStmt
 		}
 	case 173:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1053
+		//line yacc.y:1053
 		{
 			yyVAL.values = Values{yyDollar[1].tuple}
 		}
 	case 174:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1057
+		//line yacc.y:1057
 		{
 			yyVAL.values = append(yyDollar[1].values, yyDollar[3].tuple)
 		}
 	case 175:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1063
+		//line yacc.y:1063
 		{
 			yyVAL.tuple = ValTuple(yyDollar[2].valExprs)
 		}
 	case 176:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1067
+		//line yacc.y:1067
 		{
 			yyVAL.tuple = yyDollar[1].subquery
 		}
 	case 177:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1073
+		//line yacc.y:1073
 		{
 			yyVAL.subquery = &Subquery{yyDollar[2].selStmt}
 		}
 	case 178:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1079
+		//line yacc.y:1079
 		{
 			yyVAL.valExprs = ValExprs{yyDollar[1].valExpr}
 		}
 	case 179:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1083
+		//line yacc.y:1083
 		{
 			yyVAL.valExprs = append(yyDollar[1].valExprs, yyDollar[3].valExpr)
 		}
 	case 180:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1089
+		//line yacc.y:1089
 		{
 			yyVAL.valExpr = yyDollar[1].valExpr
 		}
 	case 181:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1093
+		//line yacc.y:1093
 		{
 			yyVAL.valExpr = yyDollar[1].colName
 		}
 	case 182:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1097
+		//line yacc.y:1097
 		{
 			yyVAL.valExpr = yyDollar[1].tuple
 		}
 	case 183:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1101
+		//line yacc.y:1101
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_BITAND, Right: yyDollar[3].valExpr}
 		}
 	case 184:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1105
+		//line yacc.y:1105
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_BITOR, Right: yyDollar[3].valExpr}
 		}
 	case 185:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1109
+		//line yacc.y:1109
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_BITXOR, Right: yyDollar[3].valExpr}
 		}
 	case 186:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1113
+		//line yacc.y:1113
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_PLUS, Right: yyDollar[3].valExpr}
 		}
 	case 187:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1117
+		//line yacc.y:1117
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_MINUS, Right: yyDollar[3].valExpr}
 		}
 	case 188:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1121
+		//line yacc.y:1121
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_MULT, Right: yyDollar[3].valExpr}
 		}
 	case 189:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1125
+		//line yacc.y:1125
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_DIV, Right: yyDollar[3].valExpr}
 		}
 	case 190:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1129
+		//line yacc.y:1129
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_MOD, Right: yyDollar[3].valExpr}
 		}
 	case 191:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1133
+		//line yacc.y:1133
 		{
 			if num, ok := yyDollar[2].valExpr.(NumVal); ok {
 				switch yyDollar[1].byt {
@@ -2929,271 +2929,271 @@ yydefault:
 		}
 	case 192:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1148
+		//line yacc.y:1148
 		{
 			yyVAL.valExpr = yyDollar[1].funcExpr
 		}
 	case 193:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1152
+		//line yacc.y:1152
 		{
 			yyVAL.valExpr = yyDollar[1].caseExpr
 		}
 	case 194:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1158
+		//line yacc.y:1158
 		{
 			yyVAL.funcExpr = &FuncExpr{Name: yyDollar[1].bytes}
 		}
 	case 195:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1162
+		//line yacc.y:1162
 		{
 			yyVAL.funcExpr = &FuncExpr{Name: yyDollar[1].bytes, Exprs: yyDollar[3].valExprs}
 		}
 	case 196:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1166
+		//line yacc.y:1166
 		{
 			yyVAL.funcExpr = &FuncExpr{Name: yyDollar[1].bytes, Distinct: true, Exprs: yyDollar[4].valExprs}
 		}
 	case 197:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1170
+		//line yacc.y:1170
 		{
 			yyVAL.funcExpr = &FuncExpr{Name: []byte("locate"), Exprs: ValExprs{yyDollar[3].valExpr, yyDollar[5].valExpr}}
 		}
 	case 198:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1174
+		//line yacc.y:1174
 		{
 			yyVAL.funcExpr = &FuncExpr{Name: yyDollar[1].bytes, Exprs: yyDollar[3].valExprs}
 		}
 	case 199:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1180
+		//line yacc.y:1180
 		{
 			yyVAL.bytes = IF_BYTES
 		}
 	case 200:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1184
+		//line yacc.y:1184
 		{
 			yyVAL.bytes = VALUES_BYTES
 		}
 	case 201:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1190
+		//line yacc.y:1190
 		{
 			yyVAL.byt = AST_UPLUS
 		}
 	case 202:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1194
+		//line yacc.y:1194
 		{
 			yyVAL.byt = AST_UMINUS
 		}
 	case 203:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1198
+		//line yacc.y:1198
 		{
 			yyVAL.byt = AST_TILDA
 		}
 	case 204:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1204
+		//line yacc.y:1204
 		{
 			yyVAL.caseExpr = &CaseExpr{Expr: yyDollar[2].valExpr, Whens: yyDollar[3].whens, Else: yyDollar[4].valExpr}
 		}
 	case 205:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1209
+		//line yacc.y:1209
 		{
 			yyVAL.valExpr = nil
 		}
 	case 206:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1213
+		//line yacc.y:1213
 		{
 			yyVAL.valExpr = yyDollar[1].valExpr
 		}
 	case 207:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1219
+		//line yacc.y:1219
 		{
 			yyVAL.whens = []*When{yyDollar[1].when}
 		}
 	case 208:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1223
+		//line yacc.y:1223
 		{
 			yyVAL.whens = append(yyDollar[1].whens, yyDollar[2].when)
 		}
 	case 209:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1229
+		//line yacc.y:1229
 		{
 			yyVAL.when = &When{Cond: yyDollar[2].boolExpr, Val: yyDollar[4].valExpr}
 		}
 	case 210:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1234
+		//line yacc.y:1234
 		{
 			yyVAL.valExpr = nil
 		}
 	case 211:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1238
+		//line yacc.y:1238
 		{
 			yyVAL.valExpr = yyDollar[2].valExpr
 		}
 	case 212:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1244
+		//line yacc.y:1244
 		{
 			yyVAL.colName = &ColName{Name: yyDollar[1].bytes}
 		}
 	case 213:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1248
+		//line yacc.y:1248
 		{
 			yyVAL.colName = &ColName{Qualifier: yyDollar[1].bytes, Name: yyDollar[3].bytes}
 		}
 	case 214:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1254
+		//line yacc.y:1254
 		{
 			yyVAL.valExpr = StrVal(yyDollar[1].bytes)
 		}
 	case 215:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1258
+		//line yacc.y:1258
 		{
 			yyVAL.valExpr = NumVal(yyDollar[1].bytes)
 		}
 	case 216:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1262
+		//line yacc.y:1262
 		{
 			yyVAL.valExpr = ValArg(yyDollar[1].bytes)
 		}
 	case 217:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1266
+		//line yacc.y:1266
 		{
 			yyVAL.valExpr = &NullVal{}
 		}
 	case 218:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1271
+		//line yacc.y:1271
 		{
 			yyVAL.valExprs = nil
 		}
 	case 219:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1275
+		//line yacc.y:1275
 		{
 			yyVAL.valExprs = yyDollar[3].valExprs
 		}
 	case 220:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1280
+		//line yacc.y:1280
 		{
 			yyVAL.boolExpr = nil
 		}
 	case 221:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1284
+		//line yacc.y:1284
 		{
 			yyVAL.boolExpr = yyDollar[2].boolExpr
 		}
 	case 222:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1289
+		//line yacc.y:1289
 		{
 			yyVAL.orderBy = nil
 		}
 	case 223:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1293
+		//line yacc.y:1293
 		{
 			yyVAL.orderBy = yyDollar[3].orderBy
 		}
 	case 224:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1299
+		//line yacc.y:1299
 		{
 			yyVAL.orderBy = OrderBy{yyDollar[1].order}
 		}
 	case 225:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1303
+		//line yacc.y:1303
 		{
 			yyVAL.orderBy = append(yyDollar[1].orderBy, yyDollar[3].order)
 		}
 	case 226:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1309
+		//line yacc.y:1309
 		{
 			yyVAL.order = &Order{Expr: yyDollar[1].valExpr, Direction: yyDollar[2].str}
 		}
 	case 227:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1314
+		//line yacc.y:1314
 		{
 			yyVAL.str = AST_ASC
 		}
 	case 228:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1318
+		//line yacc.y:1318
 		{
 			yyVAL.str = AST_ASC
 		}
 	case 229:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1322
+		//line yacc.y:1322
 		{
 			yyVAL.str = AST_DESC
 		}
 	case 230:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1327
+		//line yacc.y:1327
 		{
 			yyVAL.limit = nil
 		}
 	case 231:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1331
+		//line yacc.y:1331
 		{
 			yyVAL.limit = &Limit{Rowcount: yyDollar[2].valExpr}
 		}
 	case 232:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1335
+		//line yacc.y:1335
 		{
 			yyVAL.limit = &Limit{Offset: yyDollar[2].valExpr, Rowcount: yyDollar[4].valExpr}
 		}
 	case 233:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1339
+		//line yacc.y:1339
 		{
 			yyVAL.limit = &Limit{Offset: yyDollar[4].valExpr, Rowcount: yyDollar[2].valExpr}
 		}
 	case 234:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1344
+		//line yacc.y:1344
 		{
 			yyVAL.str = ""
 		}
 	case 235:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1348
+		//line yacc.y:1348
 		{
 			yyVAL.str = AST_FOR_UPDATE
 		}
 	case 236:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1352
+		//line yacc.y:1352
 		{
 			if !bytes.Equal(yyDollar[3].bytes, SHARE) {
 				yylex.Error("expecting share")
@@ -3207,1051 +3207,1051 @@ yydefault:
 		}
 	case 237:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1365
+		//line yacc.y:1365
 		{
 			yyVAL.columns = nil
 		}
 	case 238:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1369
+		//line yacc.y:1369
 		{
 			yyVAL.columns = yyDollar[2].columns
 		}
 	case 239:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1375
+		//line yacc.y:1375
 		{
 			yyVAL.columns = Columns{&NonStarExpr{Expr: yyDollar[1].colName}}
 		}
 	case 240:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1379
+		//line yacc.y:1379
 		{
 			yyVAL.columns = append(yyVAL.columns, &NonStarExpr{Expr: yyDollar[3].colName})
 		}
 	case 241:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1384
+		//line yacc.y:1384
 		{
 			yyVAL.updateExprs = nil
 		}
 	case 242:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1388
+		//line yacc.y:1388
 		{
 			yyVAL.updateExprs = yyDollar[5].updateExprs
 		}
 	case 243:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1394
+		//line yacc.y:1394
 		{
 			yyVAL.updateExprs = UpdateExprs{yyDollar[1].updateExpr}
 		}
 	case 244:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1398
+		//line yacc.y:1398
 		{
 			yyVAL.updateExprs = append(yyDollar[1].updateExprs, yyDollar[3].updateExpr)
 		}
 	case 245:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1404
+		//line yacc.y:1404
 		{
 			yyVAL.updateExpr = &UpdateExpr{Name: yyDollar[1].colName, Expr: yyDollar[3].valExpr}
 		}
 	case 246:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1409
+		//line yacc.y:1409
 		{
 			yyVAL.empty = struct{}{}
 		}
 	case 247:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1411
+		//line yacc.y:1411
 		{
 			yyVAL.empty = struct{}{}
 		}
 	case 248:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1414
+		//line yacc.y:1414
 		{
 			yyVAL.empty = struct{}{}
 		}
 	case 249:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1416
+		//line yacc.y:1416
 		{
 			yyVAL.empty = struct{}{}
 		}
 	case 250:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1419
+		//line yacc.y:1419
 		{
 			yyVAL.str = ""
 		}
 	case 251:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1421
+		//line yacc.y:1421
 		{
 			yyVAL.str = AST_IGNORE
 		}
 	case 252:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1424
+		//line yacc.y:1424
 		{
 			yyVAL.bytes = nil
 		}
 	case 253:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1426
+		//line yacc.y:1426
 		{
 			yyVAL.bytes = []byte("unique")
 		}
 	case 254:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1428
+		//line yacc.y:1428
 		{
 			yyVAL.bytes = []byte("fulltext")
 		}
 	case 255:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1432
+		//line yacc.y:1432
 		{
 			yyVAL.idxColNames = IndexColNames{yyDollar[1].idxColName}
 		}
 	case 256:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1436
+		//line yacc.y:1436
 		{
 			yyVAL.idxColNames = append(yyDollar[1].idxColNames, yyDollar[3].idxColName)
 		}
 	case 257:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1442
+		//line yacc.y:1442
 		{
 			yyVAL.idxColName = &IndexColName{ColumnName: yyDollar[1].colName, AscOrDesc: yyDollar[2].str}
 		}
 	case 258:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1446
+		//line yacc.y:1446
 		{
 			yyVAL.idxColName = &IndexColName{ColumnName: yyDollar[1].colName, Length: NumVal(yyDollar[3].bytes), AscOrDesc: yyDollar[5].str}
 		}
 	case 259:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1451
+		//line yacc.y:1451
 		{
 			yyVAL.bytes = nil
 		}
 	case 260:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1453
+		//line yacc.y:1453
 		{
 			yyVAL.bytes = []byte("btree")
 		}
 	case 261:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1455
+		//line yacc.y:1455
 		{
 			yyVAL.bytes = []byte("hash")
 		}
 	case 262:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1459
+		//line yacc.y:1459
 		{
 			yyVAL.bytes = bytes.ToLower(yyDollar[1].bytes)
 		}
 	case 263:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1463
+		//line yacc.y:1463
 		{
 			yyVAL.bytes = []byte("database")
 		}
 	case 264:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1474
+		//line yacc.y:1474
 		{
 			yyVAL.bytes = []byte("armscii8")
 		}
 	case 265:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1476
+		//line yacc.y:1476
 		{
 			yyVAL.bytes = []byte("ascii")
 		}
 	case 266:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1478
+		//line yacc.y:1478
 		{
 			yyVAL.bytes = []byte("big5")
 		}
 	case 267:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1480
+		//line yacc.y:1480
 		{
 			yyVAL.bytes = []byte("binary")
 		}
 	case 268:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1482
+		//line yacc.y:1482
 		{
 			yyVAL.bytes = []byte("cp1250")
 		}
 	case 269:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1484
+		//line yacc.y:1484
 		{
 			yyVAL.bytes = []byte("cp1251")
 		}
 	case 270:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1486
+		//line yacc.y:1486
 		{
 			yyVAL.bytes = []byte("cp1256")
 		}
 	case 271:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1488
+		//line yacc.y:1488
 		{
 			yyVAL.bytes = []byte("cp1257")
 		}
 	case 272:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1490
+		//line yacc.y:1490
 		{
 			yyVAL.bytes = []byte("cp850")
 		}
 	case 273:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1492
+		//line yacc.y:1492
 		{
 			yyVAL.bytes = []byte("cp852")
 		}
 	case 274:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1494
+		//line yacc.y:1494
 		{
 			yyVAL.bytes = []byte("cp866")
 		}
 	case 275:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1496
+		//line yacc.y:1496
 		{
 			yyVAL.bytes = []byte("cp932")
 		}
 	case 276:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1498
+		//line yacc.y:1498
 		{
 			yyVAL.bytes = []byte("dec8")
 		}
 	case 277:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1500
+		//line yacc.y:1500
 		{
 			yyVAL.bytes = []byte("eucjpms")
 		}
 	case 278:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1502
+		//line yacc.y:1502
 		{
 			yyVAL.bytes = []byte("euckr")
 		}
 	case 279:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1504
+		//line yacc.y:1504
 		{
 			yyVAL.bytes = []byte("gb2312")
 		}
 	case 280:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1506
+		//line yacc.y:1506
 		{
 			yyVAL.bytes = []byte("gbk")
 		}
 	case 281:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1508
+		//line yacc.y:1508
 		{
 			yyVAL.bytes = []byte("geostd8")
 		}
 	case 282:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1510
+		//line yacc.y:1510
 		{
 			yyVAL.bytes = []byte("greek")
 		}
 	case 283:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1512
+		//line yacc.y:1512
 		{
 			yyVAL.bytes = []byte("hebrew")
 		}
 	case 284:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1514
+		//line yacc.y:1514
 		{
 			yyVAL.bytes = []byte("hp8")
 		}
 	case 285:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1516
+		//line yacc.y:1516
 		{
 			yyVAL.bytes = []byte("keybcs2")
 		}
 	case 286:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1518
+		//line yacc.y:1518
 		{
 			yyVAL.bytes = []byte("koi8r")
 		}
 	case 287:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1520
+		//line yacc.y:1520
 		{
 			yyVAL.bytes = []byte("koi8u")
 		}
 	case 288:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1522
+		//line yacc.y:1522
 		{
 			yyVAL.bytes = []byte("latin1")
 		}
 	case 289:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1524
+		//line yacc.y:1524
 		{
 			yyVAL.bytes = []byte("latin2")
 		}
 	case 290:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1526
+		//line yacc.y:1526
 		{
 			yyVAL.bytes = []byte("latin5")
 		}
 	case 291:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1528
+		//line yacc.y:1528
 		{
 			yyVAL.bytes = []byte("latin7")
 		}
 	case 292:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1530
+		//line yacc.y:1530
 		{
 			yyVAL.bytes = []byte("macce")
 		}
 	case 293:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1532
+		//line yacc.y:1532
 		{
 			yyVAL.bytes = []byte("macroman")
 		}
 	case 294:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1534
+		//line yacc.y:1534
 		{
 			yyVAL.bytes = []byte("sjis")
 		}
 	case 295:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1536
+		//line yacc.y:1536
 		{
 			yyVAL.bytes = []byte("swe7")
 		}
 	case 296:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1538
+		//line yacc.y:1538
 		{
 			yyVAL.bytes = []byte("tis620")
 		}
 	case 297:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1540
+		//line yacc.y:1540
 		{
 			yyVAL.bytes = []byte("ucs2")
 		}
 	case 298:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1542
+		//line yacc.y:1542
 		{
 			yyVAL.bytes = []byte("ujis")
 		}
 	case 299:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1544
+		//line yacc.y:1544
 		{
 			yyVAL.bytes = []byte("utf16")
 		}
 	case 300:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1546
+		//line yacc.y:1546
 		{
 			yyVAL.bytes = []byte("utf16le")
 		}
 	case 301:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1548
+		//line yacc.y:1548
 		{
 			yyVAL.bytes = []byte("utf32")
 		}
 	case 302:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1550
+		//line yacc.y:1550
 		{
 			yyVAL.bytes = []byte("utf8")
 		}
 	case 303:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1552
+		//line yacc.y:1552
 		{
 			yyVAL.bytes = []byte("utf8mb4")
 		}
 	case 304:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1556
+		//line yacc.y:1556
 		{
 			yyVAL.bytes = []byte("armscii8_general_ci")
 		}
 	case 305:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1558
+		//line yacc.y:1558
 		{
 			yyVAL.bytes = []byte("armscii8_bin")
 		}
 	case 306:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1560
+		//line yacc.y:1560
 		{
 			yyVAL.bytes = []byte("ascii_general_ci")
 		}
 	case 307:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1562
+		//line yacc.y:1562
 		{
 			yyVAL.bytes = []byte("ascii_bin")
 		}
 	case 308:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1564
+		//line yacc.y:1564
 		{
 			yyVAL.bytes = []byte("big5_chinese_ci")
 		}
 	case 309:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1566
+		//line yacc.y:1566
 		{
 			yyVAL.bytes = []byte("big5_bin")
 		}
 	case 310:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1568
+		//line yacc.y:1568
 		{
 			yyVAL.bytes = []byte("binary")
 		}
 	case 311:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1570
+		//line yacc.y:1570
 		{
 			yyVAL.bytes = []byte("cp1250_general_ci")
 		}
 	case 312:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1572
+		//line yacc.y:1572
 		{
 			yyVAL.bytes = []byte("cp1250_bin")
 		}
 	case 313:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1574
+		//line yacc.y:1574
 		{
 			yyVAL.bytes = []byte("cp1251_chinese_ci")
 		}
 	case 314:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1576
+		//line yacc.y:1576
 		{
 			yyVAL.bytes = []byte("cp1251_chinese_cs")
 		}
 	case 315:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1578
+		//line yacc.y:1578
 		{
 			yyVAL.bytes = []byte("cp1251_bin")
 		}
 	case 316:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1580
+		//line yacc.y:1580
 		{
 			yyVAL.bytes = []byte("cp1256_chinese_ci")
 		}
 	case 317:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1582
+		//line yacc.y:1582
 		{
 			yyVAL.bytes = []byte("cp1256_bin")
 		}
 	case 318:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1584
+		//line yacc.y:1584
 		{
 			yyVAL.bytes = []byte("cp1257_chinese_ci")
 		}
 	case 319:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1586
+		//line yacc.y:1586
 		{
 			yyVAL.bytes = []byte("cp1257_bin")
 		}
 	case 320:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1588
+		//line yacc.y:1588
 		{
 			yyVAL.bytes = []byte("cp850_chinese_ci")
 		}
 	case 321:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1590
+		//line yacc.y:1590
 		{
 			yyVAL.bytes = []byte("cp850_bin")
 		}
 	case 322:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1592
+		//line yacc.y:1592
 		{
 			yyVAL.bytes = []byte("cp852_chinese_ci")
 		}
 	case 323:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1594
+		//line yacc.y:1594
 		{
 			yyVAL.bytes = []byte("cp852_bin")
 		}
 	case 324:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1596
+		//line yacc.y:1596
 		{
 			yyVAL.bytes = []byte("cp866_chinese_ci")
 		}
 	case 325:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1598
+		//line yacc.y:1598
 		{
 			yyVAL.bytes = []byte("cp866_bin")
 		}
 	case 326:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1600
+		//line yacc.y:1600
 		{
 			yyVAL.bytes = []byte("cp932_japanese_ci")
 		}
 	case 327:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1602
+		//line yacc.y:1602
 		{
 			yyVAL.bytes = []byte("cp932_bin")
 		}
 	case 328:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1604
+		//line yacc.y:1604
 		{
 			yyVAL.bytes = []byte("dec8_swedish_ci")
 		}
 	case 329:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1606
+		//line yacc.y:1606
 		{
 			yyVAL.bytes = []byte("dec8_bin")
 		}
 	case 330:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1608
+		//line yacc.y:1608
 		{
 			yyVAL.bytes = []byte("eucjpms_japanese_ci")
 		}
 	case 331:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1610
+		//line yacc.y:1610
 		{
 			yyVAL.bytes = []byte("eucjpms_bin")
 		}
 	case 332:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1612
+		//line yacc.y:1612
 		{
 			yyVAL.bytes = []byte("euckr_korean_ci")
 		}
 	case 333:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1614
+		//line yacc.y:1614
 		{
 			yyVAL.bytes = []byte("euckr_bin")
 		}
 	case 334:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1616
+		//line yacc.y:1616
 		{
 			yyVAL.bytes = []byte("gb2312_chinese_ci")
 		}
 	case 335:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1618
+		//line yacc.y:1618
 		{
 			yyVAL.bytes = []byte("gb2312_bin")
 		}
 	case 336:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1620
+		//line yacc.y:1620
 		{
 			yyVAL.bytes = []byte("gbk_chinese_ci")
 		}
 	case 337:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1622
+		//line yacc.y:1622
 		{
 			yyVAL.bytes = []byte("gbk_bin")
 		}
 	case 338:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1624
+		//line yacc.y:1624
 		{
 			yyVAL.bytes = []byte("geostd8_general_ci")
 		}
 	case 339:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1626
+		//line yacc.y:1626
 		{
 			yyVAL.bytes = []byte("geostd8_bin")
 		}
 	case 340:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1628
+		//line yacc.y:1628
 		{
 			yyVAL.bytes = []byte("greek_general_ci")
 		}
 	case 341:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1630
+		//line yacc.y:1630
 		{
 			yyVAL.bytes = []byte("greek_bin")
 		}
 	case 342:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1632
+		//line yacc.y:1632
 		{
 			yyVAL.bytes = []byte("hebrew_general_ci")
 		}
 	case 343:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1634
+		//line yacc.y:1634
 		{
 			yyVAL.bytes = []byte("hebrew_bin")
 		}
 	case 344:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1636
+		//line yacc.y:1636
 		{
 			yyVAL.bytes = []byte("hp8_english_ci")
 		}
 	case 345:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1638
+		//line yacc.y:1638
 		{
 			yyVAL.bytes = []byte("hp8_bin")
 		}
 	case 346:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1640
+		//line yacc.y:1640
 		{
 			yyVAL.bytes = []byte("keybcs2_general_ci")
 		}
 	case 347:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1642
+		//line yacc.y:1642
 		{
 			yyVAL.bytes = []byte("keybcs2_bin")
 		}
 	case 348:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1644
+		//line yacc.y:1644
 		{
 			yyVAL.bytes = []byte("koi8r_general_ci")
 		}
 	case 349:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1646
+		//line yacc.y:1646
 		{
 			yyVAL.bytes = []byte("koi8r_bin")
 		}
 	case 350:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1648
+		//line yacc.y:1648
 		{
 			yyVAL.bytes = []byte("koi8u_general_ci")
 		}
 	case 351:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1650
+		//line yacc.y:1650
 		{
 			yyVAL.bytes = []byte("koi8u_bin")
 		}
 	case 352:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1652
+		//line yacc.y:1652
 		{
 			yyVAL.bytes = []byte("latin1_general_ci")
 		}
 	case 353:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1654
+		//line yacc.y:1654
 		{
 			yyVAL.bytes = []byte("latin1_general_cs")
 		}
 	case 354:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1656
+		//line yacc.y:1656
 		{
 			yyVAL.bytes = []byte("latin1_bin")
 		}
 	case 355:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1658
+		//line yacc.y:1658
 		{
 			yyVAL.bytes = []byte("latin2_general_ci")
 		}
 	case 356:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1660
+		//line yacc.y:1660
 		{
 			yyVAL.bytes = []byte("latin2_bin")
 		}
 	case 357:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1662
+		//line yacc.y:1662
 		{
 			yyVAL.bytes = []byte("latin5_turkish_ci")
 		}
 	case 358:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1664
+		//line yacc.y:1664
 		{
 			yyVAL.bytes = []byte("latin5_bin")
 		}
 	case 359:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1666
+		//line yacc.y:1666
 		{
 			yyVAL.bytes = []byte("latin7_general_ci")
 		}
 	case 360:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1668
+		//line yacc.y:1668
 		{
 			yyVAL.bytes = []byte("latin7_general_cs")
 		}
 	case 361:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1670
+		//line yacc.y:1670
 		{
 			yyVAL.bytes = []byte("latin7_bin")
 		}
 	case 362:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1672
+		//line yacc.y:1672
 		{
 			yyVAL.bytes = []byte("macce_general_ci")
 		}
 	case 363:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1674
+		//line yacc.y:1674
 		{
 			yyVAL.bytes = []byte("macce_bin")
 		}
 	case 364:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1676
+		//line yacc.y:1676
 		{
 			yyVAL.bytes = []byte("macroman_general_ci")
 		}
 	case 365:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1678
+		//line yacc.y:1678
 		{
 			yyVAL.bytes = []byte("macroman_bin")
 		}
 	case 366:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1680
+		//line yacc.y:1680
 		{
 			yyVAL.bytes = []byte("sjis_japanese_ci")
 		}
 	case 367:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1682
+		//line yacc.y:1682
 		{
 			yyVAL.bytes = []byte("sjis_bin")
 		}
 	case 368:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1684
+		//line yacc.y:1684
 		{
 			yyVAL.bytes = []byte("swe7_swedish_ci")
 		}
 	case 369:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1686
+		//line yacc.y:1686
 		{
 			yyVAL.bytes = []byte("swe7_bin")
 		}
 	case 370:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1688
+		//line yacc.y:1688
 		{
 			yyVAL.bytes = []byte("tis620_thai_ci")
 		}
 	case 371:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1690
+		//line yacc.y:1690
 		{
 			yyVAL.bytes = []byte("tis620_bin")
 		}
 	case 372:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1692
+		//line yacc.y:1692
 		{
 			yyVAL.bytes = []byte("ucs2_general_ci")
 		}
 	case 373:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1694
+		//line yacc.y:1694
 		{
 			yyVAL.bytes = []byte("ucs2_unicode_ci")
 		}
 	case 374:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1696
+		//line yacc.y:1696
 		{
 			yyVAL.bytes = []byte("ucs2_bin")
 		}
 	case 375:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1698
+		//line yacc.y:1698
 		{
 			yyVAL.bytes = []byte("ujis_japanese_ci")
 		}
 	case 376:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1700
+		//line yacc.y:1700
 		{
 			yyVAL.bytes = []byte("ujis_bin")
 		}
 	case 377:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1702
+		//line yacc.y:1702
 		{
 			yyVAL.bytes = []byte("utf16_general_ci")
 		}
 	case 378:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1704
+		//line yacc.y:1704
 		{
 			yyVAL.bytes = []byte("utf16_unicode_ci")
 		}
 	case 379:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1706
+		//line yacc.y:1706
 		{
 			yyVAL.bytes = []byte("utf16_bin")
 		}
 	case 380:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1708
+		//line yacc.y:1708
 		{
 			yyVAL.bytes = []byte("utf16le_general_ci")
 		}
 	case 381:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1710
+		//line yacc.y:1710
 		{
 			yyVAL.bytes = []byte("utf16le_bin")
 		}
 	case 382:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1712
+		//line yacc.y:1712
 		{
 			yyVAL.bytes = []byte("utf32_general_ci")
 		}
 	case 383:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1714
+		//line yacc.y:1714
 		{
 			yyVAL.bytes = []byte("utf32_unicode_ci")
 		}
 	case 384:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1716
+		//line yacc.y:1716
 		{
 			yyVAL.bytes = []byte("utf32_bin")
 		}
 	case 385:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1718
+		//line yacc.y:1718
 		{
 			yyVAL.bytes = []byte("utf8_general_ci")
 		}
 	case 386:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1720
+		//line yacc.y:1720
 		{
 			yyVAL.bytes = []byte("utf8_unicode_ci")
 		}
 	case 387:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1722
+		//line yacc.y:1722
 		{
 			yyVAL.bytes = []byte("utf8_bin")
 		}
 	case 388:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1724
+		//line yacc.y:1724
 		{
 			yyVAL.bytes = []byte("utf8mb4_general_ci")
 		}
 	case 389:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1726
+		//line yacc.y:1726
 		{
 			yyVAL.bytes = []byte("utf8mb4_unicode_ci")
 		}
 	case 390:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1728
+		//line yacc.y:1728
 		{
 			yyVAL.bytes = []byte("utf8mb4_bin")
 		}
 	case 391:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1733
+		//line yacc.y:1733
 		{
 			yyVAL.bytes = []byte("read committed")
 		}
 	case 392:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1735
+		//line yacc.y:1735
 		{
 			yyVAL.bytes = []byte("read uncommitted")
 		}
 	case 393:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1737
+		//line yacc.y:1737
 		{
 			yyVAL.bytes = []byte("repeatable read")
 		}
 	case 394:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1739
+		//line yacc.y:1739
 		{
 			yyVAL.bytes = []byte("serializable")
 		}
 	case 395:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1742
+		//line yacc.y:1742
 		{
 			yyVAL.bytes = nil
 		}
 	case 396:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1744
+		//line yacc.y:1744
 		{
 			yyVAL.bytes = []byte("session")
 		}
 	case 397:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1746
+		//line yacc.y:1746
 		{
 			yyVAL.bytes = []byte("global")
 		}
 	case 398:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1749
+		//line yacc.y:1749
 		{
 			yyVAL.expr = nil
 		}
 	case 399:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1751
+		//line yacc.y:1751
 		{
 			yyVAL.expr = &LikeExpr{Expr: yyDollar[2].valExpr}
 		}
 	case 400:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1755
+		//line yacc.y:1755
 		{
 			yyVAL.expr = &WhereExpr{Expr: yyDollar[2].boolExpr}
 		}
 	case 401:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1761
+		//line yacc.y:1761
 		{
 			yyVAL.createDefs = CreateDefinitions{yyDollar[1].createDef}
 		}
 	case 402:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1765
+		//line yacc.y:1765
 		{
 			yyVAL.createDefs = append(yyDollar[1].createDefs, yyDollar[3].createDef)
 		}
 	case 403:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1771
+		//line yacc.y:1771
 		{
 			yyVAL.createDef = &CreateColumnDefinition{ColumnName: yyDollar[1].colName, ColumnDef: yyDollar[2].columnDef}
 		}
 	case 404:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1775
+		//line yacc.y:1775
 		{
 			yyVAL.createDef = &CreatePrimaryKeyDefinition{Symbol: yyDollar[1].bytes, IndexType: yyDollar[4].bytes, IndexColumns: yyDollar[6].idxColNames}
 		}
 	case 405:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1779
+		//line yacc.y:1779
 		{
 			yyVAL.createDef = &CreateIndexDefinition{Name: yyDollar[2].bytes, IndexType: yyDollar[3].bytes, IndexColumns: yyDollar[5].idxColNames}
 		}
 	case 406:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1783
+		//line yacc.y:1783
 		{
 			yyVAL.createDef = &CreateIndexDefinition{Name: yyDollar[2].bytes, IndexType: yyDollar[3].bytes, IndexColumns: yyDollar[5].idxColNames}
 		}
 	case 407:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1787
+		//line yacc.y:1787
 		{
 			yyVAL.createDef = &CreateUniqueIndexDefinition{Symbol: yyDollar[1].bytes, Name: yyDollar[3].bytes, IndexType: yyDollar[4].bytes, IndexColumns: yyDollar[6].idxColNames}
 		}
 	case 408:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1791
+		//line yacc.y:1791
 		{
 			yyVAL.createDef = &CreateUniqueIndexDefinition{Symbol: yyDollar[1].bytes, Name: yyDollar[4].bytes, IndexType: yyDollar[5].bytes, IndexColumns: yyDollar[7].idxColNames}
 		}
 	case 409:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1795
+		//line yacc.y:1795
 		{
 			yyVAL.createDef = &CreateUniqueIndexDefinition{Symbol: yyDollar[1].bytes, Name: yyDollar[4].bytes, IndexType: yyDollar[5].bytes, IndexColumns: yyDollar[7].idxColNames}
 		}
 	case 410:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1799
+		//line yacc.y:1799
 		{
 			yyVAL.createDef = &CreateForeignKeyDefinition{Symbol: yyDollar[1].bytes, IndexColumns: yyDollar[5].idxColNames, ReferenceDef: yyDollar[7].bytes}
 		}
 	case 411:
 		yyDollar = yyS[yypt-9 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1805
+		//line yacc.y:1805
 		{
 			yyVAL.columnDef = &ColumnDefinition{Type: yyDollar[1].dataType,
 				IsNotNull:       yyDollar[2].boolean,
@@ -4265,823 +4265,823 @@ yydefault:
 		}
 	case 412:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1819
+		//line yacc.y:1819
 		{
 			yyVAL.dataType = &DataType{TypeName: "bit"}
 		}
 	case 413:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1823
+		//line yacc.y:1823
 		{
 			yyVAL.dataType = &DataType{TypeName: "bit(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 414:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1827
+		//line yacc.y:1827
 		{
 			yyVAL.dataType = &DataType{TypeName: "tinyint", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 415:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1831
+		//line yacc.y:1831
 		{
 			yyVAL.dataType = &DataType{TypeName: "tinyint(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 416:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1835
+		//line yacc.y:1835
 		{
 			yyVAL.dataType = &DataType{TypeName: "smallint", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 417:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1839
+		//line yacc.y:1839
 		{
 			yyVAL.dataType = &DataType{TypeName: "smallint(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 418:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1843
+		//line yacc.y:1843
 		{
 			yyVAL.dataType = &DataType{TypeName: "mediumint", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 419:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1847
+		//line yacc.y:1847
 		{
 			yyVAL.dataType = &DataType{TypeName: "mediumint(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 420:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1851
+		//line yacc.y:1851
 		{
 			yyVAL.dataType = &DataType{TypeName: "int", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 421:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1855
+		//line yacc.y:1855
 		{
 			yyVAL.dataType = &DataType{TypeName: "int(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 422:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1859
+		//line yacc.y:1859
 		{
 			yyVAL.dataType = &DataType{TypeName: "integer", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 423:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1863
+		//line yacc.y:1863
 		{
 			yyVAL.dataType = &DataType{TypeName: "integer(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 424:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1867
+		//line yacc.y:1867
 		{
 			yyVAL.dataType = &DataType{TypeName: "bigint", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 425:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1871
+		//line yacc.y:1871
 		{
 			yyVAL.dataType = &DataType{TypeName: "bigint(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 426:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1875
+		//line yacc.y:1875
 		{
 			yyVAL.dataType = &DataType{TypeName: "real", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 427:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1879
+		//line yacc.y:1879
 		{
 			yyVAL.dataType = &DataType{TypeName: "real(" + string(yyDollar[3].bytes) + "," + string(yyDollar[5].bytes) + ")", IsUnsigned: yyDollar[7].boolean, IsZeroFill: yyDollar[8].boolean}
 		}
 	case 428:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1883
+		//line yacc.y:1883
 		{
 			yyVAL.dataType = &DataType{TypeName: "double", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 429:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1887
+		//line yacc.y:1887
 		{
 			yyVAL.dataType = &DataType{TypeName: "double(" + string(yyDollar[3].bytes) + "," + string(yyDollar[5].bytes) + ")", IsUnsigned: yyDollar[7].boolean, IsZeroFill: yyDollar[8].boolean}
 		}
 	case 430:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1891
+		//line yacc.y:1891
 		{
 			yyVAL.dataType = &DataType{TypeName: "float", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 431:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1895
+		//line yacc.y:1895
 		{
 			yyVAL.dataType = &DataType{TypeName: "float(" + string(yyDollar[3].bytes) + "," + string(yyDollar[5].bytes) + ")", IsUnsigned: yyDollar[7].boolean, IsZeroFill: yyDollar[8].boolean}
 		}
 	case 432:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1899
+		//line yacc.y:1899
 		{
 			yyVAL.dataType = &DataType{TypeName: "decimal", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 433:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1903
+		//line yacc.y:1903
 		{
 			yyVAL.dataType = &DataType{TypeName: "decimal(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 434:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1907
+		//line yacc.y:1907
 		{
 			yyVAL.dataType = &DataType{TypeName: "decimal(" + string(yyDollar[3].bytes) + "," + string(yyDollar[5].bytes) + ")", IsUnsigned: yyDollar[7].boolean, IsZeroFill: yyDollar[8].boolean}
 		}
 	case 435:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1911
+		//line yacc.y:1911
 		{
 			yyVAL.dataType = &DataType{TypeName: "date"}
 		}
 	case 436:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1915
+		//line yacc.y:1915
 		{
 			yyVAL.dataType = &DataType{TypeName: "time"}
 		}
 	case 437:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1919
+		//line yacc.y:1919
 		{
 			yyVAL.dataType = &DataType{TypeName: "time(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 438:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1923
+		//line yacc.y:1923
 		{
 			yyVAL.dataType = &DataType{TypeName: "timestamp"}
 		}
 	case 439:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1927
+		//line yacc.y:1927
 		{
 			yyVAL.dataType = &DataType{TypeName: "timestamp(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 440:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1931
+		//line yacc.y:1931
 		{
 			yyVAL.dataType = &DataType{TypeName: "datetime"}
 		}
 	case 441:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1935
+		//line yacc.y:1935
 		{
 			yyVAL.dataType = &DataType{TypeName: "datetime(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 442:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1939
+		//line yacc.y:1939
 		{
 			yyVAL.dataType = &DataType{TypeName: "year"}
 		}
 	case 443:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1943
+		//line yacc.y:1943
 		{
 			yyVAL.dataType = &DataType{TypeName: "char", IsBinary: yyDollar[2].boolean, Charset: yyDollar[3].bytes, Collate: yyDollar[4].bytes}
 		}
 	case 444:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1947
+		//line yacc.y:1947
 		{
 			yyVAL.dataType = &DataType{TypeName: "char(" + string(yyDollar[3].bytes) + ")", IsBinary: yyDollar[5].boolean, Charset: yyDollar[6].bytes, Collate: yyDollar[7].bytes}
 		}
 	case 445:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1951
+		//line yacc.y:1951
 		{
 			yyVAL.dataType = &DataType{TypeName: "varchar(" + string(yyDollar[3].bytes) + ")", IsBinary: yyDollar[5].boolean, Charset: yyDollar[6].bytes, Collate: yyDollar[7].bytes}
 		}
 	case 446:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1955
+		//line yacc.y:1955
 		{
 			yyVAL.dataType = &DataType{TypeName: "binary"}
 		}
 	case 447:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1959
+		//line yacc.y:1959
 		{
 			yyVAL.dataType = &DataType{TypeName: "binary(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 448:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1963
+		//line yacc.y:1963
 		{
 			yyVAL.dataType = &DataType{TypeName: "varbinary(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 449:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1967
+		//line yacc.y:1967
 		{
 			yyVAL.dataType = &DataType{TypeName: "tinyblob"}
 		}
 	case 450:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1971
+		//line yacc.y:1971
 		{
 			yyVAL.dataType = &DataType{TypeName: "blob"}
 		}
 	case 451:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1975
+		//line yacc.y:1975
 		{
 			yyVAL.dataType = &DataType{TypeName: "mediumblob"}
 		}
 	case 452:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1979
+		//line yacc.y:1979
 		{
 			yyVAL.dataType = &DataType{TypeName: "longblob"}
 		}
 	case 453:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1983
+		//line yacc.y:1983
 		{
 			yyVAL.dataType = &DataType{TypeName: "tinytext", IsBinary: yyDollar[2].boolean, Charset: yyDollar[3].bytes, Collate: yyDollar[4].bytes}
 		}
 	case 454:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1987
+		//line yacc.y:1987
 		{
 			yyVAL.dataType = &DataType{TypeName: "text", IsBinary: yyDollar[2].boolean, Charset: yyDollar[3].bytes, Collate: yyDollar[4].bytes}
 		}
 	case 455:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1991
+		//line yacc.y:1991
 		{
 			yyVAL.dataType = &DataType{TypeName: "mediumtext", IsBinary: yyDollar[2].boolean, Charset: yyDollar[3].bytes, Collate: yyDollar[4].bytes}
 		}
 	case 456:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1995
+		//line yacc.y:1995
 		{
 			yyVAL.dataType = &DataType{TypeName: "longtext", IsBinary: yyDollar[2].boolean, Charset: yyDollar[3].bytes, Collate: yyDollar[4].bytes}
 		}
 	case 457:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:1999
+		//line yacc.y:1999
 		{
 			yyVAL.dataType = &DataType{TypeName: "enum(" + String(yyDollar[3].valExprs) + ")", Charset: yyDollar[5].bytes, Collate: yyDollar[6].bytes}
 		}
 	case 458:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2003
+		//line yacc.y:2003
 		{
 			yyVAL.dataType = &DataType{TypeName: "set(" + String(yyDollar[3].valExprs) + ")", Charset: yyDollar[5].bytes, Collate: yyDollar[6].bytes}
 		}
 	case 459:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2008
+		//line yacc.y:2008
 		{
 			yyVAL.boolean = false
 		}
 	case 460:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2010
+		//line yacc.y:2010
 		{
 			yyVAL.boolean = false
 		}
 	case 461:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2012
+		//line yacc.y:2012
 		{
 			yyVAL.boolean = true
 		}
 	case 462:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2015
+		//line yacc.y:2015
 		{
 			yyVAL.valExpr = nil
 		}
 	case 463:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2017
+		//line yacc.y:2017
 		{
 			yyVAL.valExpr = yyDollar[2].valExpr
 		}
 	case 464:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2020
+		//line yacc.y:2020
 		{
 			yyVAL.boolean = false
 		}
 	case 465:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2022
+		//line yacc.y:2022
 		{
 			yyVAL.boolean = true
 		}
 	case 466:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2025
+		//line yacc.y:2025
 		{
 			yyVAL.bytes = nil
 		}
 	case 467:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2027
+		//line yacc.y:2027
 		{
 			yyVAL.bytes = []byte("unique key")
 		}
 	case 468:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2029
+		//line yacc.y:2029
 		{
 			yyVAL.bytes = []byte("unique key")
 		}
 	case 469:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2031
+		//line yacc.y:2031
 		{
 			yyVAL.bytes = []byte("primary key")
 		}
 	case 470:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2033
+		//line yacc.y:2033
 		{
 			yyVAL.bytes = []byte("primary key")
 		}
 	case 471:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2036
+		//line yacc.y:2036
 		{
 			yyVAL.valExpr = nil
 		}
 	case 472:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2038
+		//line yacc.y:2038
 		{
 			yyVAL.valExpr = StrVal(yyDollar[2].bytes)
 		}
 	case 473:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2043
+		//line yacc.y:2043
 		{
 			yyVAL.bytes = nil
 		}
 	case 474:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2045
+		//line yacc.y:2045
 		{
 			yyVAL.bytes = []byte("fixed")
 		}
 	case 475:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2047
+		//line yacc.y:2047
 		{
 			yyVAL.bytes = []byte("dynamic")
 		}
 	case 476:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2049
+		//line yacc.y:2049
 		{
 			yyVAL.bytes = []byte("default")
 		}
 	case 477:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2052
+		//line yacc.y:2052
 		{
 			yyVAL.bytes = nil
 		}
 	case 478:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2054
+		//line yacc.y:2054
 		{
 			yyVAL.bytes = []byte("disk")
 		}
 	case 479:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2056
+		//line yacc.y:2056
 		{
 			yyVAL.bytes = []byte("memory")
 		}
 	case 480:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2058
+		//line yacc.y:2058
 		{
 			yyVAL.bytes = []byte("default")
 		}
 	case 481:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2061
+		//line yacc.y:2061
 		{
 			yyVAL.bytes = nil
 		}
 	case 482:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2063
+		//line yacc.y:2063
 		{
 			yyVAL.bytes = yyDollar[1].bytes
 		}
 	case 483:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2067
+		//line yacc.y:2067
 		{
 			yyVAL.bytes = []byte("references " + String(yyDollar[2].tableName) + "(" + String(yyDollar[4].idxColNames) + ")" + string(yyDollar[6].bytes) + string(yyDollar[7].bytes))
 		}
 	case 484:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2070
+		//line yacc.y:2070
 		{
 			yyVAL.bytes = nil
 		}
 	case 485:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2072
+		//line yacc.y:2072
 		{
 			yyVAL.bytes = []byte("match full")
 		}
 	case 486:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2074
+		//line yacc.y:2074
 		{
 			yyVAL.bytes = []byte("match partial")
 		}
 	case 487:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2076
+		//line yacc.y:2076
 		{
 			yyVAL.bytes = []byte("match simple")
 		}
 	case 488:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2079
+		//line yacc.y:2079
 		{
 			yyVAL.bytes = nil
 		}
 	case 489:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2081
+		//line yacc.y:2081
 		{
 			yyVAL.bytes = []byte("on delete " + string(yyDollar[3].bytes))
 		}
 	case 490:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2083
+		//line yacc.y:2083
 		{
 			yyVAL.bytes = []byte("on update " + string(yyDollar[3].bytes))
 		}
 	case 491:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2085
+		//line yacc.y:2085
 		{
 			yyVAL.bytes = []byte("on delete " + string(yyDollar[3].bytes) + " on update " + string(yyDollar[6].bytes))
 		}
 	case 492:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2088
+		//line yacc.y:2088
 		{
 			yyVAL.bytes = nil
 		}
 	case 493:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2090
+		//line yacc.y:2090
 		{
 			yyVAL.bytes = yyDollar[1].bytes
 		}
 	case 494:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2094
+		//line yacc.y:2094
 		{
 			yyVAL.bytes = []byte("restrict")
 		}
 	case 495:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2096
+		//line yacc.y:2096
 		{
 			yyVAL.bytes = []byte("cascade")
 		}
 	case 496:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2098
+		//line yacc.y:2098
 		{
 			yyVAL.bytes = []byte("set null")
 		}
 	case 497:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2100
+		//line yacc.y:2100
 		{
 			yyVAL.bytes = []byte("no action")
 		}
 	case 498:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2103
+		//line yacc.y:2103
 		{
 			yyVAL.boolean = false
 		}
 	case 499:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2105
+		//line yacc.y:2105
 		{
 			yyVAL.boolean = true
 		}
 	case 500:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2108
+		//line yacc.y:2108
 		{
 			yyVAL.boolean = false
 		}
 	case 501:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2110
+		//line yacc.y:2110
 		{
 			yyVAL.boolean = true
 		}
 	case 502:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2113
+		//line yacc.y:2113
 		{
 			yyVAL.boolean = false
 		}
 	case 503:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2115
+		//line yacc.y:2115
 		{
 			yyVAL.boolean = true
 		}
 	case 504:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2118
+		//line yacc.y:2118
 		{
 			yyVAL.bytes = nil
 		}
 	case 505:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2120
+		//line yacc.y:2120
 		{
 			yyVAL.bytes = yyDollar[3].bytes
 		}
 	case 506:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2123
+		//line yacc.y:2123
 		{
 			yyVAL.bytes = nil
 		}
 	case 507:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2125
+		//line yacc.y:2125
 		{
 			yyVAL.bytes = yyDollar[2].bytes
 		}
 	case 508:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2128
+		//line yacc.y:2128
 		{
 			yyVAL.bytes = nil
 		}
 	case 509:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2130
+		//line yacc.y:2130
 		{
 			yyVAL.bytes = yyDollar[2].bytes
 		}
 	case 510:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2133
+		//line yacc.y:2133
 		{
 			yyVAL.optKeyVals = nil
 		}
 	case 511:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2135
+		//line yacc.y:2135
 		{
 			yyVAL.optKeyVals = yyDollar[1].optKeyVals
 		}
 	case 512:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2139
+		//line yacc.y:2139
 		{
 			yyVAL.optKeyVals = OptionKeyValues{yyDollar[1].optKeyVal}
 		}
 	case 513:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2141
+		//line yacc.y:2141
 		{
 			yyVAL.optKeyVals = append(yyDollar[1].optKeyVals, yyDollar[2].optKeyVal)
 		}
 	case 514:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2145
+		//line yacc.y:2145
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "engine", Value: string(yyDollar[3].bytes)}
 		}
 	case 515:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2149
+		//line yacc.y:2149
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "auto_increment", Value: string(yyDollar[3].bytes)}
 		}
 	case 516:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2153
+		//line yacc.y:2153
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "charset", Value: string(yyDollar[5].bytes)}
 		}
 	case 517:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2157
+		//line yacc.y:2157
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "charset", Value: string(yyDollar[4].bytes)}
 		}
 	case 518:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2161
+		//line yacc.y:2161
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "charset", Value: string(yyDollar[4].bytes)}
 		}
 	case 519:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2165
+		//line yacc.y:2165
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "charset", Value: string(yyDollar[3].bytes)}
 		}
 	case 520:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2169
+		//line yacc.y:2169
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "collate", Value: string(yyDollar[4].bytes)}
 		}
 	case 521:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2173
+		//line yacc.y:2173
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "collate", Value: string(yyDollar[3].bytes)}
 		}
 	case 522:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2177
+		//line yacc.y:2177
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "comment", Value: String(StrVal(yyDollar[3].bytes))}
 		}
 	case 523:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2182
+		//line yacc.y:2182
 		{
 			yyVAL.alterSpecs = nil
 		}
 	case 524:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2184
+		//line yacc.y:2184
 		{
 			yyVAL.alterSpecs = yyDollar[1].alterSpecs
 		}
 	case 525:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2188
+		//line yacc.y:2188
 		{
 			yyVAL.alterSpecs = AlterSpecifications{yyDollar[1].alterSpec}
 		}
 	case 526:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2190
+		//line yacc.y:2190
 		{
 			yyVAL.alterSpecs = append(yyDollar[1].alterSpecs, yyDollar[3].alterSpec)
 		}
 	case 527:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2194
+		//line yacc.y:2194
 		{
 			yyVAL.alterSpec = yyDollar[1].optKeyVals
 		}
 	case 528:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2198
+		//line yacc.y:2198
 		{
 			yyVAL.alterSpec = &AddOrModifyColumnSpec{Action: "add", ColumnName: yyDollar[3].colName, ColumnDef: yyDollar[4].columnDef, FirstOrAfterColumn: yyDollar[5].fiOAfCol}
 		}
 	case 529:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2202
+		//line yacc.y:2202
 		{
 			yyVAL.alterSpec = &AddIndexSpec{Name: yyDollar[3].bytes, IndexType: yyDollar[4].bytes, IndexColumns: yyDollar[6].idxColNames}
 		}
 	case 530:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2206
+		//line yacc.y:2206
 		{
 			yyVAL.alterSpec = &AddIndexSpec{Name: yyDollar[3].bytes, IndexType: yyDollar[4].bytes, IndexColumns: yyDollar[6].idxColNames}
 		}
 	case 531:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2210
+		//line yacc.y:2210
 		{
 			yyVAL.alterSpec = &AddPrimaryKeySpec{Symbol: yyDollar[2].bytes, IndexType: yyDollar[5].bytes, IndexColumns: yyDollar[7].idxColNames}
 		}
 	case 532:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2214
+		//line yacc.y:2214
 		{
 			yyVAL.alterSpec = &AddUniqueIndexSpec{Symbol: yyDollar[2].bytes, Name: yyDollar[4].bytes, IndexType: yyDollar[5].bytes, IndexColumns: yyDollar[7].idxColNames}
 		}
 	case 533:
 		yyDollar = yyS[yypt-9 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2218
+		//line yacc.y:2218
 		{
 			yyVAL.alterSpec = &AddUniqueIndexSpec{Symbol: yyDollar[2].bytes, Name: yyDollar[5].bytes, IndexType: yyDollar[6].bytes, IndexColumns: yyDollar[8].idxColNames}
 		}
 	case 534:
 		yyDollar = yyS[yypt-9 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2222
+		//line yacc.y:2222
 		{
 			yyVAL.alterSpec = &AddUniqueIndexSpec{Symbol: yyDollar[2].bytes, Name: yyDollar[5].bytes, IndexType: yyDollar[6].bytes, IndexColumns: yyDollar[8].idxColNames}
 		}
 	case 535:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2226
+		//line yacc.y:2226
 		{
 			yyVAL.alterSpec = &AddForeignKeySpec{Symbol: yyDollar[2].bytes, IndexColumns: yyDollar[6].idxColNames, ReferenceDef: yyDollar[8].bytes}
 		}
 	case 536:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2230
+		//line yacc.y:2230
 		{
 			yyVAL.alterSpec = &ChangeColumnSpec{OldColumnName: yyDollar[3].colName, ColumnName: yyDollar[4].colName, ColumnDef: yyDollar[5].columnDef, FirstOrAfterColumn: yyDollar[6].fiOAfCol}
 		}
 	case 537:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2234
+		//line yacc.y:2234
 		{
 			yyVAL.alterSpec = &AddOrModifyColumnSpec{Action: "modify", ColumnName: yyDollar[3].colName, ColumnDef: yyDollar[4].columnDef, FirstOrAfterColumn: yyDollar[5].fiOAfCol}
 		}
 	case 538:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2238
+		//line yacc.y:2238
 		{
 			yyVAL.alterSpec = &DropColumnSpec{ColumnName: yyDollar[3].colName}
 		}
 	case 539:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2242
+		//line yacc.y:2242
 		{
 			yyVAL.alterSpec = &DropPrimaryKeySpec{}
 		}
 	case 540:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2246
+		//line yacc.y:2246
 		{
 			yyVAL.alterSpec = &DropIndexSpec{Name: yyDollar[3].bytes}
 		}
 	case 541:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2250
+		//line yacc.y:2250
 		{
 			yyVAL.alterSpec = &DropIndexSpec{Name: yyDollar[3].bytes}
 		}
 	case 542:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2254
+		//line yacc.y:2254
 		{
 			yyVAL.alterSpec = &DropForeignKeySpec{Name: yyDollar[4].bytes}
 		}
 	case 543:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2258
+		//line yacc.y:2258
 		{
 			yyVAL.alterSpec = &DisableKeysSpec{}
 		}
 	case 544:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2262
+		//line yacc.y:2262
 		{
 			yyVAL.alterSpec = &EnableKeysSpec{}
 		}
 	case 545:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2267
+		//line yacc.y:2267
 		{
 			yyVAL.fiOAfCol = nil
 		}
 	case 546:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2269
+		//line yacc.y:2269
 		{
 			yyVAL.fiOAfCol = yyDollar[1].fiOAfCol
 		}
 	case 547:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2273
+		//line yacc.y:2273
 		{
 			yyVAL.fiOAfCol = &FirstOrAfterColumn{FirstOrAfter: "first", ColumnName: yyDollar[2].colName}
 		}
 	case 548:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line C:\MyGo\src\github.com\berkaroad\saashard\sqlparser\yacc.y:2277
+		//line yacc.y:2277
 		{
 			yyVAL.fiOAfCol = &FirstOrAfterColumn{FirstOrAfter: "after", ColumnName: yyDollar[2].colName}
 		}
