@@ -63,3 +63,7 @@ VIEW, FUNCTION, PROCEDURE or TRIGGER not supported
 ![logical architecture](docs/images/logical_arch.png "logical architecture")
 
 ![logical schema](docs/images/logical_schema.png "logical schema")
+
+## Contact Info
+
+1. QQ Group: SaaShard 487761803
