@@ -13,6 +13,9 @@ go get github.com/berkaroad/saashard
 cd $GOPATH/src/github.com/berkaroad/saashard
 ```
 
+### Binary release
+[binary release](github.com/berkaroad/saashard-binary)
+
 ### Compile
 
 ```
