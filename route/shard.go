@@ -23,14 +23,15 @@
 package route
 
 import (
-	"errors"
 	"hash/crc32"
 	"strconv"
 	"strings"
+
+	"github.com/berkaroad/saashard/errors"
 )
 
 // ShardAlgorithm shard algorithm
-type ShardAlgorithm func(val string, dataNodeCount int) (int, error)
+type ShardAlgorithm func(val string, dataNodeCount int, params ...[]interface{}) (int, error)
 
 // ParseShardAlgorithm parse ShardAlgorithm
 func ParseShardAlgorithm(name string) ShardAlgorithm {
@@ -47,20 +48,21 @@ func ParseShardAlgorithm(name string) ShardAlgorithm {
 }
 
 // HashShardAlgo hash shard algorithm
-func HashShardAlgo(val string, dataNodeCount int) (int, error) {
+func HashShardAlgo(val string, dataNodeCount int, params ...[]interface{}) (int, error) {
+	val = strings.Trim(val, "'")
 	hashCode := crc32.ChecksumIEEE([]byte(val))
 	index := int(hashCode) % dataNodeCount
 	return index, nil
 }
 
 // ModShardAlgo mod shard algorithm
-func ModShardAlgo(val string, dataNodeCount int) (int, error) {
+func ModShardAlgo(val string, dataNodeCount int, params ...[]interface{}) (int, error) {
 	num, err := strconv.Atoi(val)
 	if err != nil {
-		return 0, err
+		return 0, errors.ErrMustPositiveIntegerInModShard
 	}
 	if num <= 0 {
-		return 0, errors.New("negative or zero is not allowed")
+		return 0, errors.ErrMustPositiveIntegerInModShard
 	}
 	index := (num - 1) % dataNodeCount
 	return index, nil

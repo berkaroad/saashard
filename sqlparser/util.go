@@ -41,11 +41,11 @@
 package sqlparser
 
 import (
-	"reflect"
 	"regexp"
 	"strings"
 
 	"github.com/berkaroad/saashard/errors"
+	"github.com/berkaroad/saashard/utils"
 )
 
 var (
@@ -165,7 +165,7 @@ func CheckTableExprs(tabExprs TableExprs, tableNames interface{}) (err error) {
 				}
 				if !isSystemDB {
 					tableName := strings.Trim(strings.ToLower(string(simpExpr.Name)), "`")
-					if isValid := Contains(tableNames, tableName); !isValid {
+					if isValid := utils.Contains(tableNames, tableName); !isValid {
 						err = errors.ErrTableNotExists
 						break
 					}
@@ -378,25 +378,6 @@ func GetColName(node Expr) string {
 	return ""
 }
 
-// Contains is a convenience function that returns
-// true if str matches any of the values.
-func Contains(arr interface{}, item interface{}) bool {
-	arrValue := reflect.ValueOf(arr)
-	switch reflect.TypeOf(arr).Kind() {
-	case reflect.Slice, reflect.Array:
-		for i := 0; i < arrValue.Len(); i++ {
-			if arrValue.Index(i).Interface() == item {
-				return true
-			}
-		}
-	case reflect.Map:
-		if arrValue.MapIndex(reflect.ValueOf(item)).IsValid() {
-			return true
-		}
-	}
-	return false
-}
-
 // SplitSQLStatement is to split multi-sql to single-sql.
 func SplitSQLStatement(multiSQL string) []string {
 	sqlStatementList := regSQLStatement.FindAll([]byte(strings.TrimRight(multiSQL, ";")+";"), -1)
@@ -410,8 +391,7 @@ func SplitSQLStatement(multiSQL string) []string {
 
 // IsSystemDB is system db or not.
 func IsSystemDB(db string) bool {
-	// println("IsSystemDB, current db=", db)
-	return Contains(sysdbs, db)
+	return utils.Contains(sysdbs, db)
 }
 
 func mergeValExprAndError(val1 ValExpr, err1 error, val2 ValExpr, err2 error) (strOrNumValue ValExpr, err error) {

@@ -103,9 +103,10 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*mysql.Result,
 	dataNodes []string, isSlave bool,
 	queryDataNodes map[sqlparser.Statement][]string) (err error) {
-	resultCount := len(statements)
-	for _, dataNode := range dataNodes {
-		node := c.proxy.nodes[dataNode]
+
+	if len(dataNodes) == 1 {
+		resultCount := len(statements)
+		node := c.proxy.nodes[dataNodes[0]]
 		// If in transaction, must exec in the same node.
 		if c.isInTransaction() && node != c.nodeInTrans {
 			return errors.ErrTransInMulti
@@ -233,6 +234,62 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			} else {
 				return errors.ErrNoStatement
 			}
+		}
+	} else {
+		var result *mysql.Result
+		for _, dataNode := range dataNodes {
+			node := c.proxy.nodes[dataNode]
+			statement := statements[0]
+			// If in transaction, must exec in the same node.
+			if c.isInTransaction() && node != c.nodeInTrans {
+				return errors.ErrTransInMulti
+			}
+
+			var conn backend.Connection
+			// Get backend conn from slave or master.
+			if !c.isInTransaction() && isSlave && len(node.DataHost.Slaves) > 0 {
+				if conn = c.backendSlaveConns[node]; conn == nil {
+					var dbHost *backend.DBHost
+					dbHost = node.DataHost.Slaves[0]
+					if conn, err = dbHost.GetConnection(node.Database); err != nil {
+						return
+					}
+					c.backendSlaveConns[node] = conn
+				}
+			} else {
+				if conn = c.backendMasterConns[node]; conn == nil {
+					var dbHost *backend.DBHost
+					dbHost = node.DataHost.Master
+					if conn, err = dbHost.GetConnection(node.Database); err != nil {
+						return
+					}
+					c.backendMasterConns[node] = conn
+				}
+			}
+
+			var mysqlConn = conn.(*mysqlBackend.Conn)
+			mysqlConn.UseDB(node.Database)
+
+			switch statement.(type) {
+			case sqlparser.SelectStatement:
+				return errors.ErrCmdUnsupport
+			case sqlparser.DDLStatement:
+				sql := sqlparser.String(statement)
+				if result, err = mysqlConn.Query(sql); err != nil {
+					return
+				}
+				c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
+			default:
+				return errors.ErrCmdUnsupport
+			}
+		}
+		if result == nil {
+			return errors.ErrCmdUnsupport
+		}
+		if result.Resultset == nil {
+			err = c.pkg.WriteOK(c.capability, c.status, result)
+		} else {
+			err = c.pkg.WriteResultSet(c.capability, c.status, result)
 		}
 	}
 	return err

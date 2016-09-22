@@ -31,9 +31,10 @@ make run # Run immediately, use ss.yaml config file.
 ## Features
 - Support multi-query and multi-result.
 - Support transaction.
-- Support hint /*! saashard master */ to force execute on master.
+- Support hint /*!saashard master */ to force execute on master.
+- Support hint /*!saashard nodes=node1,node2 */ to force specify node list in DDL statement.
 - Support split read and write. (Read balance feature is in 'TODO list'.)
-- Database sharding feature is in 'TODO list'.
+- Support database sharding, supported algorithm is 'hash', 'mod'.
 - Support backend connection pool.
 - Support maintain table struct, index.
 

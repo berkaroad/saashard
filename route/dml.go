@@ -32,6 +32,7 @@ import (
 func (r *Router) buildInsertPlan(statement *sqlparser.Insert) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	statement.Table.Qualifier = nil
+	nodeIndex := 0
 	if schemaConfig.ShardEnabled() {
 		// check table exists or not.
 		table := string(statement.Table.Name)
@@ -45,13 +46,18 @@ func (r *Router) buildInsertPlan(statement *sqlparser.Insert) (*normalPlan, erro
 		if err != nil {
 			return nil, err
 		}
-		println("Insert ShardKey=", sqlparser.String(colValue))
+
+		algo := ParseShardAlgorithm(schemaConfig.ShardAlgo)
+		nodeIndex, err = algo(sqlparser.String(colValue), len(schemaConfig.Nodes))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	plan.nodeNames = []string{schemaConfig.Nodes[nodeIndex]}
 	plan.Statement = statement
 	return plan, nil
 }
@@ -59,6 +65,7 @@ func (r *Router) buildInsertPlan(statement *sqlparser.Insert) (*normalPlan, erro
 func (r *Router) buildUpdatePlan(statement *sqlparser.Update) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	statement.Table.Qualifier = nil
+	nodeIndex := 0
 	if schemaConfig.ShardEnabled() {
 		// check table exists or not.
 		table := string(statement.Table.Name)
@@ -88,12 +95,17 @@ func (r *Router) buildUpdatePlan(statement *sqlparser.Update) (*normalPlan, erro
 		} else if colValue == nil {
 			return nil, errors.ErrWhereOrJoinOnKey
 		}
-		println("Update ShardKey=", sqlparser.String(colValue))
+
+		algo := ParseShardAlgorithm(schemaConfig.ShardAlgo)
+		nodeIndex, err = algo(sqlparser.String(colValue), len(schemaConfig.Nodes))
+		if err != nil {
+			return nil, err
+		}
 	}
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	plan.nodeNames = []string{schemaConfig.Nodes[nodeIndex]}
 	plan.Statement = statement
 
 	return plan, nil
@@ -102,6 +114,7 @@ func (r *Router) buildUpdatePlan(statement *sqlparser.Update) (*normalPlan, erro
 func (r *Router) buildDeletePlan(statement *sqlparser.Delete) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	statement.Table.Qualifier = nil
+	nodeIndex := 0
 	if schemaConfig.ShardEnabled() {
 		// check table exists or not.
 		table := string(statement.Table.Name)
@@ -121,12 +134,17 @@ func (r *Router) buildDeletePlan(statement *sqlparser.Delete) (*normalPlan, erro
 		} else if colValue == nil {
 			return nil, errors.ErrWhereOrJoinOnKey
 		}
-		println("Delete ShardKey=", sqlparser.String(colValue))
+
+		algo := ParseShardAlgorithm(schemaConfig.ShardAlgo)
+		nodeIndex, err = algo(sqlparser.String(colValue), len(schemaConfig.Nodes))
+		if err != nil {
+			return nil, err
+		}
 	}
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	plan.nodeNames = []string{schemaConfig.Nodes[nodeIndex]}
 	plan.Statement = statement
 
 	return plan, nil
@@ -135,6 +153,7 @@ func (r *Router) buildDeletePlan(statement *sqlparser.Delete) (*normalPlan, erro
 func (r *Router) buildReplacePlan(statement *sqlparser.Replace) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	statement.Table.Qualifier = nil
+	nodeIndex := 0
 	if schemaConfig.ShardEnabled() {
 		// check table exists or not.
 		table := string(statement.Table.Name)
@@ -148,12 +167,17 @@ func (r *Router) buildReplacePlan(statement *sqlparser.Replace) (*normalPlan, er
 		if err != nil {
 			return nil, err
 		}
-		println("Replace ShardKey=", sqlparser.String(colValue))
+
+		algo := ParseShardAlgorithm(schemaConfig.ShardAlgo)
+		nodeIndex, err = algo(sqlparser.String(colValue), len(schemaConfig.Nodes))
+		if err != nil {
+			return nil, err
+		}
 	}
 	ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	plan.nodeNames = []string{schemaConfig.Nodes[nodeIndex]}
 	plan.Statement = statement
 
 	return plan, nil

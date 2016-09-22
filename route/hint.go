@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/berkaroad/saashard/sqlparser"
+	"github.com/berkaroad/saashard/utils"
 )
 
 var hintPrefix = "/*!saashard "
@@ -53,7 +54,7 @@ func ReadHint(comments *sqlparser.Comments) *Hint {
 				nodesStr := strings.TrimPrefix(commentStr, hintNodesPrefix)
 				for _, nodeStr := range strings.Split(nodesStr, ",") {
 					node := strings.TrimSpace(nodeStr)
-					if !sqlparser.Contains(hint.Nodes, node) {
+					if !utils.Contains(hint.Nodes, node) {
 						hint.Nodes = append(hint.Nodes, node)
 					}
 				}

@@ -523,35 +523,35 @@ use_statement:
   }
 
 create_statement:
-  CREATE TABLE not_exists_opt table_name '(' create_definition_list ')' table_option_list_opt
+  CREATE comments_list_opt TABLE not_exists_opt table_name '(' create_definition_list ')' table_option_list_opt
   {
-    $$ = &CreateTable{Table: $4, CreateDefs: $6, TableOptions: $8 }
+    $$ = &CreateTable{Comments : Comments($2), Table: $5, CreateDefs: $7, TableOptions: $9 }
   }
-| CREATE index_category_opt INDEX sql_id index_type_opt ON table_name '(' index_column_list ')'
+| CREATE comments_list_opt index_category_opt INDEX sql_id index_type_opt ON table_name '(' index_column_list ')'
   {
-    $$ = &CreateIndex{IndexCategory: $2, Name: $4, IndexType: $5, Table: $7, IndexColumns: $9 }
+    $$ = &CreateIndex{Comments : Comments($2), IndexCategory: $3, Name: $5, IndexType: $6, Table: $8, IndexColumns: $10 }
   }
 
 alter_statement:
-  ALTER ignore_opt TABLE table_name alter_specification_list_opt
+  ALTER comments_list_opt ignore_opt TABLE table_name alter_specification_list_opt
   {
-    $$ = &AlterTable{Ignore: $2, Table: $4, AlterSpecs: $5}
+    $$ = &AlterTable{Comments : Comments($2), Ignore: $3, Table: $5, AlterSpecs: $6}
   }
 
 rename_statement:
-  RENAME TABLE table_name TO table_name
+  RENAME comments_list_opt TABLE table_name TO table_name
   {
-    $$ = &RenameTable{OldName: $3, NewName: $5}
+    $$ = &RenameTable{Comments : Comments($2), OldName: $4, NewName: $6}
   }
 
 drop_statement:
-  DROP TABLE exists_opt table_name reference_option_opt
+  DROP comments_list_opt TABLE exists_opt table_name reference_option_opt
   {
-    $$ = &DropTable{Name: $4, RefOption: $5}
+    $$ = &DropTable{Comments : Comments($2), Name: $5, RefOption: $6}
   }
-| DROP INDEX sql_id ON table_name
+| DROP comments_list_opt INDEX sql_id ON table_name
   {
-    $$ = &DropIndex{Name: $3, Table: $5}
+    $$ = &DropIndex{Comments : Comments($2), Name: $4, Table: $6}
   }
 
 show_statement:

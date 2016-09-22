@@ -35,6 +35,7 @@ type DDLStatement interface {
 
 // CreateTable create table statement
 type CreateTable struct {
+	Comments     Comments
 	Table        *TableName
 	CreateDefs   CreateDefinitions
 	TableOptions OptionKeyValues
@@ -42,7 +43,7 @@ type CreateTable struct {
 
 // Format CreateTable
 func (node *CreateTable) Format(buf *TrackedBuffer) {
-	buf.Fprintf("create table if not exists %v\n(\n%v\n) %v", node.Table, node.CreateDefs, node.TableOptions)
+	buf.Fprintf("create %v table if not exists %v\n(\n%v\n) %v", node.Comments, node.Table, node.CreateDefs, node.TableOptions)
 }
 
 func (node *CreateTable) IStatement()    {}
@@ -50,6 +51,7 @@ func (node *CreateTable) IDDLStatement() {}
 
 // CreateIndex create index statement
 type CreateIndex struct {
+	Comments      Comments
 	IndexCategory []byte
 	Name          []byte
 	Table         *TableName
@@ -67,7 +69,7 @@ func (node *CreateIndex) Format(buf *TrackedBuffer) {
 	if node.IndexType != nil && len(node.IndexType) > 0 {
 		indexType = " using " + string(node.IndexType)
 	}
-	buf.Fprintf("create%s index %s%s on %v(%v)", strIndexCategory, node.Name, indexType, node.Table, node.IndexColumns)
+	buf.Fprintf("create %v%s index %s%s on %v(%v)", node.Comments, strIndexCategory, node.Name, indexType, node.Table, node.IndexColumns)
 }
 
 func (node *CreateIndex) IStatement()    {}
@@ -75,6 +77,7 @@ func (node *CreateIndex) IDDLStatement() {}
 
 // AlterTable alter table
 type AlterTable struct {
+	Comments   Comments
 	Ignore     string
 	Table      *TableName
 	AlterSpecs AlterSpecifications
@@ -90,13 +93,14 @@ func (node *AlterTable) IDDLStatement() {}
 
 // RenameTable rename table
 type RenameTable struct {
-	OldName *TableName
-	NewName *TableName
+	Comments Comments
+	OldName  *TableName
+	NewName  *TableName
 }
 
 // Format RenameTable
 func (node *RenameTable) Format(buf *TrackedBuffer) {
-	buf.Fprintf("rename table %v %v", node.OldName, node.NewName)
+	buf.Fprintf("rename %v table %v %v", node.Comments, node.OldName, node.NewName)
 }
 
 func (node *RenameTable) IStatement()    {}
@@ -104,13 +108,14 @@ func (node *RenameTable) IDDLStatement() {}
 
 // DropTable drop table
 type DropTable struct {
+	Comments  Comments
 	Name      *TableName
 	RefOption []byte
 }
 
 // Format DropTable
 func (node *DropTable) Format(buf *TrackedBuffer) {
-	buf.Fprintf("drop table if exists %v %s", node.Name, node.RefOption)
+	buf.Fprintf("drop %v table if exists %v %s", node.Comments, node.Name, node.RefOption)
 }
 
 func (node *DropTable) IStatement()    {}
@@ -118,13 +123,14 @@ func (node *DropTable) IDDLStatement() {}
 
 // DropIndex drop index
 type DropIndex struct {
-	Name  []byte
-	Table *TableName
+	Comments Comments
+	Name     []byte
+	Table    *TableName
 }
 
 // Format DropIndex
 func (node *DropIndex) Format(buf *TrackedBuffer) {
-	buf.Fprintf("drop index %s on %v", node.Name, node.Table)
+	buf.Fprintf("drop %v index %s on %v", node.Comments, node.Name, node.Table)
 }
 
 func (node *DropIndex) IStatement()    {}

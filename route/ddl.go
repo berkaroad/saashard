@@ -22,16 +22,24 @@
 
 package route
 
-import "github.com/berkaroad/saashard/sqlparser"
+import (
+	"github.com/berkaroad/saashard/sqlparser"
+	"github.com/berkaroad/saashard/utils"
+)
 
 func (r *Router) buildCreateTablePlan(statement *sqlparser.CreateTable) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	statement.Table.Qualifier = nil
 	if schemaConfig.ShardEnabled() {
 	}
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = schemaConfig.Nodes
+	if len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = schemaConfig.Nodes
+	}
 	plan.Statement = statement
 	return plan, nil
 }
@@ -39,12 +47,16 @@ func (r *Router) buildCreateTablePlan(statement *sqlparser.CreateTable) (*normal
 func (r *Router) buildCreateIndexPlan(statement *sqlparser.CreateIndex) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	statement.Table.Qualifier = nil
-
-	plan := new(normalPlan)
 	if schemaConfig.ShardEnabled() {
 	}
+	hint := ReadHint(&statement.Comments)
 
-	plan.nodeNames = schemaConfig.Nodes
+	plan := new(normalPlan)
+	if len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = schemaConfig.Nodes
+	}
 	plan.Statement = statement
 	return plan, nil
 }
@@ -55,9 +67,14 @@ func (r *Router) buildRenameTablePlan(statement *sqlparser.RenameTable) (*normal
 	statement.NewName.Qualifier = nil
 	if schemaConfig.ShardEnabled() {
 	}
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = schemaConfig.Nodes
+	if len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = schemaConfig.Nodes
+	}
 	plan.Statement = statement
 	return plan, nil
 }
@@ -67,9 +84,14 @@ func (r *Router) buildDropTablePlan(statement *sqlparser.DropTable) (*normalPlan
 	statement.Name.Qualifier = nil
 	if schemaConfig.ShardEnabled() {
 	}
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = schemaConfig.Nodes
+	if len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = schemaConfig.Nodes
+	}
 	plan.Statement = statement
 	return plan, nil
 }
@@ -79,9 +101,14 @@ func (r *Router) buildDropIndexPlan(statement *sqlparser.DropIndex) (*normalPlan
 	statement.Table.Qualifier = nil
 	if schemaConfig.ShardEnabled() {
 	}
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = schemaConfig.Nodes
+	if len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = schemaConfig.Nodes
+	}
 	plan.Statement = statement
 	return plan, nil
 }

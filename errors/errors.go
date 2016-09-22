@@ -84,6 +84,8 @@ var (
 	ErrUpdateKey        = errors.New("shard key in update expression")
 	ErrWhereOrJoinOnKey = errors.New("no shard key or key has different values in where or join on expression")
 
+	ErrMustPositiveIntegerInModShard = errors.New("shard key must positive integer when use mod shard algorithm")
+
 	ErrStmtConvert      = errors.New("statement fail to convert")
 	ErrExprConvert      = errors.New("expr fail to convert")
 	ErrConnNotEqual     = errors.New("the length of conns not equal sqls")

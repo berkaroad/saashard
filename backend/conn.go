@@ -143,7 +143,7 @@ func NewConnectionPool(maxPoolSize uint32, dbHost *DBHost) *ConnectionPool {
 			} else {
 				golog.Info("backend", "ConnectionPool", fmt.Sprintf("%s 's idle count is %d", p.dbHost.Addr, idleCount), 0)
 			}
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 15)
 		}
 	}()
 	return p
@@ -183,8 +183,7 @@ func (p *ConnectionPool) GetConnection(database string) (Connection, error) {
 				if err != nil {
 					atomic.AddUint32(&p.used, ^uint32(0))
 					conn = nil
-				}
-				if conn.GetConnectionID() == 0 {
+				} else if conn.GetConnectionID() == 0 {
 					conn.SetConnectionID(p.used)
 				}
 			}
