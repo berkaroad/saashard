@@ -29,6 +29,7 @@ import (
 
 	"github.com/berkaroad/saashard/config"
 	"github.com/berkaroad/saashard/errors"
+	"github.com/berkaroad/saashard/utils/golog"
 )
 
 // DataHost is data host.
@@ -106,6 +107,11 @@ func (h *DataHost) GetSlave() (*DBHost, error) {
 	}
 	slave := h.slavePolling.Value.(*DBHost)
 	h.slavePolling = h.slavePolling.Next()
+	golog.Debug("backend", "DataHost.GetSlave", "Slave info", 0,
+		"addr",
+		slave.Addr,
+		"weight",
+		slave.Weight)
 	return slave, nil
 }
 
