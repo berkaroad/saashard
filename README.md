@@ -41,43 +41,20 @@ make run # Run immediately, use ss.yaml config file.
 ### Unsupported SQL
 
 ```
-select (case t1.f1 when '0' then 'hello' else 'world' end) f1 from t1 
-select f1,f2,f3 into t2 from t1
+select (case t1.f1 when '0' then 'hello' else 'world' end) f1 from t1 -- Not supported, but you can replace it to above
+select (case when t1.f1='0' then 'hello' else 'world' end) f1 from t1 -- This is supported
 ```
 
 ```
-VIEW, FUNCTION or PROCEDURE, TRIGGER not supported
+select f1,f2,f3 into t2 from t1 -- Not supported, because this is dml statement, and couldn't get shard key's value.
 ```
 
-## Code Structure
+```
+VIEW, FUNCTION, PROCEDURE or TRIGGER not supported -- Not supported, because it couldn't get shard key's value from those.
+```
 
-```
-|admin |
-|
-|backend |
-|--------|mysql |
-|
-|cmd |
-|----|saashard |
-|
-|config |
-|
-|errors |
-|
-|net |
-|----|mysql |
-|
-|proxy |
-|
-|route |
-|
-|server |
-|
-|sqlparser |
-|----------|sqltypes |
-|
-|statistic |
-|
-|utils |
-|------|golog |
-```
+## Logical Architecture
+
+![logical architecture](http://github.com/berkaroad/saashard/docs/images/logical_arch.png "logical architecture")
+
+![logical schema](http://github.com/berkaroad/saashard/docs/images/logical_schema.png "logical schema")
