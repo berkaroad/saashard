@@ -58,7 +58,7 @@ func (c *ClientConn) handleFieldList(data []byte) error {
 	if !c.isInTransaction() && len(node.DataHost.Slaves) > 0 {
 		if conn = c.backendSlaveConns[node]; conn == nil {
 			var dbHost *backend.DBHost
-			dbHost = node.DataHost.Slaves[0]
+			dbHost, _ = node.DataHost.GetSlave()
 			if conn, err = dbHost.GetConnection(node.Database); err != nil {
 				return err
 			}

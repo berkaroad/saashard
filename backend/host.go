@@ -23,20 +23,24 @@
 package backend
 
 import (
+	"container/ring"
 	"strconv"
 	"strings"
 
 	"github.com/berkaroad/saashard/config"
+	"github.com/berkaroad/saashard/errors"
 )
 
 // DataHost is data host.
 type DataHost struct {
-	Name             string
-	MaxConnNum       int
-	DownAfterNoAlive int
-	PingInterval     int
-	Master           *DBHost
-	Slaves           []*DBHost
+	Name               string
+	MaxConnNum         int
+	DownAfterNoAlive   int
+	PingInterval       int
+	Master             *DBHost
+	Slaves             []*DBHost
+	slavePolling       *ring.Ring
+	slavePollingLength int
 }
 
 // NewDataHost new host.
@@ -51,17 +55,58 @@ func NewDataHost(hostCfg config.HostConfig) *DataHost {
 	if len(hostCfg.Slaves) > 0 {
 		h.Slaves = make([]*DBHost, len(hostCfg.Slaves))
 
+		minWeight := 0
+		maxWeight := 0
+		totalWeight := 0
 		for i, slave := range hostCfg.Slaves {
 			slaveConfig := strings.Split(slave, "@")
 			var slaveWeight int
 			if len(slaveConfig) > 1 {
 				slaveWeight, _ = strconv.Atoi(slaveConfig[1])
+				if minWeight <= 0 || slaveWeight < minWeight {
+					minWeight = slaveWeight
+				}
+				if slaveWeight > maxWeight {
+					maxWeight = slaveWeight
+				}
+				totalWeight += slaveWeight
 			}
 			h.Slaves[i] = NewDBHost(slaveConfig[0], hostCfg.User, hostCfg.Password, slaveWeight, h.MaxConnNum)
+		}
+		adjustWeight := 1 - minWeight // the min weight must 1.
+		minWeight = 1
+		maxWeight = maxWeight + adjustWeight
+
+		if len(hostCfg.Slaves) > 1 {
+			h.slavePollingLength = totalWeight + len(hostCfg.Slaves)*adjustWeight
+			h.slavePolling = ring.New(h.slavePollingLength)
+
+			for currentWeight := minWeight; currentWeight <= maxWeight; currentWeight++ {
+				for _, slave := range h.Slaves {
+					if slave.Weight+adjustWeight >= currentWeight {
+						h.slavePolling.Value = slave
+						h.slavePolling = h.slavePolling.Next()
+					}
+				}
+			}
+			h.slavePolling = h.slavePolling.Next()
 		}
 	}
 
 	return h
+}
+
+// GetSlave get slave by balance algorithm
+func (h *DataHost) GetSlave() (*DBHost, error) {
+	if len(h.Slaves) == 0 {
+		return nil, errors.ErrNoSlaveDB
+	}
+	if len(h.Slaves) == 1 {
+		return h.Slaves[0], nil
+	}
+	slave := h.slavePolling.Value.(*DBHost)
+	h.slavePolling = h.slavePolling.Next()
+	return slave, nil
 }
 
 // DBHost db host.

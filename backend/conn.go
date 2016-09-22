@@ -141,7 +141,7 @@ func NewConnectionPool(maxPoolSize uint32, dbHost *DBHost) *ConnectionPool {
 			if idleCount*100/p.MaxPoolSize <= 10 {
 				golog.Warn("backend", "ConnectionPool", fmt.Sprintf("%s 's idle count is less or equal then 10 pecent, current is %d", p.dbHost.Addr, idleCount), 0)
 			} else {
-				golog.Info("backend", "ConnectionPool", fmt.Sprintf("%s 's idle count is %d", p.dbHost.Addr, idleCount), 0)
+				golog.Debug("backend", "ConnectionPool", fmt.Sprintf("%s 's idle count is %d", p.dbHost.Addr, idleCount), 0)
 			}
 			time.Sleep(time.Second * 15)
 		}

@@ -117,7 +117,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 		if !c.isInTransaction() && isSlave && len(node.DataHost.Slaves) > 0 {
 			if conn = c.backendSlaveConns[node]; conn == nil {
 				var dbHost *backend.DBHost
-				dbHost = node.DataHost.Slaves[0]
+				dbHost, _ = node.DataHost.GetSlave()
 				if conn, err = dbHost.GetConnection(node.Database); err != nil {
 					return
 				}
@@ -250,7 +250,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			if !c.isInTransaction() && isSlave && len(node.DataHost.Slaves) > 0 {
 				if conn = c.backendSlaveConns[node]; conn == nil {
 					var dbHost *backend.DBHost
-					dbHost = node.DataHost.Slaves[0]
+					dbHost, _ = node.DataHost.GetSlave()
 					if conn, err = dbHost.GetConnection(node.Database); err != nil {
 						return
 					}

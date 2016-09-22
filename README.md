@@ -33,7 +33,7 @@ make run # Run immediately, use ss.yaml config file.
 - Support transaction.
 - Support hint /*!saashard master */ to force execute on master.
 - Support hint /*!saashard nodes=node1,node2 */ to force specify node list in DDL statement.
-- Support split read and write. (Read balance feature is in 'TODO list'.)
+- Support split read and write. (Read balance use polling algorithm.)
 - Support database sharding, supported algorithm is 'hash', 'mod'.
 - Support backend connection pool.
 - Support maintain table struct, index.
