@@ -1,4 +1,4 @@
-//line yacc.y:1
+//line yacc.y:2
 
 // Copyright 2012, Google Inc. All rights reserved.
 // Use of this source code is governed by a BSD-style
@@ -44,7 +44,7 @@ package sqlparser
 
 import __yyfmt__ "fmt"
 
-//line yacc.y:43
+//line yacc.y:42
 import "bytes"
 
 // SetParseTree to build ast.
