@@ -2,7 +2,9 @@
 
 go get github.com/go-yaml/yaml
 
-go tool yacc -o %~dp0sqlparser\yacc.go -v %~dp0sqlparser\yacc.output %~dp0sqlparser\yacc.y && gofmt -w %~dp0sqlparser\yacc.go
+cd %dp0sqlparser
+go tool yacc -o yacc.go -v yacc.output yacc.y && gofmt -w yacc.go
+cd %dp0
 
 go install github.com/berkaroad/saashard/utils/golog
 go install github.com/berkaroad/saashard/config

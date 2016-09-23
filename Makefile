@@ -17,7 +17,7 @@ build-windows: saashard
 
 saashard:
 	go get github.com/go-yaml/yaml
-	cd ./sqlparser && go tool yacc -o ./yacc.go -v ./yacc.output ./yacc.y && gofmt -w ./yacc.go
+	cd ./sqlparser && go tool yacc -o yacc.go -v yacc.output yacc.y && gofmt -w yacc.go
 	@bash genver.sh
 
 run: build

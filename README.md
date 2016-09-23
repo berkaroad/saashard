@@ -13,11 +13,14 @@ go get github.com/berkaroad/saashard
 cd $GOPATH/src/github.com/berkaroad/saashard
 ```
 
+### Binary Release
+[http://github.com/berkaroad/saashard-binary](http://github.com/berkaroad/saashard-binary)
+
 ### Compile
 
 ```
 make # compile in current platform
-make build-all  # compile in windows, linux  and darwin platform.
+make build-all # compile in windows, linux and darwin platform.
 ```
 
 ### Run
