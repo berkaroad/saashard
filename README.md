@@ -39,9 +39,20 @@ make run # Run immediately, use ss.yaml config file.
 - Support split read and write. (Read balance use polling algorithm.)
 - Support database sharding, supported algorithm is 'hash', 'mod'.
 - Support backend connection pool.
-- Support maintain table struct, index.
 
-### Unsupported SQL
+## SQL Client Support 
+- MySQL Workbench
+- SQLyog
+- ado.net
+- entity framework (EF6)
+
+## SQL Support
+
+- simple query, join query, sub query is supported.
+- DML statement
+- DDL that only support table struct and index.
+- VIEW is not supported, because it couldn't get shard key's value from those.
+- maintain FUNCTION, PROCEDURE or TRIGGER is not supported.
 
 ```
 /* Not supported, but you can replace it to above */
