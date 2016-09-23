@@ -41,6 +41,7 @@ type ShowCharset struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowCharset
 func (node *ShowCharset) Format(buf *TrackedBuffer) {
 	if node.LikeOrWhere == nil {
 		buf.Fprintf("show %v character set", node.Comments)
@@ -58,6 +59,7 @@ type ShowCollation struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowCollation
 func (node *ShowCollation) Format(buf *TrackedBuffer) {
 	if node.LikeOrWhere == nil {
 		buf.Fprintf("show %v collation", node.Comments)
@@ -76,6 +78,7 @@ type ShowVariables struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowVariables
 func (node *ShowVariables) Format(buf *TrackedBuffer) {
 	scope := ""
 	if node.Scope != "" {
@@ -98,6 +101,7 @@ type ShowStatus struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowStatus
 func (node *ShowStatus) Format(buf *TrackedBuffer) {
 	scope := ""
 	if node.Scope != "" {
@@ -119,6 +123,7 @@ type ShowDatabases struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowDatabases
 func (node *ShowDatabases) Format(buf *TrackedBuffer) {
 	if node.LikeOrWhere == nil {
 		buf.Fprintf("show %v databases", node.Comments)
@@ -137,6 +142,7 @@ type ShowTables struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowTables
 func (node *ShowTables) Format(buf *TrackedBuffer) {
 	table := ""
 	if node.From != nil {
@@ -159,6 +165,7 @@ type ShowFullTables struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowFullTables
 func (node *ShowFullTables) Format(buf *TrackedBuffer) {
 	table := ""
 	if node.From != nil {
@@ -174,6 +181,29 @@ func (node *ShowFullTables) Format(buf *TrackedBuffer) {
 func (node *ShowFullTables) IStatement()     {}
 func (node *ShowFullTables) IShowStatement() {}
 
+// ShowTableStatus statement
+type ShowTableStatus struct {
+	Comments    Comments
+	From        *TableName
+	LikeOrWhere Expr
+}
+
+// Format ShowTableStatus
+func (node *ShowTableStatus) Format(buf *TrackedBuffer) {
+	table := ""
+	if node.From != nil {
+		table = " from " + String(node.From)
+	}
+	if node.LikeOrWhere == nil {
+		buf.Fprintf("show %v table status%s", node.Comments, table)
+	} else {
+		buf.Fprintf("show %v table status%s%v", node.Comments, table, node.LikeOrWhere)
+	}
+}
+
+func (node *ShowTableStatus) IStatement()     {}
+func (node *ShowTableStatus) IShowStatement() {}
+
 // ShowColumns statement
 type ShowColumns struct {
 	Comments    Comments
@@ -181,6 +211,7 @@ type ShowColumns struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowColumns
 func (node *ShowColumns) Format(buf *TrackedBuffer) {
 	table := ""
 	if node.From != nil {
@@ -203,6 +234,7 @@ type ShowFullColumns struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowFullColumns
 func (node *ShowFullColumns) Format(buf *TrackedBuffer) {
 	table := ""
 	if node.From != nil {
@@ -224,6 +256,7 @@ type ShowProcedureStatus struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowProcedureStatus
 func (node *ShowProcedureStatus) Format(buf *TrackedBuffer) {
 	if node.LikeOrWhere == nil {
 		buf.Fprintf("show %v procedure status", node.Comments)
@@ -241,6 +274,7 @@ type ShowFunctionStatus struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowFunctionStatus
 func (node *ShowFunctionStatus) Format(buf *TrackedBuffer) {
 	if node.LikeOrWhere == nil {
 		buf.Fprintf("show %v function status", node.Comments)
@@ -259,6 +293,7 @@ type ShowIndex struct {
 	Where    BoolExpr
 }
 
+// Format ShowIndex
 func (node *ShowIndex) Format(buf *TrackedBuffer) {
 	table := ""
 	if node.From != nil {
@@ -278,6 +313,7 @@ func (node *ShowIndex) IShowStatement() {}
 type ShowEngines struct {
 }
 
+// Format ShowEngines
 func (node *ShowEngines) Format(buf *TrackedBuffer) {
 	buf.Fprintf("show engines")
 }
@@ -289,6 +325,7 @@ func (node *ShowEngines) IShowStatement() {}
 type ShowPlugins struct {
 }
 
+// Format ShowPlugins
 func (node *ShowPlugins) Format(buf *TrackedBuffer) {
 	buf.Fprintf("show plugins")
 }
@@ -303,6 +340,7 @@ type ShowTriggers struct {
 	LikeOrWhere Expr
 }
 
+// Format ShowTriggers
 func (node *ShowTriggers) Format(buf *TrackedBuffer) {
 	table := ""
 	if node.From != nil {
@@ -324,6 +362,7 @@ type ShowCreateDatabase struct {
 	Name     *TableName
 }
 
+// Format ShowCreateDatabase
 func (node *ShowCreateDatabase) Format(buf *TrackedBuffer) {
 	name := ""
 	if node.Name != nil {
@@ -341,6 +380,7 @@ type ShowCreateTable struct {
 	Name     *TableName
 }
 
+// Format ShowCreateTable
 func (node *ShowCreateTable) Format(buf *TrackedBuffer) {
 	name := ""
 	if node.Name != nil {
@@ -358,6 +398,7 @@ type ShowCreateView struct {
 	Name     *TableName
 }
 
+// Format ShowCreateView
 func (node *ShowCreateView) Format(buf *TrackedBuffer) {
 	name := ""
 	if node.Name != nil {
@@ -375,6 +416,7 @@ type ShowCreateProcedure struct {
 	Name     *TableName
 }
 
+// Format ShowCreateProcedure
 func (node *ShowCreateProcedure) Format(buf *TrackedBuffer) {
 	name := ""
 	if node.Name != nil {
@@ -392,6 +434,7 @@ type ShowCreateFunction struct {
 	Name     *TableName
 }
 
+// Format ShowCreateFunction
 func (node *ShowCreateFunction) Format(buf *TrackedBuffer) {
 	name := ""
 	if node.Name != nil {
@@ -409,6 +452,7 @@ type ShowCreateTrigger struct {
 	Name     *TableName
 }
 
+// Format ShowCreateTrigger
 func (node *ShowCreateTrigger) Format(buf *TrackedBuffer) {
 	name := ""
 	if node.Name != nil {
@@ -425,6 +469,7 @@ type ShowProcessList struct {
 	Comments Comments
 }
 
+// Format ShowProcessList
 func (node *ShowProcessList) Format(buf *TrackedBuffer) {
 	buf.Fprintf("show %v processlist", node.Comments)
 }
@@ -437,6 +482,7 @@ type ShowFullProcessList struct {
 	Comments Comments
 }
 
+// Format ShowFullProcessList
 func (node *ShowFullProcessList) Format(buf *TrackedBuffer) {
 	buf.Fprintf("show %v full processlist", node.Comments)
 }
@@ -449,6 +495,7 @@ type ShowSlaveStatus struct {
 	Comments Comments
 }
 
+// Format ShowSlaveStatus
 func (node *ShowSlaveStatus) Format(buf *TrackedBuffer) {
 	buf.Fprintf("show %v slave status", node.Comments)
 }
@@ -460,6 +507,7 @@ func (node *ShowSlaveStatus) IShowStatement() {}
 type ShowProfiles struct {
 }
 
+// Format ShowProfiles
 func (node *ShowProfiles) Format(buf *TrackedBuffer) {
 	buf.Fprintf("show profiles")
 }

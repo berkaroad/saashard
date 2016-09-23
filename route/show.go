@@ -29,6 +29,7 @@ import (
 	"github.com/berkaroad/saashard/errors"
 	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/sqlparser"
+	"github.com/berkaroad/saashard/utils"
 )
 
 var variableNameField = &mysql.Field{Schema: []byte("information_schema"),
@@ -90,11 +91,15 @@ func (r *Router) buildShowPluginsPlan(statement *sqlparser.ShowPlugins) (*normal
 
 func (r *Router) buildShowProcessListPlan(statement *sqlparser.ShowProcessList) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 
 	return plan, nil
@@ -102,11 +107,15 @@ func (r *Router) buildShowProcessListPlan(statement *sqlparser.ShowProcessList) 
 
 func (r *Router) buildShowFullProcessListPlan(statement *sqlparser.ShowFullProcessList) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 
 	return plan, nil
@@ -114,11 +123,15 @@ func (r *Router) buildShowFullProcessListPlan(statement *sqlparser.ShowFullProce
 
 func (r *Router) buildShowSlaveStatusPlan(statement *sqlparser.ShowSlaveStatus) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 	plan.anyNode = true
 
@@ -139,10 +152,15 @@ func (r *Router) buildShowProfilesPlan(statement *sqlparser.ShowProfiles) (*norm
 
 func (r *Router) buildShowCharsetPlan(statement *sqlparser.ShowCharset) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(normalPlan)
+	hint := ReadHint(&statement.Comments)
 
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	plan := new(normalPlan)
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 	plan.anyNode = true
 
@@ -151,10 +169,15 @@ func (r *Router) buildShowCharsetPlan(statement *sqlparser.ShowCharset) (*normal
 
 func (r *Router) buildShowCollationPlan(statement *sqlparser.ShowCollation) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	plan := new(normalPlan)
+	hint := ReadHint(&statement.Comments)
 
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	plan := new(normalPlan)
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 	plan.anyNode = true
 
@@ -163,11 +186,15 @@ func (r *Router) buildShowCollationPlan(statement *sqlparser.ShowCollation) (*no
 
 func (r *Router) buildShowVariablesPlan(statement *sqlparser.ShowVariables) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 
 	if statement.Scope == "session" {
@@ -223,22 +250,30 @@ func (r *Router) buildShowVariablesPlan(statement *sqlparser.ShowVariables) (*no
 
 func (r *Router) buildShowStatusPlan(statement *sqlparser.ShowStatus) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 	return plan, nil
 }
 
 func (r *Router) buildShowDatabasesPlan(statement *sqlparser.ShowDatabases) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 	plan.anyNode = true
 
@@ -273,11 +308,15 @@ func (r *Router) buildShowTablesPlan(statement *sqlparser.ShowTables) (*normalPl
 		return nil, errors.ErrDatabaseNotExists
 	}
 
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 	if schemaConfig.ShardEnabled() {
 		result := new(mysql.Result)
@@ -320,11 +359,15 @@ func (r *Router) buildShowFullTablesPlan(statement *sqlparser.ShowFullTables) (*
 	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
 		return nil, errors.ErrDatabaseNotExists
 	}
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 
 	if schemaConfig.ShardEnabled() {
@@ -365,6 +408,48 @@ func (r *Router) buildShowFullTablesPlan(statement *sqlparser.ShowFullTables) (*
 	return plan, nil
 }
 
+func (r *Router) buildShowTableStatusPlan(statement *sqlparser.ShowTableStatus) (*normalPlan, error) {
+	db := ""
+	if statement.From != nil {
+		db = string(statement.From.Name)
+	}
+	if db == "" {
+		db = r.SchemaName
+	}
+	db = strings.Trim(strings.ToLower(db), "`")
+
+	var schemaConfig *config.SchemaConfig
+	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
+		return nil, errors.ErrDatabaseNotExists
+	}
+	hint := ReadHint(&statement.Comments)
+
+	plan := new(normalPlan)
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
+	plan.Statement = statement
+	if schemaConfig.ShardEnabled() {
+		nameColName := &sqlparser.ColName{Name: []byte("Name")}
+		nameList := sqlparser.ValTuple{}
+		for _, table := range schemaConfig.Tables {
+			nameList = append(nameList, sqlparser.StrVal(table.Name))
+		}
+		if statement.LikeOrWhere != nil {
+			switch v := statement.LikeOrWhere.(type) {
+			case *sqlparser.WhereExpr:
+				v.Expr = &sqlparser.AndExpr{Left: v.Expr, Right: &sqlparser.ComparisonExpr{Operator: sqlparser.AST_IN, Left: nameColName, Right: nameList}}
+			}
+		} else {
+			statement.LikeOrWhere = &sqlparser.WhereExpr{Expr: &sqlparser.ComparisonExpr{Operator: sqlparser.AST_IN, Left: nameColName, Right: nameList}}
+		}
+	}
+	return plan, nil
+}
+
 func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normalPlan, error) {
 
 	schemaConfig := r.Schemas[r.SchemaName]
@@ -391,11 +476,15 @@ func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normal
 		statement.From.Qualifier = nil
 	}
 
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 
 	return plan, nil
@@ -423,11 +512,15 @@ func (r *Router) buildShowFullColumnsPlan(statement *sqlparser.ShowFullColumns) 
 	if statement.From != nil {
 		statement.From.Qualifier = nil
 	}
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 
 	return plan, nil
@@ -455,11 +548,15 @@ func (r *Router) buildShowIndexPlan(statement *sqlparser.ShowIndex) (*normalPlan
 	if statement.From != nil {
 		statement.From.Qualifier = nil
 	}
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 
 	return plan, nil
@@ -476,11 +573,15 @@ func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*norm
 	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
 		return nil, errors.ErrDatabaseNotExists
 	}
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 	if schemaConfig.ShardEnabled() {
 		result := new(mysql.Result)
@@ -635,11 +736,15 @@ func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*norm
 
 func (r *Router) buildShowProcedureStatusPlan(statement *sqlparser.ShowProcedureStatus) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 
 	if !schemaConfig.ShardEnabled() {
@@ -791,11 +896,15 @@ func (r *Router) buildShowProcedureStatusPlan(statement *sqlparser.ShowProcedure
 
 func (r *Router) buildShowFunctionStatusPlan(statement *sqlparser.ShowFunctionStatus) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 	if !schemaConfig.ShardEnabled() {
 		switch v := statement.LikeOrWhere.(type) {
@@ -955,12 +1064,15 @@ func (r *Router) buildShowCreateDatabasePlan(statement *sqlparser.ShowCreateData
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Name = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
-
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 
 	return plan, nil
@@ -978,9 +1090,16 @@ func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) 
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
+	plan.Statement = statement
 
 	table := string(statement.Name.Name)
 	table = strings.Trim(strings.ToLower(table), "`")
@@ -988,10 +1107,6 @@ func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) 
 	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
 		return nil, errors.ErrTableNotExists
 	}
-
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
-	plan.Statement = statement
 
 	return plan, nil
 }
@@ -1008,9 +1123,16 @@ func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
+	if hint.Nodes != nil && len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = []string{schemaConfig.Nodes[0]}
+	}
+	plan.onSlave = true && !r.InTrans && !hint.OnMaster
+	plan.Statement = statement
 
 	table := string(statement.Name.Name)
 	table = strings.Trim(strings.ToLower(table), "`")
@@ -1018,10 +1140,6 @@ func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*
 	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
 		return nil, errors.ErrTableNotExists
 	}
-
-	plan.nodeNames = []string{schemaConfig.Nodes[0]}
-	plan.onSlave = true && !r.InTrans
-	plan.Statement = statement
 
 	return plan, nil
 }
@@ -1038,7 +1156,7 @@ func (r *Router) buildShowCreateTriggerPlan(statement *sqlparser.ShowCreateTrigg
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	if !schemaConfig.ShardEnabled() {
 		plan := new(normalPlan)
@@ -1046,8 +1164,12 @@ func (r *Router) buildShowCreateTriggerPlan(statement *sqlparser.ShowCreateTrigg
 		trigger := string(statement.Name.Name)
 		trigger = strings.Trim(strings.ToLower(trigger), "`")
 
-		plan.nodeNames = []string{schemaConfig.Nodes[0]}
-		plan.onSlave = true && !r.InTrans
+		if hint.Nodes != nil && len(hint.Nodes) > 0 {
+			plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+		} else {
+			plan.nodeNames = []string{schemaConfig.Nodes[0]}
+		}
+		plan.onSlave = true && !r.InTrans && !hint.OnMaster
 		plan.Statement = statement
 
 		return plan, nil
@@ -1067,7 +1189,7 @@ func (r *Router) buildShowCreateProcedurePlan(statement *sqlparser.ShowCreatePro
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	if !schemaConfig.ShardEnabled() {
 		plan := new(normalPlan)
@@ -1075,8 +1197,12 @@ func (r *Router) buildShowCreateProcedurePlan(statement *sqlparser.ShowCreatePro
 		procedure := string(statement.Name.Name)
 		procedure = strings.Trim(strings.ToLower(procedure), "`")
 
-		plan.nodeNames = []string{schemaConfig.Nodes[0]}
-		plan.onSlave = true && !r.InTrans
+		if hint.Nodes != nil && len(hint.Nodes) > 0 {
+			plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+		} else {
+			plan.nodeNames = []string{schemaConfig.Nodes[0]}
+		}
+		plan.onSlave = true && !r.InTrans && !hint.OnMaster
 		plan.Statement = statement
 
 		return plan, nil
@@ -1096,7 +1222,7 @@ func (r *Router) buildShowCreateFunctionPlan(statement *sqlparser.ShowCreateFunc
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
-	ReadHint(&statement.Comments)
+	hint := ReadHint(&statement.Comments)
 
 	if !schemaConfig.ShardEnabled() {
 		plan := new(normalPlan)
@@ -1104,8 +1230,12 @@ func (r *Router) buildShowCreateFunctionPlan(statement *sqlparser.ShowCreateFunc
 		function := string(statement.Name.Name)
 		function = strings.Trim(strings.ToLower(function), "`")
 
-		plan.nodeNames = []string{schemaConfig.Nodes[0]}
-		plan.onSlave = true && !r.InTrans
+		if hint.Nodes != nil && len(hint.Nodes) > 0 {
+			plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+		} else {
+			plan.nodeNames = []string{schemaConfig.Nodes[0]}
+		}
+		plan.onSlave = true && !r.InTrans && !hint.OnMaster
 		plan.Statement = statement
 
 		return plan, nil

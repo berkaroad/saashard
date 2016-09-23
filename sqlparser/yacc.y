@@ -599,6 +599,14 @@ show_statement:
   {
     $$ = &ShowFullTables{Comments : Comments($2), From : $6, LikeOrWhere : $7}
   }
+| SHOW comments_list_opt TABLE STATUS where_or_like_opt
+  {
+    $$ = &ShowTableStatus{Comments : Comments($2), LikeOrWhere : $5}
+  }
+| SHOW comments_list_opt TABLE STATUS FROM table_name where_or_like_opt
+  {
+    $$ = &ShowTableStatus{Comments : Comments($2), From : $6, LikeOrWhere : $7}
+  }
 | SHOW comments_list_opt COLUMNS FROM table_name where_or_like_opt
   {
     $$ = &ShowColumns{Comments : Comments($2), From : $5, LikeOrWhere : $6}

@@ -282,6 +282,8 @@ func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err 
 		realPlan, err = r.buildShowTablesPlan(v)
 	case *sqlparser.ShowFullTables:
 		realPlan, err = r.buildShowFullTablesPlan(v)
+	case *sqlparser.ShowTableStatus:
+		realPlan, err = r.buildShowTableStatusPlan(v)
 	case *sqlparser.ShowColumns:
 		realPlan, err = r.buildShowColumnsPlan(v)
 	case *sqlparser.ShowFullColumns:
