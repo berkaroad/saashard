@@ -14,7 +14,9 @@ cd $GOPATH/src/github.com/berkaroad/saashard
 ```
 
 ### Binary Release
-[http://github.com/berkaroad/saashard-binary](http://github.com/berkaroad/saashard-binary)
+[http://github.com/berkaroad/saashard-binary](http://github.com/berkaroad/saashard-binary "SaaShard Binary")
+
+[https://github.com/berkaroad/docker-images/tree/master/saashard](https://github.com/berkaroad/docker-images/tree/master/saashard "SaaShard Dockerfile")
 
 ### Compile
 
