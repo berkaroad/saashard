@@ -60,6 +60,7 @@ func TestParseSelect(t *testing.T) {
 
 	// 	sql = `ALTER TABLE sub_category
 	// ADD COLUMN sub_categorycolSS VARCHAR(45) NULL AFTER description`
+	sql = "select count(*) from input_list"
 
 	t.Log(sql)
 	if stmt, err := Parse(sql); err != nil {

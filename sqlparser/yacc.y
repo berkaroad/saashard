@@ -1166,6 +1166,10 @@ function_expression:
   {
     $$ = &FuncExpr{Name: $1}
   }
+| sql_id '(' '*' ')'
+  {
+    $$ = &FuncExpr{Name: $1, Exprs: ValExprs{&ColName{Name: []byte("*")}}}
+  }
 | sql_id '(' value_expression_list ')'
   {
     $$ = &FuncExpr{Name: $1, Exprs: $3}

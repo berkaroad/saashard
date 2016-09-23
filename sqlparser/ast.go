@@ -557,10 +557,13 @@ func escape(buf *TrackedBuffer, name []byte) {
 		buf.Fprintf("`%s`", name)
 	} else {
 		needQuota := false
-		for _, ch := range name {
-			if !isLetter(uint16(ch)) && !isDigit(uint16(ch)) {
-				needQuota = true
-				break
+		// except "*"
+		if len(name) != 1 || name[0] != '*' {
+			for _, ch := range name {
+				if !isLetter(uint16(ch)) && !isDigit(uint16(ch)) {
+					needQuota = true
+					break
+				}
 			}
 		}
 		if needQuota {
