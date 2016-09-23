@@ -67,11 +67,6 @@ select (case when t1.f1='0' then 'hello' else 'world' end) f1 from t1;
 select f1,f2,f3 into t2 from t1
 ```
 
-```
-/* Not supported, because it couldn't get shard key's value from those. */
-VIEW, FUNCTION, PROCEDURE or TRIGGER not supported
-```
-
 ## Logical Architecture
 
 ![logical architecture](docs/images/logical_arch.png "logical architecture")
