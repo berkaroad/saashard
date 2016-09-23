@@ -17,7 +17,7 @@ log_sql: on
 #slow_log_time : 100
 
 # only allow this ip list ip to connect saashard
-#allow_ips: 127.0.0.1
+#allow_ips: ["127.0.0.1"]
 
 # the charset of saashard, if you don't set this item
 # the default charset of saashard is utf8.
@@ -42,7 +42,7 @@ hosts :
 
     # slave represents a real mysql salve server,and the number after '@' is 
     # read load weight of this slave.
-    slaves : ["192.168.0.124:3304@2", "192.168.0.124:3305@3"]
+    #slaves : ["192.168.0.124:3304@2", "192.168.0.124:3305@3"]
 
 - 
     name : host2
@@ -61,7 +61,7 @@ hosts :
 
     # slaves represents a real mysql salve server,and the number after '@' is 
     # read load weight of this slave.
-    slaves : ["192.168.0.134:3304@2", "192.168.0.134:3305@3"]
+    #slaves : ["192.168.0.134:3304@2", "192.168.0.134:3305@3"]
 
 # data node list
 nodes : 

@@ -239,8 +239,8 @@ func (c *ClientConn) dispatch(data []byte) error {
 		return c.pkg.WriteOK(c.capability, c.status, nil)
 	case mysql.COM_INIT_DB:
 		return c.handleInitDB(string(data))
-	// case mysql.COM_FIELD_LIST:
-	// return c.handleFieldList(data)
+	case mysql.COM_FIELD_LIST:
+		return c.handleFieldList(data)
 	// case mysql.COM_STMT_PREPARE:
 	// return c.handleStmtPrepare(hack.String(data))
 	// case mysql.COM_STMT_EXECUTE:
