@@ -41,6 +41,7 @@ make run # Run immediately, use ss.yaml config file.
 - Support split read and write. (Read balance use polling algorithm.)
 - Support database sharding, supported algorithm is 'hash', 'mod'.
 - Support backend connection pool.
+- Support Stmt related command.(developing)
 
 ## SQL Client Support 
 - MySQL Workbench
