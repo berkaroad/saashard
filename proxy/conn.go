@@ -72,7 +72,7 @@ type ClientConn struct {
 	lastInsertID       int64
 	affectedRows       int64
 	stmtID             uint32
-	//stmts map[uint32]*Stmt //prepare相关,client端到proxy的stmt
+	stmts              map[uint32]*mysql.Stmt //prepare,client -> proxy
 }
 
 // IsAllowConnect check ip in whitelist.
@@ -122,7 +122,7 @@ func (c *ClientConn) Handshake() error {
 	getCredentialsConfigBySchema := func(schema string) (string, string, error) {
 		schemaConfig := c.proxy.schemas[schema]
 		if schemaConfig == nil {
-			return "", "", mysql.NewDefaultError(mysql.ER_BAD_DB_ERROR, c.db)
+			return "", "", mysql.NewDefaultError(mysql.ER_BAD_DB_ERROR, schema)
 		}
 		return schemaConfig.User, schemaConfig.Password, nil
 	}
@@ -220,7 +220,7 @@ func (c *ClientConn) Close() error {
 	c.c.Close()
 
 	c.closed = true
-
+	delete(c.proxy.conns, c.connectionID)
 	return nil
 }
 
@@ -242,15 +242,15 @@ func (c *ClientConn) dispatch(data []byte) error {
 	case mysql.COM_FIELD_LIST:
 		return c.handleFieldList(data)
 	// case mysql.COM_STMT_PREPARE:
-	// return c.handleStmtPrepare(hack.String(data))
+	// 	return c.handleStmtPrepare(string(data))
 	// case mysql.COM_STMT_EXECUTE:
-	// return c.handleStmtExecute(data)
+	// 	return c.handleStmtExecute(data)
 	// case mysql.COM_STMT_CLOSE:
-	// return c.handleStmtClose(data)
+	// 	return c.handleStmtClose(data)
 	// case mysql.COM_STMT_SEND_LONG_DATA:
-	// return c.handleStmtSendLongData(data)
+	// 	return c.handleStmtSendLongData(data)
 	// case mysql.COM_STMT_RESET:
-	// return c.handleStmtReset(data)
+	// 	return c.handleStmtReset(data)
 	case mysql.COM_SET_OPTION:
 		return c.pkg.WriteEOF(c.capability, 0)
 	default:

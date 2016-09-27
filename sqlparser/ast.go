@@ -517,7 +517,8 @@ func (node NumVal) Format(buf *TrackedBuffer) {
 type ValArg []byte
 
 func (node ValArg) Format(buf *TrackedBuffer) {
-	buf.WriteArg(string(node[1:]))
+	buf.Fprintf("%s", []byte(node))
+	// buf.WriteArg(string(node[1:]))
 }
 
 // NullVal represents a NULL value.

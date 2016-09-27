@@ -145,11 +145,11 @@ func (r *Resultset) GetUint(row, column int) (uint64, error) {
 
 // GetUintByName get value as uint.
 func (r *Resultset) GetUintByName(row int, name string) (uint64, error) {
-	if column, err := r.GetIndexByName(name); err != nil {
+	column, err := r.GetIndexByName(name)
+	if err != nil {
 		return 0, err
-	} else {
-		return r.GetUint(row, column)
 	}
+	return r.GetUint(row, column)
 }
 
 // GetInt get value as int.
@@ -179,11 +179,11 @@ func (r *Resultset) GetInt(row, column int) (int64, error) {
 
 // GetIntByName get value as int.
 func (r *Resultset) GetIntByName(row int, name string) (int64, error) {
-	if column, err := r.GetIndexByName(name); err != nil {
+	column, err := r.GetIndexByName(name)
+	if err != nil {
 		return 0, err
-	} else {
-		return r.GetInt(row, column)
 	}
+	return r.GetInt(row, column)
 }
 
 // GetFloat get value as float.
@@ -213,11 +213,11 @@ func (r *Resultset) GetFloat(row, column int) (float64, error) {
 
 // GetFloatByName get value as float.
 func (r *Resultset) GetFloatByName(row int, name string) (float64, error) {
-	if column, err := r.GetIndexByName(name); err != nil {
+	column, err := r.GetIndexByName(name)
+	if err != nil {
 		return 0, err
-	} else {
-		return r.GetFloat(row, column)
 	}
+	return r.GetFloat(row, column)
 }
 
 // GetString get value as string.
@@ -247,9 +247,9 @@ func (r *Resultset) GetString(row, column int) (string, error) {
 
 // GetStringByName get value as string.
 func (r *Resultset) GetStringByName(row int, name string) (string, error) {
-	if column, err := r.GetIndexByName(name); err != nil {
+	column, err := r.GetIndexByName(name)
+	if err != nil {
 		return "", err
-	} else {
-		return r.GetString(row, column)
 	}
+	return r.GetString(row, column)
 }

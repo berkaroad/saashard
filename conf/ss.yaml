@@ -23,6 +23,10 @@ log_sql: on
 # the default charset of saashard is utf8.
 #charset: gbk
 
+# allow execute kill query or kill connection.
+# If use it in production, please set false
+#allow_kill_query : false
+
 # data host list
 hosts :
 - 
@@ -91,6 +95,7 @@ schemas :
     name : db1
     user : db1
     password : 123456
+    max_row_count : 0
     # shard
     shard_key : tenantid
     # shard_algo [hash|mod], default is hash.
@@ -101,5 +106,6 @@ schemas :
     name : db2
     user : db2
     password : 123456
+    max_row_count : 0
     # no shard, only split read and write
     nodes: ["db2_node1"]

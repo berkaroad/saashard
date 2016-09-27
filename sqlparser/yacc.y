@@ -213,6 +213,8 @@ var (
 %token <empty> ADD COLUMN CHANGE MODIFY
 %token <empty> ENABLE DISABLE
 
+%token <empty> KILL QUERY CONNECTION
+
 // Functin
 %token <empty> POSITION
 
@@ -281,7 +283,7 @@ var (
 %type <bytes> isolation_level
 %type <bytes> scope_opt
 
-%type <valExpr> default_value_opt column_comment_opt
+%type <valExpr> default_value column_comment_opt
 %type <bytes> unique_or_primary_opt column_format_opt column_storage_opt
 %type <bytes> reference_definition reference_definition_opt reference_match_opt
 %type <bytes> reference_on_delete_or_update_opt reference_option reference_option_opt
@@ -291,7 +293,7 @@ var (
 %type <alterSpec> alter_specification
 %type <alterSpecs> alter_specification_list alter_specification_list_opt
 %type <valExprs> value_list
-%type <boolean> not_null_opt auto_increment_opt data_type_unsigned_opt data_type_zerofill_opt data_type_binary_opt
+%type <boolean> not_null auto_increment_opt data_type_unsigned_opt data_type_zerofill_opt data_type_binary_opt
 %type <columnDef> column_definition
 %type <dataType> data_type
 %type <bytes> constraint_opt
@@ -522,6 +524,25 @@ use_statement:
 	  $$ = &UseDB{DB : string($2)}
   }
 
+
+admin_statement:
+  ADMIN
+  { $$ = nil }
+| ADMIN HELP
+  { $$ = nil }
+| KILL NUMBER
+  {
+    $$ = &KillConnection{ConnectionID: NumVal($2)}
+  }
+| KILL CONNECTION NUMBER
+  {
+    $$ = &KillConnection{ConnectionID: NumVal($3)}
+  }
+| KILL QUERY NUMBER
+  {
+    $$ = &KillQuery{ConnectionID: NumVal($3)}
+  }
+
 create_statement:
   CREATE comments_list_opt TABLE not_exists_opt table_name '(' create_definition_list ')' table_option_list_opt
   {
@@ -705,13 +726,6 @@ describe_statement:
   {
     $$ = &ShowColumns{Comments : Comments($2), From : $3}
   }
-
-
-admin_statement:
-  ADMIN
-  { $$ = nil }
-| ADMIN HELP
-  { $$ = nil }
 
 comments_list_opt:
   {
@@ -1783,7 +1797,7 @@ create_definition:
   {
     $$ = &CreateColumnDefinition{ColumnName: $1, ColumnDef: $2 }
   }
-| constraint_opt PRIMARY KEY index_type_opt '(' index_column_list ')'
+| constraint_opt PRIMARY KEY index_type_opt '(' index_column_list ')' column_comment_opt
   {
     $$ = &CreatePrimaryKeyDefinition{Symbol: $1, IndexType: $4, IndexColumns: $6}
   }
@@ -1813,11 +1827,55 @@ create_definition:
   }
 
 column_definition:
-  data_type not_null_opt default_value_opt auto_increment_opt unique_or_primary_opt column_comment_opt column_format_opt column_storage_opt reference_definition_opt
+  data_type auto_increment_opt unique_or_primary_opt column_comment_opt column_format_opt column_storage_opt reference_definition_opt
+  {
+    $$ = &ColumnDefinition{Type: $1,
+          IsAutoIncrement: $2,
+          UniqueOrKey: $3,
+          ColumnComment: $4,
+          ColumnFormat: $5,
+          ColumnStorage: $6,
+          ReferenceDef: $7 }
+  }
+| data_type not_null auto_increment_opt unique_or_primary_opt column_comment_opt column_format_opt column_storage_opt reference_definition_opt
+  {
+    $$ = &ColumnDefinition{Type: $1,
+          IsNotNull: $2,
+          IsAutoIncrement: $3,
+          UniqueOrKey: $4,
+          ColumnComment: $5,
+          ColumnFormat: $6,
+          ColumnStorage: $7,
+          ReferenceDef: $8 }
+  }
+| data_type default_value auto_increment_opt unique_or_primary_opt column_comment_opt column_format_opt column_storage_opt reference_definition_opt
+  {
+    $$ = &ColumnDefinition{Type: $1,
+          DefaultValue: $2,
+          IsAutoIncrement: $3,
+          UniqueOrKey: $4,
+          ColumnComment: $5,
+          ColumnFormat: $6,
+          ColumnStorage: $7,
+          ReferenceDef: $8 }
+  }
+| data_type not_null default_value auto_increment_opt unique_or_primary_opt column_comment_opt column_format_opt column_storage_opt reference_definition_opt
   {
     $$ = &ColumnDefinition{Type: $1,
           IsNotNull: $2,
           DefaultValue: $3,
+          IsAutoIncrement: $4,
+          UniqueOrKey: $5,
+          ColumnComment: $6,
+          ColumnFormat: $7,
+          ColumnStorage: $8,
+          ReferenceDef: $9 }
+  }
+| data_type default_value not_null auto_increment_opt unique_or_primary_opt column_comment_opt column_format_opt column_storage_opt reference_definition_opt
+  {
+    $$ = &ColumnDefinition{Type: $1,
+          IsNotNull: $3,
+          DefaultValue: $2,
           IsAutoIncrement: $4,
           UniqueOrKey: $5,
           ColumnComment: $6,
@@ -2015,17 +2073,15 @@ data_type:
   {
     $$ = &DataType{TypeName: "set(" + String($3) + ")", Charset: $5, Collate: $6 }
   }
-  
-not_null_opt:
-  { $$ = false }
-| NULL
+
+not_null:
+  NULL
   { $$ = false }
 | NOT NULL
   { $$ = true }
 
-default_value_opt:
-  { $$ = nil}
-| DEFAULT value
+default_value:
+  DEFAULT value
   { $$ = $2 }
 
 auto_increment_opt:

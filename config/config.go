@@ -30,15 +30,16 @@ import (
 
 // Config is a global config for saashard.
 type Config struct {
-	BindIP      string   `yaml:"bind_ip"`
-	ProxyPort   int      `yaml:"proxy_port"`
-	AdminPort   int      `yaml:"admin_port"`
-	LogPath     string   `yaml:"log_path"`
-	LogLevel    string   `yaml:"log_level"`
-	LogSQL      string   `yaml:"log_sql"`
-	SlowLogTime int      `yaml:"slow_log_time"`
-	AllowIps    []string `yaml:"allow_ips"`
-	Charset     string   `yaml:"charset"`
+	BindIP         string   `yaml:"bind_ip"`
+	ProxyPort      int      `yaml:"proxy_port"`
+	AdminPort      int      `yaml:"admin_port"`
+	LogPath        string   `yaml:"log_path"`
+	LogLevel       string   `yaml:"log_level"`
+	LogSQL         string   `yaml:"log_sql"`
+	SlowLogTime    int      `yaml:"slow_log_time"`
+	AllowIps       []string `yaml:"allow_ips"`
+	Charset        string   `yaml:"charset"`
+	AllowKillQuery bool     `yaml:"allow_kill_query"`
 
 	Hosts   []HostConfig   `yaml:"hosts"`
 	Nodes   []NodeConfig   `yaml:"nodes"`
@@ -82,13 +83,14 @@ type NodeConfig struct {
 
 // SchemaConfig is a config of schema.
 type SchemaConfig struct {
-	Name      string        `yaml:"name"`
-	User      string        `yaml:"user"`
-	Password  string        `yaml:"password"`
-	ShardKey  string        `yaml:"shard_key"`
-	ShardAlgo string        `yaml:"shard_algo"`
-	Nodes     []string      `yaml:"nodes"`
-	Tables    []TableConfig `yaml:"tables"`
+	Name        string        `yaml:"name"`
+	User        string        `yaml:"user"`
+	Password    string        `yaml:"password"`
+	MaxRowCount int           `yaml:"max_row_count"`
+	ShardKey    string        `yaml:"shard_key"`
+	ShardAlgo   string        `yaml:"shard_algo"`
+	Nodes       []string      `yaml:"nodes"`
+	Tables      []TableConfig `yaml:"tables"`
 
 	tables map[string]*TableConfig
 }

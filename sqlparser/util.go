@@ -42,6 +42,7 @@ package sqlparser
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/berkaroad/saashard/errors"
@@ -302,6 +303,21 @@ func CheckColumnInSelect(statement SelectStatement, colName string) (strOrNumVal
 		}
 	}
 	return strOrNumValue, err
+}
+
+// SetLimitInSelect set limit expression in select statement.
+func SetLimitInSelect(statement SelectStatement, maxRowCount int) {
+	if statement != nil && maxRowCount > 0 {
+		switch v := statement.(type) {
+		case *Select:
+			if v.Limit == nil {
+				v.Limit = &Limit{Offset: NumVal("0"), Rowcount: NumVal(strconv.Itoa(maxRowCount))}
+			}
+			// case *Union:
+			// 	SetLimitInSelect(v.Left, maxRowCount)
+			// 	SetLimitInSelect(v.Right, maxRowCount)
+		}
+	}
 }
 
 // CheckColumnInInsertOrReplace check shard key should exists in columns, not in dup expers, has same shard key's value in rows.

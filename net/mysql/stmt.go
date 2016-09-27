@@ -36,30 +36,49 @@
 
 package mysql
 
-import (
-	"github.com/berkaroad/saashard/net/mysql"
-)
+import "github.com/berkaroad/saashard/sqlparser"
 
+// Stmt for stmt.
 type Stmt struct {
-	conn  *Conn
-	id    uint32
-	query string
+	pkg        *PacketIO
+	capability uint32
+	status     *uint16
 
-	params  int
-	columns int
+	ID        uint32
+	Query     string
+	Statement sqlparser.Statement
+	Params    int
+	Columns   int
+	Args      []interface{}
 }
 
-func (s *Stmt) Execute(args ...interface{}) (*mysql.Result, error) {
-	if err := s.conn.pkg.StmtExecute(s.id, args...); err != nil {
+// NewStmt new stmt.
+func NewStmt(pkg *PacketIO, capability uint32, status *uint16) *Stmt {
+	s := new(Stmt)
+	s.pkg = pkg
+	s.capability = capability
+	s.status = status
+	return s
+}
+
+// Execute stmt.
+func (s *Stmt) Execute(args ...interface{}) (*Result, error) {
+	if err := s.pkg.StmtExecute(s.ID, args...); err != nil {
 		return nil, err
 	}
-	return s.conn.pkg.ReadResultSet(s.conn.capability, &(s.conn.status), true)
+	return s.pkg.ReadResultSet(s.capability, s.status, true)
 }
 
+// Close stmt.
 func (s *Stmt) Close() error {
-	if err := s.conn.pkg.StmtClose(s.id); err != nil {
+	if err := s.pkg.StmtClose(s.ID); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// ResetParams reset params.
+func (s *Stmt) ResetParams() {
+	s.Args = make([]interface{}, s.Params)
 }

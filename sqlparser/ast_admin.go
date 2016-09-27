@@ -40,9 +40,56 @@
 
 package sqlparser
 
+import "strconv"
+
 // AdminStatement admin statement.
 type AdminStatement interface {
 	IStatement()
 	IAdminStatement()
 	SQLNode
+}
+
+// KillStatement kill statement.
+type KillStatement interface {
+	AdminStatement
+	IKillStatement()
+	GetConnectionID() uint32
+}
+
+// KillConnection kill connection statement.
+type KillConnection struct {
+	ConnectionID NumVal
+}
+
+// Format KillConnection
+func (node *KillConnection) Format(buf *TrackedBuffer) {
+	buf.Fprintf("kill connection %v", node.ConnectionID)
+}
+
+func (node *KillConnection) IStatement()      {}
+func (node *KillConnection) IAdminStatement() {}
+func (node *KillConnection) IKillStatement()  {}
+func (node *KillConnection) GetConnectionID() uint32 {
+	intConnID, _ := strconv.Atoi(String(node.ConnectionID))
+	connID := uint32(intConnID)
+	return connID
+}
+
+// KillQuery kill query statement
+type KillQuery struct {
+	ConnectionID NumVal
+}
+
+// Format KillQuery
+func (node *KillQuery) Format(buf *TrackedBuffer) {
+	buf.Fprintf("kill query %v", node.ConnectionID)
+}
+
+func (node *KillQuery) IStatement()      {}
+func (node *KillQuery) IAdminStatement() {}
+func (node *KillQuery) IKillStatement()  {}
+func (node *KillQuery) GetConnectionID() uint32 {
+	intConnID, _ := strconv.Atoi(String(node.ConnectionID))
+	connID := uint32(intConnID)
+	return connID
 }

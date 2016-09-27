@@ -61,6 +61,11 @@ func TestParseSelect(t *testing.T) {
 	// 	sql = `ALTER TABLE sub_category
 	// ADD COLUMN sub_categorycolSS VARCHAR(45) NULL AFTER description`
 	sql = "select count(*) from input_list"
+	sql = "SELECT c from sbtest where id=?"
+
+	sql = `CREATE TABLE abpzero.new_table (                                      
+  idnew_table INT NOT NULL COMMENT '',                                                                                    
+  PRIMARY KEY (idnew_table)  COMMENT '')`
 
 	t.Log(sql)
 	if stmt, err := Parse(sql); err != nil {

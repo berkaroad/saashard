@@ -236,33 +236,36 @@ func (c *Conn) Execute(command string, args ...interface{}) (*mysql.Result, erro
 }
 
 // Prepare stmt.
-func (c *Conn) Prepare(query string) (*Stmt, error) {
+func (c *Conn) Prepare(query string) (*mysql.Stmt, error) {
 	var err error
 
-	stmt := new(Stmt)
-	stmt.conn = c
-	if stmt.id, stmt.columns, stmt.params, err = c.pkg.StmtPrepare(c.capability, query); err != nil {
+	stmt := mysql.NewStmt(c.pkg, c.capability, &c.status)
+	if stmt.ID, stmt.Columns, stmt.Params, err = c.pkg.StmtPrepare(c.capability, query); err != nil {
 		return nil, err
 	}
 
 	return stmt, nil
 }
 
+// Begin Tx
 func (c *Conn) Begin() error {
 	_, err := c.Query("begin")
 	return err
 }
 
+// Commit Tx
 func (c *Conn) Commit() error {
 	_, err := c.Query("commit")
 	return err
 }
 
+// Rollback Tx
 func (c *Conn) Rollback() error {
 	_, err := c.Query("rollback")
 	return err
 }
 
+// SetCharset set charset
 func (c *Conn) SetCharset(charset string) error {
 	charset = strings.Trim(charset, "\"'`")
 	if c.charset == charset {
@@ -283,14 +286,17 @@ func (c *Conn) SetCharset(charset string) error {
 
 }
 
+// GetCharset get charset.
+func (c *Conn) GetCharset() string {
+	return c.charset
+}
+
+// IsAutoCommit status.
 func (c *Conn) IsAutoCommit() bool {
 	return c.status&mysql.SERVER_STATUS_AUTOCOMMIT > 0
 }
 
+// IsInTransaction status.
 func (c *Conn) IsInTransaction() bool {
 	return c.status&mysql.SERVER_STATUS_IN_TRANS > 0
-}
-
-func (c *Conn) GetCharset() string {
-	return c.charset
 }

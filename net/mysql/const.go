@@ -40,7 +40,7 @@ const (
 	MinProtocolVersion byte   = 10
 	MaxPayloadLen      int    = 1<<24 - 1
 	TimeFormat         string = "2016-08-25 14:30:00"
-	ServerVersion      string = "5.5.5-SaaShard"
+	ServerVersion      string = "5.6.0-SaaShard"
 	SourceInfo         string = "github.com/berkaroad/saashard"
 )
 

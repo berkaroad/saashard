@@ -42,13 +42,12 @@ import (
 	"strings"
 
 	"github.com/berkaroad/saashard/backend"
+	mysqlBackend "github.com/berkaroad/saashard/backend/mysql"
+	"github.com/berkaroad/saashard/errors"
 	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/route"
 	"github.com/berkaroad/saashard/sqlparser"
 	"github.com/berkaroad/saashard/utils/golog"
-
-	mysqlBackend "github.com/berkaroad/saashard/backend/mysql"
-	"github.com/berkaroad/saashard/errors"
 )
 
 func (c *ClientConn) handleQuery(sql string) (err error) {
@@ -95,26 +94,29 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 		if err != nil {
 			return
 		}
-		return plan.Execute(c.executePlan, c.c.RemoteAddr(), strings.ToLower(c.proxy.logSQL[c.proxy.logSQLIndex]) != golog.LogSqlOff, c.proxy.slowLogTime[c.proxy.slowLogTimeIndex], c.proxy.counter)
+		return plan.Execute(c.executePlanWithQueryCommand, c.c.RemoteAddr(), strings.ToLower(c.proxy.logSQL[c.proxy.logSQLIndex]) != golog.LogSqlOff, c.proxy.slowLogTime[c.proxy.slowLogTimeIndex], c.proxy.counter)
 	}
 	return c.pkg.WriteOK(c.capability, c.status, nil)
 }
 
-func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*mysql.Result,
+func (c *ClientConn) executePlanWithQueryCommand(statements []sqlparser.Statement, results []*mysql.Result,
 	dataNodes []string, isSlave bool,
-	queryDataNodes map[sqlparser.Statement][]string) (err error) {
+	queryDataNodes map[sqlparser.Statement][]string) (backendConnAddrs []string, err error) {
+
+	backendConnAddrs = []string{}
 
 	if len(dataNodes) == 1 {
 		resultCount := len(statements)
 		node := c.proxy.nodes[dataNodes[0]]
 		// If in transaction, must exec in the same node.
 		if c.isInTransaction() && node != c.nodeInTrans {
-			return errors.ErrTransInMulti
+			err = errors.ErrTransInMulti
+			return
 		}
 
 		var conn backend.Connection
 		// Get backend conn from slave or master.
-		if !c.isInTransaction() && isSlave && len(node.DataHost.Slaves) > 0 {
+		if isSlave && len(node.DataHost.Slaves) > 0 {
 			if conn = c.backendSlaveConns[node]; conn == nil {
 				var dbHost *backend.DBHost
 				dbHost, _ = node.DataHost.GetSlave()
@@ -134,6 +136,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			}
 		}
 
+		backendConnAddrs = []string{conn.GetAddr()}
 		var mysqlConn = conn.(*mysqlBackend.Conn)
 		mysqlConn.UseDB(node.Database)
 		var moreResult = true
@@ -159,7 +162,8 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 				switch v := statement.(type) {
 				case *sqlparser.UseDB:
 					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
-					return c.handleInitDB(v.DB)
+					err = c.handleInitDB(v.DB)
+					return
 				case *sqlparser.Begin:
 					sql := sqlparser.String(statement)
 					if result, err = mysqlConn.Query(sql); err != nil {
@@ -168,7 +172,8 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 					c.status |= mysql.SERVER_STATUS_IN_TRANS
 					c.nodeInTrans = node
 					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
-					return c.pkg.WriteOK(c.capability, c.status, result)
+					err = c.pkg.WriteOK(c.capability, c.status, result)
+					return
 				case *sqlparser.Commit:
 					sql := sqlparser.String(statement)
 					if result, err = mysqlConn.Query(sql); err != nil {
@@ -177,7 +182,8 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 					c.status &= ^mysql.SERVER_STATUS_IN_TRANS
 					c.nodeInTrans = nil
 					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
-					return c.pkg.WriteOK(c.capability, c.status, result)
+					err = c.pkg.WriteOK(c.capability, c.status, result)
+					return
 				case *sqlparser.Rollback:
 					sql := sqlparser.String(statement)
 					if result, err = mysqlConn.Query(sql); err != nil {
@@ -186,7 +192,40 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 					c.status &= ^mysql.SERVER_STATUS_IN_TRANS
 					c.nodeInTrans = nil
 					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
-					return c.pkg.WriteOK(c.capability, c.status, result)
+					err = c.pkg.WriteOK(c.capability, c.status, result)
+					return
+				case *sqlparser.KillQuery:
+					connID := v.GetConnectionID()
+					if c.proxy.cfg.AllowKillQuery {
+						c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
+						if connID == c.connectionID {
+							c.Close()
+						} else if specConn, ok := c.proxy.conns[connID]; ok {
+							err = mysql.NewDefaultError(mysql.ER_QUERY_INTERRUPTED)
+							specConn.Close()
+						} else {
+							err = mysql.NewDefaultError(mysql.ER_NO_SUCH_THREAD, connID)
+						}
+					} else {
+						err = mysql.NewDefaultError(mysql.ER_KILL_DENIED_ERROR, connID)
+					}
+					return
+				case *sqlparser.KillConnection:
+					connID := v.GetConnectionID()
+					if c.proxy.cfg.AllowKillQuery {
+						c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
+						if connID == c.connectionID {
+							c.Close()
+						} else if specConn, ok := c.proxy.conns[connID]; ok {
+							err = mysql.NewDefaultError(mysql.ER_QUERY_INTERRUPTED)
+							specConn.Close()
+						} else {
+							err = mysql.NewDefaultError(mysql.ER_NO_SUCH_THREAD, connID)
+						}
+					} else {
+						err = mysql.NewDefaultError(mysql.ER_KILL_DENIED_ERROR, connID)
+					}
+					return
 				case *sqlparser.SetVariable:
 					sql := sqlparser.String(statement)
 					if result, err = mysqlConn.Query(sql); err != nil {
@@ -232,7 +271,8 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 					return
 				}
 			} else {
-				return errors.ErrNoStatement
+				err = errors.ErrNoStatement
+				return
 			}
 		}
 	} else {
@@ -242,7 +282,7 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			statement := statements[0]
 			// If in transaction, must exec in the same node.
 			if c.isInTransaction() && node != c.nodeInTrans {
-				return errors.ErrTransInMulti
+				return nil, errors.ErrTransInMulti
 			}
 
 			var conn backend.Connection
@@ -266,13 +306,14 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 					c.backendMasterConns[node] = conn
 				}
 			}
-
+			backendConnAddrs = append(backendConnAddrs, conn.GetAddr())
 			var mysqlConn = conn.(*mysqlBackend.Conn)
 			mysqlConn.UseDB(node.Database)
 
 			switch statement.(type) {
 			case sqlparser.SelectStatement:
-				return errors.ErrCmdUnsupport
+				err = errors.ErrCmdUnsupport
+				return
 			case sqlparser.DDLStatement:
 				sql := sqlparser.String(statement)
 				if result, err = mysqlConn.Query(sql); err != nil {
@@ -280,11 +321,13 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 				}
 				c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 			default:
-				return errors.ErrCmdUnsupport
+				err = errors.ErrCmdUnsupport
+				return
 			}
 		}
 		if result == nil {
-			return errors.ErrCmdUnsupport
+			err = errors.ErrCmdUnsupport
+			return
 		}
 		if result.Resultset == nil {
 			err = c.pkg.WriteOK(c.capability, c.status, result)
@@ -292,5 +335,5 @@ func (c *ClientConn) executePlan(statements []sqlparser.Statement, results []*my
 			err = c.pkg.WriteResultSet(c.capability, c.status, result)
 		}
 	}
-	return err
+	return
 }

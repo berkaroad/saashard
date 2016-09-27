@@ -61,6 +61,23 @@ func (r *Router) buildCreateIndexPlan(statement *sqlparser.CreateIndex) (*normal
 	return plan, nil
 }
 
+func (r *Router) buildAlterTable(statement *sqlparser.AlterTable) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
+	statement.Table.Qualifier = nil
+	if schemaConfig.ShardEnabled() {
+	}
+	hint := ReadHint(&statement.Comments)
+
+	plan := new(normalPlan)
+	if len(hint.Nodes) > 0 {
+		plan.nodeNames = utils.StringCollectionIntersection(hint.Nodes, schemaConfig.Nodes)
+	} else {
+		plan.nodeNames = schemaConfig.Nodes
+	}
+	plan.Statement = statement
+	return plan, nil
+}
+
 func (r *Router) buildRenameTablePlan(statement *sqlparser.RenameTable) (*normalPlan, error) {
 	schemaConfig := r.Schemas[r.SchemaName]
 	statement.OldName.Qualifier = nil

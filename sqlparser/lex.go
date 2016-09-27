@@ -267,6 +267,10 @@ var keywords = map[string]int{
 	// function
 	"position": POSITION,
 
+	"kill":       KILL,
+	"query":      QUERY,
+	"connection": CONNECTION,
+
 	// charset
 	"armscii8": ARMSCII8,
 	"ascii":    ASCII,
@@ -460,7 +464,8 @@ func (tkn *Tokenizer) Scan() (int, []byte) {
 			tkn.posVarIndex++
 			buf := new(bytes.Buffer)
 			fmt.Fprintf(buf, ":v%d", tkn.posVarIndex)
-			return VALUE_ARG, buf.Bytes()
+			return VALUE_ARG, []byte{'?'}
+			// return VALUE_ARG, buf.Bytes()
 		case '.':
 			if isDigit(tkn.lastChar) {
 				return tkn.scanNumber(true)

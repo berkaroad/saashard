@@ -70,6 +70,9 @@ type Connection interface {
 
 	// Rollback transaction
 	Rollback() error
+
+	// GetAddr Get addr info
+	GetAddr() string
 }
 
 // nilConnection default connection.
@@ -111,6 +114,9 @@ func (c *nilConnection) Commit() error { return nil }
 
 // Rollback transaction
 func (c *nilConnection) Rollback() error { return nil }
+
+// GetAddr Get addr info
+func (c *nilConnection) GetAddr() string { return "127.0.0.1:6051" }
 
 // ConnectionPool to manage connection pool.
 type ConnectionPool struct {

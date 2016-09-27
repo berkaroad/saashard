@@ -78,6 +78,7 @@ type Server struct {
 	counter  *statistic.Counter
 	listener net.Listener
 	running  bool
+	conns    map[uint32]*ClientConn
 }
 
 // NewServer create proxy.
@@ -86,6 +87,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	p.cfg = cfg
 	p.bindIP = net.ParseIP(cfg.BindIP)
 	p.port = cfg.ProxyPort
+	p.conns = make(map[uint32]*ClientConn)
 
 	p.hosts = make(map[string]*backend.DataHost)
 	p.nodes = make(map[string]*backend.DataNode)
@@ -239,6 +241,7 @@ func (p *Server) onConn(c net.Conn) {
 	}
 
 	conn.schemas = p.getSchemasByUser(conn.user)
+	p.conns[conn.connectionID] = conn // save conn
 	conn.Run()
 }
 
@@ -266,7 +269,7 @@ func (p *Server) newClientConn(co net.Conn) *ClientConn {
 	c.charset = mysql.DEFAULT_CHARSET
 	c.collation = mysql.DEFAULT_COLLATION_ID
 	c.stmtID = 0
-	// c.stmts = make(map[uint32]*Stmt)
+	c.stmts = make(map[uint32]*mysql.Stmt)
 	return c
 }
 

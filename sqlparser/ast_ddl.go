@@ -26,6 +26,8 @@
 
 package sqlparser
 
+// http://dev.mysql.com/doc/refman/5.6/en/create-table.html
+
 // DDLStatement ddl statement
 type DDLStatement interface {
 	IStatement()

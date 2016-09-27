@@ -130,6 +130,7 @@ func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, erro
 	schemaConfig := r.Schemas[r.SchemaName]
 	isOnlySystemDB := false
 	nodeIndex := 0
+	sqlparser.SetLimitInSelect(statement, schemaConfig.MaxRowCount)
 	if schemaConfig.ShardEnabled() {
 		if isOnlySystemDB = sqlparser.IsOnlySystemDBInTableExprs(statement.From); !isOnlySystemDB {
 			var err error

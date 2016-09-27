@@ -47,8 +47,13 @@ type Plan interface {
 	Route
 	Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
 		dataNodes []string, isSlave bool,
-		queryDataNodes map[sqlparser.Statement][]string) error,
+		queryDataNodes map[sqlparser.Statement][]string) (backendConnAddrs []string, err error),
 		clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) error
+
+	ExecuteWithStmtPrepare(executor func(statements []sqlparser.Statement, results []*mysql.Result,
+		dataNodes []string, isSlave bool,
+		queryDataNodes map[sqlparser.Statement][]string) (*mysql.Stmt, error),
+		clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) (*mysql.Stmt, error)
 }
 
 type normalPlan struct {
@@ -75,11 +80,45 @@ func (plan *normalPlan) OnSlave() bool {
 // Execute the plan
 func (plan *normalPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
 	dataNodes []string, isSlave bool,
-	queryDataNodes map[sqlparser.Statement][]string) error, clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) error {
+	queryDataNodes map[sqlparser.Statement][]string) (backendConnAddrs []string, err error), clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) error {
 	if executor != nil {
 		var state string
 		startTime := time.Now().UnixNano()
-		err := executor([]sqlparser.Statement{plan.Statement}, []*mysql.Result{plan.Result},
+		backendConnAddrs, err := executor([]sqlparser.Statement{plan.Statement}, []*mysql.Result{plan.Result},
+			plan.nodeNames, plan.onSlave,
+			map[sqlparser.Statement][]string{plan.Statement: plan.queryNodeNames})
+		execTime := float64(time.Now().UnixNano()-startTime) / float64(time.Millisecond)
+		if err != nil {
+			state = "ERROR"
+		} else {
+			state = "OK"
+		}
+		planSQL := plan.GetPlanSQL()
+		if logSQLEnabled &&
+			execTime > float64(slowLogTime) {
+			counter.IncrSlowLogTotal()
+			golog.OutputSql(state, "%.1fms - %s->%s(%s):OnSlave=%v:%s",
+				execTime,
+				clientAddr,
+				strings.Join(plan.nodeNames, ","),
+				strings.Join(backendConnAddrs, ","),
+				plan.onSlave,
+				planSQL,
+			)
+		}
+		return err
+	}
+	return nil
+}
+
+// ExecuteWithStmtPrepare execute the plan with stmt prepare
+func (plan *normalPlan) ExecuteWithStmtPrepare(executor func(statements []sqlparser.Statement, results []*mysql.Result,
+	dataNodes []string, isSlave bool,
+	queryDataNodes map[sqlparser.Statement][]string) (*mysql.Stmt, error), clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) (*mysql.Stmt, error) {
+	if executor != nil {
+		var state string
+		startTime := time.Now().UnixNano()
+		stmt, err := executor([]sqlparser.Statement{plan.Statement}, []*mysql.Result{plan.Result},
 			plan.nodeNames, plan.onSlave,
 			map[sqlparser.Statement][]string{plan.Statement: plan.queryNodeNames})
 		execTime := float64(time.Now().UnixNano()-startTime) / float64(time.Millisecond)
@@ -100,9 +139,9 @@ func (plan *normalPlan) Execute(executor func(statements []sqlparser.Statement, 
 				planSQL,
 			)
 		}
-		return err
+		return stmt, err
 	}
-	return nil
+	return nil, nil
 }
 
 // mergedPlan from plan array.
@@ -134,11 +173,44 @@ func (plan *mergedPlan) OnSlave() bool {
 // Execute the plan
 func (plan *mergedPlan) Execute(executor func(statements []sqlparser.Statement, results []*mysql.Result,
 	dataNodes []string, isSlave bool,
-	queryDataNodes map[sqlparser.Statement][]string) error, clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) error {
+	queryDataNodes map[sqlparser.Statement][]string) (backendConnAddrs []string, err error), clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) error {
 	if executor != nil {
 		var state string
 		startTime := time.Now().UnixNano()
-		err := executor(plan.Statements, plan.Results,
+		backendConnAddrs, err := executor(plan.Statements, plan.Results,
+			plan.nodeNames, plan.onSlave, plan.queryNodeNames)
+		execTime := float64(time.Now().UnixNano()-startTime) / float64(time.Millisecond)
+		if err != nil {
+			state = "ERROR"
+		} else {
+			state = "OK"
+		}
+		planSQL := plan.GetPlanSQL()
+		if logSQLEnabled &&
+			execTime > float64(slowLogTime) {
+			counter.IncrSlowLogTotal()
+			golog.OutputSql(state, "%.1fms - %s->%s(%s):OnSlave=%v:%s",
+				execTime,
+				clientAddr,
+				strings.Join(plan.nodeNames, ","),
+				strings.Join(backendConnAddrs, ","),
+				plan.onSlave,
+				planSQL,
+			)
+		}
+		return err
+	}
+	return nil
+}
+
+// ExecuteWithStmtPrepare the plan
+func (plan *mergedPlan) ExecuteWithStmtPrepare(executor func(statements []sqlparser.Statement, results []*mysql.Result,
+	dataNodes []string, isSlave bool,
+	queryDataNodes map[sqlparser.Statement][]string) (*mysql.Stmt, error), clientAddr net.Addr, logSQLEnabled bool, slowLogTime int, counter *statistic.Counter) (*mysql.Stmt, error) {
+	if executor != nil {
+		var state string
+		startTime := time.Now().UnixNano()
+		stmt, err := executor(plan.Statements, plan.Results,
 			plan.nodeNames, plan.onSlave, plan.queryNodeNames)
 		execTime := float64(time.Now().UnixNano()-startTime) / float64(time.Millisecond)
 		if err != nil {
@@ -158,9 +230,9 @@ func (plan *mergedPlan) Execute(executor func(statements []sqlparser.Statement, 
 				planSQL,
 			)
 		}
-		return err
+		return stmt, err
 	}
-	return nil
+	return nil, nil
 }
 
 // Router used to build plan.
@@ -344,12 +416,20 @@ func (r *Router) BuildNormalPlan(statement sqlparser.Statement) (plan Plan, err 
 		realPlan, err = r.buildCreateTablePlan(v)
 	case *sqlparser.CreateIndex:
 		realPlan, err = r.buildCreateIndexPlan(v)
+	case *sqlparser.AlterTable:
+		realPlan, err = r.buildAlterTable(v)
 	case *sqlparser.RenameTable:
 		realPlan, err = r.buildRenameTablePlan(v)
 	case *sqlparser.DropTable:
 		realPlan, err = r.buildDropTablePlan(v)
 	case *sqlparser.DropIndex:
 		realPlan, err = r.buildDropIndexPlan(v)
+
+	case *sqlparser.KillConnection:
+		realPlan, err = r.buildKillConnection(v)
+	case *sqlparser.KillQuery:
+		realPlan, err = r.buildKillQuery(v)
+
 	default:
 		realPlan, err = nil, errors.ErrNoPlan
 	}
