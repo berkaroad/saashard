@@ -41,10 +41,11 @@ make run # Run immediately, use ss.yaml config file.
 - Support split read and write. (Read balance use polling algorithm.)
 - Support database sharding, supported algorithm is 'hash', 'mod'.
 - Support backend connection pool.
+- Support Stmt related command.(developing)
 
 ## SQL Client Support 
-- MySQL Workbench
-- SQLyog
+- MySQL Workbench (tested version:6.3)
+- SQLyog (tested version:10.2)
 - ado.net
 - entity framework (EF6)
 
