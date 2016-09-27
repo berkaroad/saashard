@@ -539,7 +539,7 @@ func (tkn *Tokenizer) Next(buffer *bytes.Buffer) {
 
 func (tkn *Tokenizer) skipBlank() {
 	ch := tkn.lastChar
-	for ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t' {
+	for isBlank(ch) {
 		tkn.next()
 		ch = tkn.lastChar
 	}
@@ -724,4 +724,8 @@ func digitVal(ch uint16) int {
 
 func isDigit(ch uint16) bool {
 	return '0' <= ch && ch <= '9'
+}
+
+func isBlank(ch uint16) bool {
+	return ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t'
 }

@@ -147,7 +147,8 @@ type NonStarExpr struct {
 func (node *NonStarExpr) Format(buf *TrackedBuffer) {
 	buf.Fprintf("%v", node.Expr)
 	if node.As != nil {
-		buf.Fprintf(" as %s", node.As)
+		buf.Fprintf(" as ")
+		escape(buf, node.As)
 	}
 }
 

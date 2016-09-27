@@ -67,6 +67,7 @@ func TestParseSelect(t *testing.T) {
   idnew_table INT NOT NULL COMMENT '',                                                                                    
   PRIMARY KEY (idnew_table)  COMMENT '')`
 
+	sql = "SELECT state, ROUND(SUM(duration),5) AS `duration (summed) in sec` FROM information_schema.profiling WHERE query_id = 0 GROUP BY state ORDER BY `duration (summed) in sec` DESC"
 	t.Log(sql)
 	if stmt, err := Parse(sql); err != nil {
 		t.Error(err)
