@@ -22,7 +22,7 @@ func (c *ClientConn) handleStmtPrepare(sql string) error {
 	statement, err = sqlparser.Parse(sql)
 	if err != nil {
 		golog.Error("proxy", "handle_stmt", err.Error(), 0, "sql", sql)
-		return mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s'", sql))
+		return mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s': '%s'", sql, err.Error()))
 	}
 
 	s.Query = sql
@@ -56,8 +56,8 @@ func (c *ClientConn) handleStmtPrepare(sql string) error {
 	if stmtFromBackend == nil {
 		return errors.New("prepare error no stmt from backend")
 	}
-	s.Params = stmtFromBackend.Params
-	s.Columns = stmtFromBackend.Columns
+	s.ParamNum = stmtFromBackend.ParamNum
+	s.ColumnNum = stmtFromBackend.ColumnNum
 
 	s.ID = c.stmtID
 	c.stmtID++
@@ -80,7 +80,7 @@ func (c *ClientConn) handleStmtExecute(data []byte) error {
 	var err error
 	var s *mysql.Stmt
 	println("handleStmtExecute", string(data))
-	s, err = c.pkg.WriteStmtExecute(data, func(id uint32) *mysql.Stmt { return c.stmts[id] })
+	s, err = c.pkg.ReadStmtExecuteRequest(data, func(id uint32) *mysql.Stmt { return c.stmts[id] })
 
 	switch stmt := s.Statement.(type) {
 	case *sqlparser.Select:

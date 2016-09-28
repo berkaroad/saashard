@@ -75,7 +75,6 @@ type Conn struct {
 	salt      []byte
 
 	pushTimestamp int64
-	pkgErr        error
 }
 
 // GetConnectionID get connection id
@@ -100,50 +99,58 @@ func (c *Conn) Connect(dbHost *backend.DBHost, db string) error {
 
 // Reconnect reconnect to mysql.
 func (c *Conn) Reconnect() error {
-	var err error
+	var needReconnect = true
 	if c.conn != nil {
-		c.Close()
+		if c.Ping() == nil {
+			needReconnect = false
+		} else {
+			c.Close()
+		}
 	}
 
-	n := "tcp"
-	if strings.Contains(c.dbHost.Addr, "/") {
-		n = "unix"
+	if needReconnect {
+		n := "tcp"
+		if strings.Contains(c.dbHost.Addr, "/") {
+			n = "unix"
+		}
+
+		netConn, err := net.Dial(n, c.dbHost.Addr)
+		if err != nil {
+			return err
+		}
+
+		if tcpConn, ok := netConn.(*net.TCPConn); ok {
+			//SetNoDelay controls whether the operating system should delay packet transmission
+			// in hopes of sending fewer packets (Nagle's algorithm).
+			// The default is true (no delay),
+			// meaning that data is sent as soon as possible after a Write.
+			//I set this option false.
+			tcpConn.SetNoDelay(false)
+			tcpConn.SetKeepAlive(true)
+		}
+
+		c.conn = netConn
+		c.pkg = mysql.NewPacketIO(netConn)
+
+		if c.capability, c.status, c.collation, err = c.pkg.ReadInitialHandshake(&(c.salt)); err != nil {
+			c.conn.Close()
+			c.conn = nil
+			return err
+		}
+
+		if err := c.pkg.WriteAuthHandshake(&(c.capability), c.dbHost.User, c.dbHost.Password, c.db, c.salt, c.collation); err != nil {
+			c.conn.Close()
+			c.conn = nil
+			return err
+		}
+
+		if _, err := c.pkg.ReadOK(c.capability, &(c.status)); err != nil {
+			c.conn.Close()
+			c.conn = nil
+			return err
+		}
 	}
-
-	netConn, err := net.Dial(n, c.dbHost.Addr)
-	if err != nil {
-		return err
-	}
-
-	if tcpConn, ok := netConn.(*net.TCPConn); ok {
-		//SetNoDelay controls whether the operating system should delay packet transmission
-		// in hopes of sending fewer packets (Nagle's algorithm).
-		// The default is true (no delay),
-		// meaning that data is sent as soon as possible after a Write.
-		//I set this option false.
-		tcpConn.SetNoDelay(false)
-		tcpConn.SetKeepAlive(true)
-	}
-
-	c.conn = netConn
-	c.pkg = mysql.NewPacketIO(netConn)
-
-	if c.capability, c.status, c.collation, err = c.pkg.ReadInitialHandshake(&(c.salt)); err != nil {
-		c.conn.Close()
-		return err
-	}
-
-	if err := c.pkg.WriteAuthHandshake(&(c.capability), c.dbHost.User, c.dbHost.Password, c.db, c.salt, c.collation); err != nil {
-		c.conn.Close()
-
-		return err
-	}
-
-	if _, err := c.pkg.ReadOK(c.capability, &(c.status)); err != nil {
-		c.conn.Close()
-
-		return err
-	}
+	c.pkg.Sequence = 0
 
 	//we must always use autocommit
 	if !c.IsAutoCommit() {
@@ -164,7 +171,7 @@ func (c *Conn) Close() error {
 		c.conn.Close()
 		c.conn = nil
 		c.salt = nil
-		c.pkgErr = nil
+		c.pkg = nil
 	}
 
 	return nil
@@ -221,7 +228,7 @@ func (c *Conn) FieldList(table string, wildcard string) ([]*mysql.Field, error) 
 }
 
 // Execute command.
-func (c *Conn) Execute(command string, args ...interface{}) (*mysql.Result, error) {
+func (c *Conn) Execute(command string, args []interface{}) (*mysql.Result, error) {
 	if len(args) == 0 {
 		return c.pkg.Query(c.capability, &(c.status), command)
 	}
@@ -230,7 +237,7 @@ func (c *Conn) Execute(command string, args ...interface{}) (*mysql.Result, erro
 		return nil, err
 	}
 	var r *mysql.Result
-	r, err = s.Execute(args...)
+	r, err = s.Execute(args)
 	s.Close()
 	return r, err
 }
@@ -240,7 +247,7 @@ func (c *Conn) Prepare(query string) (*mysql.Stmt, error) {
 	var err error
 
 	stmt := mysql.NewStmt(c.pkg, c.capability, &c.status)
-	if stmt.ID, stmt.Columns, stmt.Params, err = c.pkg.StmtPrepare(c.capability, query); err != nil {
+	if stmt.ID, stmt.ColumnNum, stmt.ParamNum, err = c.pkg.StmtPrepare(c.capability, query); err != nil {
 		return nil, err
 	}
 

@@ -51,7 +51,7 @@ import (
 
 var (
 	regSQLStatement = regexp.MustCompile(`([^';]*|('[^']*')*)+;`)
-	sysdbs          = []string{"information_schema", "mysql"}
+	sysdbs          = []string{"information_schema", "mysql", "performance_schema"}
 )
 
 func handleError(err *error) {

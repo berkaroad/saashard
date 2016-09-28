@@ -27,3 +27,16 @@ CREATE TABLE `sub_category` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `code_UNIQUE` (`tenant_id` ASC, `code` ASC),
   UNIQUE INDEX `name_UNIQUE` (`tenant_id` ASC, `name` ASC));
+
+-- Generate tables config for saashard
+/*
+    -
+        name : top_category
+
+    -
+        name : sub_category
+
+*/
+select concat('    -
+        name : ' , `TABLE_NAME`,'
+') `config` from `information_schema`.`tables` where `table_schema`='productcatalog_00' and `Table_Type`='BASE TABLE';

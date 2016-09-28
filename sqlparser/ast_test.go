@@ -68,6 +68,8 @@ func TestParseSelect(t *testing.T) {
   PRIMARY KEY (idnew_table)  COMMENT '')`
 
 	sql = "SELECT state, ROUND(SUM(duration),5) AS `duration (summed) in sec` FROM information_schema.profiling WHERE query_id = 0 GROUP BY state ORDER BY `duration (summed) in sec` DESC"
+	sql = "select concat('    -          name : ' , `TABLE_NAME`,' ') as `config` from `information_schema`.`tables` where table_schema='productcatalog' and Table_Type='BASE TABLE' LIMIT 0, 1000"
+
 	t.Log(sql)
 	if stmt, err := Parse(sql); err != nil {
 		t.Error(err)

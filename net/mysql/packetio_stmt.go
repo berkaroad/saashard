@@ -30,9 +30,9 @@ func (p *PacketIO) WriteStmtPrepare(capability uint32, status uint16, s *Stmt) e
 	//stmt id
 	data = append(data, Uint32ToBytes(s.ID)...)
 	//number columns
-	data = append(data, Uint16ToBytes(uint16(s.Columns))...)
+	data = append(data, Uint16ToBytes(uint16(s.ColumnNum))...)
 	//number params
-	data = append(data, Uint16ToBytes(uint16(s.Params))...)
+	data = append(data, Uint16ToBytes(uint16(s.ParamNum))...)
 	//filter [00]
 	data = append(data, 0)
 	//warning count
@@ -43,8 +43,8 @@ func (p *PacketIO) WriteStmtPrepare(capability uint32, status uint16, s *Stmt) e
 		return err
 	}
 
-	if s.Params > 0 {
-		for i := 0; i < s.Params; i++ {
+	if s.ParamNum > 0 {
+		for i := 0; i < s.ParamNum; i++ {
 			data = data[0:4]
 			data = append(data, []byte(paramFieldData)...)
 
@@ -60,8 +60,8 @@ func (p *PacketIO) WriteStmtPrepare(capability uint32, status uint16, s *Stmt) e
 		}
 	}
 
-	if s.Columns > 0 {
-		for i := 0; i < s.Columns; i++ {
+	if s.ColumnNum > 0 {
+		for i := 0; i < s.ColumnNum; i++ {
 			data = data[0:4]
 			data = append(data, []byte(columnFieldData)...)
 
@@ -85,8 +85,8 @@ func (p *PacketIO) WriteStmtPrepare(capability uint32, status uint16, s *Stmt) e
 	return nil
 }
 
-// WriteStmtExecute write stmt execute
-func (p *PacketIO) WriteStmtExecute(data []byte, findStmtByID func(id uint32) *Stmt) (*Stmt, error) {
+// ReadStmtExecuteRequest read from stmt execute request
+func (p *PacketIO) ReadStmtExecuteRequest(data []byte, findStmtByID func(id uint32) *Stmt) (*Stmt, error) {
 	if len(data) < 9 {
 		return nil, errors.ErrMalformPacket
 	}
@@ -115,10 +115,10 @@ func (p *PacketIO) WriteStmtExecute(data []byte, findStmtByID func(id uint32) *S
 	var paramTypes []byte
 	var paramValues []byte
 
-	paramNum := s.Params
+	paramNum := s.ParamNum
 
 	if paramNum > 0 {
-		nullBitmapLen := (s.Params + 7) >> 3
+		nullBitmapLen := (s.ParamNum + 7) >> 3
 		if len(data) < (pos + nullBitmapLen + 1) {
 			return nil, errors.ErrMalformPacket
 		}
@@ -136,10 +136,12 @@ func (p *PacketIO) WriteStmtExecute(data []byte, findStmtByID func(id uint32) *S
 			pos += (paramNum << 1)
 
 			paramValues = data[pos:]
-		}
 
-		if err := p.bindStmtArgs(s, nullBitmaps, paramTypes, paramValues); err != nil {
-			return nil, err
+			if err := p.bindStmtArgs(s, nullBitmaps, paramTypes, paramValues); err != nil {
+				return nil, err
+			}
+		} else {
+			println("new param bound flag=", data[pos])
 		}
 	}
 	return s, nil
@@ -155,12 +157,14 @@ func (p *PacketIO) bindStmtArgs(s *Stmt, nullBitmap, paramTypes, paramValues []b
 	var isNull bool
 	var err error
 
-	for i := 0; i < s.Params; i++ {
+	for i := 0; i < s.ParamNum; i++ {
 		if nullBitmap[i>>3]&(1<<(uint(i)%8)) > 0 {
 			args[i] = nil
 			continue
 		}
-
+		println("sql=", s.Query)
+		println("paramTypes's length=", len(paramTypes))
+		println("paramValues's length=", len(paramValues))
 		tp := paramTypes[i<<1]
 		isUnsigned := (paramTypes[(i<<1)+1] & 0x80) > 0
 
@@ -202,7 +206,7 @@ func (p *PacketIO) bindStmtArgs(s *Stmt, nullBitmap, paramTypes, paramValues []b
 			}
 
 			if isUnsigned {
-				args[i] = uint32(binary.LittleEndian.Uint32(paramValues[pos : pos+4]))
+				args[i] = binary.LittleEndian.Uint32(paramValues[pos : pos+4])
 			} else {
 				args[i] = int32(binary.LittleEndian.Uint32(paramValues[pos : pos+4]))
 			}

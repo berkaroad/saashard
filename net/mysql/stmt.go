@@ -47,8 +47,8 @@ type Stmt struct {
 	ID        uint32
 	Query     string
 	Statement sqlparser.Statement
-	Params    int
-	Columns   int
+	ParamNum  int
+	ColumnNum int
 	Args      []interface{}
 }
 
@@ -62,8 +62,8 @@ func NewStmt(pkg *PacketIO, capability uint32, status *uint16) *Stmt {
 }
 
 // Execute stmt.
-func (s *Stmt) Execute(args ...interface{}) (*Result, error) {
-	if err := s.pkg.StmtExecute(s.ID, args...); err != nil {
+func (s *Stmt) Execute(args []interface{}) (*Result, error) {
+	if err := s.pkg.StmtExecute(s.ID, args); err != nil {
 		return nil, err
 	}
 	return s.pkg.ReadResultSet(s.capability, s.status, true)
@@ -80,5 +80,5 @@ func (s *Stmt) Close() error {
 
 // ResetParams reset params.
 func (s *Stmt) ResetParams() {
-	s.Args = make([]interface{}, s.Params)
+	s.Args = make([]interface{}, s.ParamNum)
 }

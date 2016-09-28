@@ -283,21 +283,22 @@ func (p *PacketIO) Ping(capability uint32, status *uint16) error {
 // StmtPrepare use command COM_STMT_PREPARE
 func (p *PacketIO) StmtPrepare(capability uint32, query string) (stmtID uint32, columnNumber, paramNumber int, err error) {
 	if err = p.WriteCommandStr(COM_STMT_PREPARE, query); err != nil {
-		return 0, 0, 0, err
+		return
 	}
 	var data []byte
 	data, err = p.ReadPacket()
 	if err != nil {
-		return 0, 0, 0, err
+		return
 	}
 
 	if data[0] == ERR_HEADER {
-		return 0, 0, 0, p.handleErrorPacket(capability, data)
+		err = p.handleErrorPacket(capability, data)
+		return
 	}
 	if data[0] != OK_HEADER {
-		return 0, 0, 0, errors.ErrMalformPacket
+		err = errors.ErrMalformPacket
+		return
 	}
-
 	pos := 1
 
 	//for statement id
@@ -330,7 +331,7 @@ func (p *PacketIO) StmtPrepare(capability uint32, query string) (stmtID uint32, 
 }
 
 // StmtExecute use command COM_STMT_EXECUTE
-func (p *PacketIO) StmtExecute(stmtID uint32, args ...interface{}) error {
+func (p *PacketIO) StmtExecute(stmtID uint32, args []interface{}) error {
 	paramsNum := len(args)
 
 	paramTypes := make([]byte, paramsNum<<1)

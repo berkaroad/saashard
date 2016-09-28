@@ -43,6 +43,7 @@ package sqlparser
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 )
 
 // TrackedBuffer is used to rebuild a query from the ast.
@@ -86,30 +87,28 @@ func (buf *TrackedBuffer) Fprintf(format string, values ...interface{}) {
 		i++ // '%'
 		switch format[i] {
 		case 'c':
-			if values[fieldnum] != nil {
-				switch v := values[fieldnum].(type) {
-				case byte:
-					buf.WriteByte(v)
-				case rune:
-					buf.WriteRune(v)
-				default:
-					panic(fmt.Sprintf("unexpected type %T", v))
-				}
+			switch v := values[fieldnum].(type) {
+			case byte:
+				buf.WriteByte(v)
+			case rune:
+				buf.WriteRune(v)
+			default:
+				panic(fmt.Sprintf("unexpected type %T", v))
 			}
+
 		case 's':
-			if values[fieldnum] != nil {
-				switch v := values[fieldnum].(type) {
-				case []byte:
-					buf.Write(v)
-				case string:
-					buf.WriteString(v)
-				default:
-					panic(fmt.Sprintf("unexpected type %T", v))
-				}
+			switch v := values[fieldnum].(type) {
+			case []byte:
+				buf.Write(v)
+			case string:
+				buf.WriteString(v)
+			default:
+				panic(fmt.Sprintf("unexpected type %T", v))
 			}
 		case 'v':
-			if values[fieldnum] != nil {
-				node := values[fieldnum].(SQLNode)
+			currentVal := values[fieldnum]
+			if currentVal != nil && !reflect.ValueOf(currentVal).IsNil() {
+				node := currentVal.(SQLNode)
 				if buf.nodeFormatter == nil {
 					node.Format(buf)
 				} else {
@@ -117,9 +116,7 @@ func (buf *TrackedBuffer) Fprintf(format string, values ...interface{}) {
 				}
 			}
 		case 'a':
-			if values[fieldnum] != nil {
-				buf.WriteArg(values[fieldnum].(string))
-			}
+			buf.WriteArg(values[fieldnum].(string))
 		default:
 			panic("unexpected")
 		}

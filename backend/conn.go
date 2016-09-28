@@ -139,26 +139,6 @@ func NewConnectionPool(maxPoolSize uint32, dbHost *DBHost) *ConnectionPool {
 	p.dbHost = dbHost
 	p.connections = list.New()
 	p.connids = make(map[uint32]interface{})
-	go func() {
-		for {
-			idleCount := p.GetIdleCount()
-			// idleCount is zero, or less or equal then 20%, then warn
-			if idleCount*100/p.MaxPoolSize <= 20 {
-				golog.Warn("backend", "NewConnectionPool", "Idle count is less or equal then 20 pecent", 0,
-					"DBHost",
-					p.dbHost.Addr,
-					"idle",
-					idleCount)
-			} else {
-				golog.Debug("backend", "NewConnectionPool", "Idle info", 0,
-					"DBHost",
-					p.dbHost.Addr,
-					"idle",
-					idleCount)
-			}
-			time.Sleep(time.Second * 15)
-		}
-	}()
 	return p
 }
 
@@ -170,6 +150,7 @@ func (p *ConnectionPool) GetIdleCount() uint32 {
 // GetConnection get connection from pool
 func (p *ConnectionPool) GetConnection(database string) (Connection, error) {
 	defer p.locker.Unlock()
+	defer p.logConnIdleInfo()
 
 	p.locker.Lock()
 	var conn Connection
@@ -218,6 +199,7 @@ func (p *ConnectionPool) GetConnection(database string) (Connection, error) {
 // ReturnConnection give back connection to pool
 func (p *ConnectionPool) ReturnConnection(conn Connection) {
 	defer p.locker.Unlock()
+	defer p.logConnIdleInfo()
 
 	p.locker.Lock()
 	if conn != nil && conn.GetConnectionID() > 0 {
@@ -226,5 +208,31 @@ func (p *ConnectionPool) ReturnConnection(conn Connection) {
 			p.connids[conn.GetConnectionID()] = nil
 			atomic.AddUint32(&p.used, ^uint32(0))
 		}
+	}
+}
+
+func (p *ConnectionPool) logConnIdleInfo() {
+	idleCount := p.GetIdleCount()
+	// idleCount is zero, or less or equal then 20%, then warn
+	if idleCount*100/p.MaxPoolSize <= 20 {
+		golog.Warn("backend", "NewConnectionPool", "Idle count is less or equal then 20 pecent", 0,
+			"DBHost",
+			p.dbHost.Addr,
+			"used",
+			p.used,
+			"cached",
+			p.connections.Len(),
+			"idle",
+			idleCount)
+	} else {
+		golog.Info("backend", "NewConnectionPool", "Idle info", 0,
+			"DBHost",
+			p.dbHost.Addr,
+			"used",
+			p.used,
+			"cached",
+			p.connections.Len(),
+			"idle",
+			idleCount)
 	}
 }

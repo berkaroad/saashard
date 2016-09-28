@@ -81,7 +81,7 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 		stmt, err := sqlparser.Parse(sql)
 		if err != nil {
 			golog.Error("proxy", "handleQuery", err.Error(), 0, "sql", sql)
-			return mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s'", sql))
+			return mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s': '%s'", sql, err.Error()))
 		}
 		if stmt != nil {
 			stmts = append(stmts, stmt)
@@ -250,7 +250,7 @@ func (c *ClientConn) executePlanWithQueryCommand(statements []sqlparser.Statemen
 					} else {
 						c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 					}
-					err = c.pkg.WriteOK(c.capability, c.status, nil)
+					err = c.pkg.WriteOK(c.capability, c.status, result)
 				default:
 					sql := sqlparser.String(statement)
 					if result, err = mysqlConn.Query(sql); err != nil {
