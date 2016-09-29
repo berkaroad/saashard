@@ -212,12 +212,11 @@ func (c *ClientConn) Close() error {
 		return nil
 	}
 	c.nodeInTrans = nil
-	for _, conn := range c.backendMasterConns {
-		conn.Rollback()
-		conn.ReturnConnection()
+	for node := range c.backendMasterConns {
+		c.returnMasterConn(node)
 	}
-	for _, conn := range c.backendSlaveConns {
-		conn.ReturnConnection()
+	for node := range c.backendSlaveConns {
+		c.returnSlaveConn(node)
 	}
 
 	c.c.Close()
@@ -272,6 +271,9 @@ func (c *ClientConn) isAutoCommit() bool {
 }
 
 func (c *ClientConn) getOrCreateMasterConn(node *backend.DataNode) (conn backend.Connection, err error) {
+	defer c.Unlock()
+
+	c.Lock()
 	if conn = c.backendMasterConns[node]; conn == nil {
 		for cachedNode := range c.backendMasterConns {
 			if cachedNode.DataHost == node.DataHost {
@@ -292,7 +294,21 @@ func (c *ClientConn) getOrCreateMasterConn(node *backend.DataNode) (conn backend
 	return
 }
 
+func (c *ClientConn) returnMasterConn(node *backend.DataNode) {
+	defer c.Unlock()
+
+	c.Lock()
+	if conn := c.backendMasterConns[node]; conn != nil {
+		conn.Rollback()
+		conn.ReturnConnection()
+		delete(c.backendMasterConns, node)
+	}
+}
+
 func (c *ClientConn) getOrCreateSlaveConn(node *backend.DataNode) (conn backend.Connection, err error) {
+	defer c.Unlock()
+
+	c.Lock()
 	if conn = c.backendSlaveConns[node]; conn == nil {
 		for cachedNode := range c.backendSlaveConns {
 			if cachedNode.DataHost == node.DataHost {
@@ -315,4 +331,14 @@ func (c *ClientConn) getOrCreateSlaveConn(node *backend.DataNode) (conn backend.
 		}
 	}
 	return
+}
+
+func (c *ClientConn) returnSlaveConn(node *backend.DataNode) {
+	defer c.Unlock()
+
+	c.Lock()
+	if conn := c.backendSlaveConns[node]; conn != nil {
+		conn.ReturnConnection()
+		delete(c.backendSlaveConns, node)
+	}
 }
