@@ -117,22 +117,12 @@ func (c *ClientConn) executePlanWithQueryCommand(statements []sqlparser.Statemen
 		var conn backend.Connection
 		// Get backend conn from slave or master.
 		if isSlave && len(node.DataHost.Slaves) > 0 {
-			if conn = c.backendSlaveConns[node]; conn == nil {
-				var dbHost *backend.DBHost
-				dbHost, _ = node.DataHost.GetSlave()
-				if conn, err = dbHost.GetConnection(node.Database); err != nil {
-					return
-				}
-				c.backendSlaveConns[node] = conn
+			if conn, err = c.getOrCreateSlaveConn(node); err != nil {
+				return
 			}
 		} else {
-			if conn = c.backendMasterConns[node]; conn == nil {
-				var dbHost *backend.DBHost
-				dbHost = node.DataHost.Master
-				if conn, err = dbHost.GetConnection(node.Database); err != nil {
-					return
-				}
-				c.backendMasterConns[node] = conn
+			if conn, err = c.getOrCreateMasterConn(node); err != nil {
+				return
 			}
 		}
 
@@ -287,25 +277,16 @@ func (c *ClientConn) executePlanWithQueryCommand(statements []sqlparser.Statemen
 
 			var conn backend.Connection
 			// Get backend conn from slave or master.
-			if !c.isInTransaction() && isSlave && len(node.DataHost.Slaves) > 0 {
-				if conn = c.backendSlaveConns[node]; conn == nil {
-					var dbHost *backend.DBHost
-					dbHost, _ = node.DataHost.GetSlave()
-					if conn, err = dbHost.GetConnection(node.Database); err != nil {
-						return
-					}
-					c.backendSlaveConns[node] = conn
+			if isSlave && len(node.DataHost.Slaves) > 0 {
+				if conn, err = c.getOrCreateSlaveConn(node); err != nil {
+					return
 				}
 			} else {
-				if conn = c.backendMasterConns[node]; conn == nil {
-					var dbHost *backend.DBHost
-					dbHost = node.DataHost.Master
-					if conn, err = dbHost.GetConnection(node.Database); err != nil {
-						return
-					}
-					c.backendMasterConns[node] = conn
+				if conn, err = c.getOrCreateMasterConn(node); err != nil {
+					return
 				}
 			}
+
 			backendConnAddrs = append(backendConnAddrs, conn.GetAddr())
 			var mysqlConn = conn.(*mysqlBackend.Conn)
 			mysqlConn.UseDB(node.Database)

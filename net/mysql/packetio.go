@@ -95,6 +95,7 @@ func (p *PacketIO) ReadPacket() ([]byte, error) {
 		return nil, errors.ErrBadConn
 	}
 	if length < MaxPayloadLen {
+		PrintPacketData("ReadPacket1", data)
 		return data, nil
 	}
 
@@ -102,7 +103,9 @@ func (p *PacketIO) ReadPacket() ([]byte, error) {
 	if err != nil {
 		return nil, errors.ErrBadConn
 	}
-	return append(data, buf...), nil
+	data = append(data, buf...)
+	PrintPacketData("ReadPacket2", data)
+	return data, nil
 }
 
 // WritePacket is to write packet.
@@ -139,7 +142,7 @@ func (p *PacketIO) WritePacket(data []byte) error {
 		return errors.ErrBadConn
 	} else {
 		p.Sequence++
-		// PrintPacketData("WritePacket", data)
+		PrintPacketData("WritePacket", data)
 		return nil
 	}
 }
@@ -189,7 +192,7 @@ func (p *PacketIO) WritePacketBatch(total, data []byte, direct bool) ([]byte, er
 		} else if n != len(total) {
 			return nil, errors.ErrBadConn
 		}
-		// PrintPacketData("WritePacketBatch", total)
+		PrintPacketData("WritePacketBatch", total)
 	}
 	return total, nil
 }

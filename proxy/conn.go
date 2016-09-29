@@ -77,16 +77,19 @@ type ClientConn struct {
 
 // IsAllowConnect check ip in whitelist.
 func (c *ClientConn) IsAllowConnect() bool {
-	clientHost, _, err := net.SplitHostPort(c.c.RemoteAddr().String())
-	if err != nil {
-		fmt.Println(err)
-	}
-	c.clientIP = net.ParseIP(clientHost)
-
 	ipVec := c.proxy.allowips[c.proxy.allowipsIndex]
 	if ipVecLen := len(ipVec); ipVecLen == 0 {
 		return true
 	}
+
+	clientHost, _, err := net.SplitHostPort(c.c.RemoteAddr().String())
+	if err != nil {
+		golog.Error("server", "IsAllowConnect", "error", mysql.ER_ACCESS_DENIED_ERROR,
+			"ip address", c.c.RemoteAddr().String(), " access denied by saashard.")
+		return false
+	}
+	c.clientIP = net.ParseIP(clientHost)
+
 	for _, ip := range ipVec {
 		if ip.Equal(c.clientIP) {
 			return true
@@ -94,7 +97,7 @@ func (c *ClientConn) IsAllowConnect() bool {
 	}
 
 	golog.Error("server", "IsAllowConnect", "error", mysql.ER_ACCESS_DENIED_ERROR,
-		"ip address", c.c.RemoteAddr().String(), " access denied by kindshard.")
+		"ip address", c.c.RemoteAddr().String(), " access denied by saashard.")
 	return false
 }
 
@@ -266,4 +269,50 @@ func (c *ClientConn) isInTransaction() bool {
 
 func (c *ClientConn) isAutoCommit() bool {
 	return c.status&mysql.SERVER_STATUS_AUTOCOMMIT > 0
+}
+
+func (c *ClientConn) getOrCreateMasterConn(node *backend.DataNode) (conn backend.Connection, err error) {
+	if conn = c.backendMasterConns[node]; conn == nil {
+		for cachedNode := range c.backendMasterConns {
+			if cachedNode.DataHost == node.DataHost {
+				conn = c.backendMasterConns[cachedNode]
+				c.backendMasterConns[node] = conn
+				break
+			}
+		}
+
+		if conn == nil {
+			dbHost := node.DataHost.Master
+			if conn, err = dbHost.GetConnection(node.Database); err != nil {
+				return
+			}
+			c.backendMasterConns[node] = conn
+		}
+	}
+	return
+}
+
+func (c *ClientConn) getOrCreateSlaveConn(node *backend.DataNode) (conn backend.Connection, err error) {
+	if conn = c.backendSlaveConns[node]; conn == nil {
+		for cachedNode := range c.backendSlaveConns {
+			if cachedNode.DataHost == node.DataHost {
+				conn = c.backendSlaveConns[cachedNode]
+				c.backendSlaveConns[node] = conn
+				break
+			}
+		}
+
+		if conn == nil {
+			var dbHost *backend.DBHost
+			dbHost, err = node.DataHost.GetSlave()
+			if err != nil {
+				return
+			}
+			if conn, err = dbHost.GetConnection(node.Database); err != nil {
+				return
+			}
+			c.backendSlaveConns[node] = conn
+		}
+	}
+	return
 }

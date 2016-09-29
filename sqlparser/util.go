@@ -161,7 +161,6 @@ func CheckTableExprs(tabExprs TableExprs, tableNames interface{}) (err error) {
 					db := strings.ToLower(string(simpExpr.Qualifier))
 					if isSystemDB = IsSystemDB(db); !isSystemDB {
 						simpExpr.Qualifier = nil
-						println(db, "is not system db.")
 					}
 				}
 				if !isSystemDB {

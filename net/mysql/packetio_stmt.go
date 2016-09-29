@@ -90,6 +90,7 @@ func (p *PacketIO) ReadStmtExecuteRequest(data []byte, findStmtByID func(id uint
 	if len(data) < 9 {
 		return nil, errors.ErrMalformPacket
 	}
+	PrintPacketData("ReadStmtExecuteRequest", data)
 
 	pos := 0
 	id := binary.LittleEndian.Uint32(data[0:4])

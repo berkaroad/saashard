@@ -36,13 +36,9 @@ func (c *ClientConn) handleStmtPrepare(sql string) error {
 
 	var conn backend.Connection
 	// Get backend conn from master.
-	if conn = c.backendMasterConns[node]; conn == nil {
-		var dbHost *backend.DBHost
-		dbHost = node.DataHost.Master
-		if conn, err = dbHost.GetConnection(node.Database); err != nil {
-			return err
-		}
-		c.backendMasterConns[node] = conn
+	conn, err = c.getOrCreateMasterConn(node)
+	if err != nil {
+		return fmt.Errorf("prepare error: %s", err.Error())
 	}
 
 	var mysqlConn = conn.(*mysqlBackend.Conn)
@@ -79,7 +75,6 @@ func (c *ClientConn) handleStmtPrepare(sql string) error {
 func (c *ClientConn) handleStmtExecute(data []byte) error {
 	var err error
 	var s *mysql.Stmt
-	println("handleStmtExecute", string(data))
 	s, err = c.pkg.ReadStmtExecuteRequest(data, func(id uint32) *mysql.Stmt { return c.stmts[id] })
 
 	switch stmt := s.Statement.(type) {

@@ -168,46 +168,6 @@ func (p *Server) Close() {
 	}
 }
 
-// Ping backend
-// func (p *Server) Ping() {
-// 	go func() {
-// 		for true {
-// 			hosts := p.hosts
-// 			for _, host := range hosts {
-// 				pingInterval := host.PingInterval
-// 				if pingInterval < 5 {
-// 					pingInterval = 5
-// 				}
-// 				pingInterval -= 5
-
-// 				if conn, err := host.Master.GetConnection(""); err != nil {
-// 					// downtime ++
-// 				} else {
-// 					if err := conn.Ping(); err != nil {
-// 						// downtime ++
-// 					}
-// 					host.Master.ReturnConnection(conn)
-// 				}
-// 				time.Sleep(time.Second * time.Duration(pingInterval))
-
-// 				for _, slave := range host.Slaves {
-// 					if conn, err := slave.GetConnection(""); err != nil {
-// 						// downtime ++
-// 					} else {
-// 						if err := conn.Ping(); err != nil {
-// 							// downtime ++
-// 						}
-// 						slave.ReturnConnection(conn)
-// 					}
-// 					time.Sleep(time.Second * time.Duration(pingInterval))
-// 				}
-// 			}
-// 			println("Ping")
-// 			time.Sleep(time.Second * 5)
-// 		}
-// 	}()
-// }
-
 func (p *Server) onConn(c net.Conn) {
 	p.counter.IncrClientConns()
 	conn := p.newClientConn(c) //新建一个conn
