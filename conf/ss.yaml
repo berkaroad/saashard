@@ -72,22 +72,30 @@ nodes :
 - 
     name : db1_node1
     host : host1
-    database : db1_0001
+    database : db1_01
 
 - 
     name : db1_node2
     host : host1
-    database : db1_0002
+    database : db1_02
 
 - 
     name : db2_node1
     host : host2
-    database : db2_node1
+    database : db2_01
 
 - 
     name : db2_node2
     host : host2
-    database : db2_0002
+    database : db2_02
+
+- 
+    # support scope config.
+    # name 'db3_node$0-99' mean db3_node0,db3_node1, ... db3_node99
+    name : db3_node$0-99
+    host : host1
+    # if is scope config, database 'db3' mean db3_00,db3_01, ... db3_99
+    database : db3
 
 # schema defines sharding rules, the db is the sharding table database.
 schemas : 
@@ -109,3 +117,15 @@ schemas :
     max_row_count : 0
     # no shard, only split read and write
     nodes: ["db2_node1"]
+
+- 
+    name : db3
+    user : db3
+    password : 123456
+    max_row_count : 0
+    # shard
+    shard_key : tenantid
+    # shard_algo [hash|mod], default is hash.
+    shard_algo : hash
+    #  nodes '["db3_node$0-99"]' mean ["db3_node0","db3_node1", ... "db3_node99"]
+    nodes: ["db3_node$0-99"]

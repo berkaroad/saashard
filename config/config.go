@@ -23,7 +23,10 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
+	"strconv"
+	"strings"
 
 	"github.com/go-yaml/yaml"
 )
@@ -125,6 +128,76 @@ func ParseConfigData(data []byte) (*Config, error) {
 	if err := yaml.Unmarshal([]byte(data), &cfg); err != nil {
 		return nil, err
 	}
+
+	// parse nodes
+	newNodes := make([]NodeConfig, 0, len(cfg.Nodes))
+	for i := range cfg.Nodes {
+		originalNode := cfg.Nodes[i]
+		nodeName := originalNode.Name
+		nodeNameLen := len(nodeName)
+		splitCharIndex := strings.LastIndex(nodeName, "$")
+		if splitCharIndex > 0 && splitCharIndex < nodeNameLen-3 {
+			seqStr := nodeName[splitCharIndex+1 : nodeNameLen]
+			nodeNamePrefix := nodeName[:splitCharIndex]
+			seqArr := strings.Split(seqStr, "-")
+			if len(seqArr) == 2 {
+				startSeq, err1 := strconv.Atoi(seqArr[0])
+				endSeq, err2 := strconv.Atoi(seqArr[1])
+				if err1 == nil && err2 == nil &&
+					startSeq >= 0 && endSeq > startSeq && endSeq < 100 {
+					for seq := startSeq; seq <= endSeq; seq++ {
+						newNode := NodeConfig{
+							Name:     fmt.Sprintf("%s%d", nodeNamePrefix, seq),
+							Host:     originalNode.Host,
+							Database: fmt.Sprintf("%s_%02d", originalNode.Database, seq),
+						}
+						newNodes = append(newNodes, newNode)
+					}
+				}
+			}
+		} else {
+			newNode := originalNode
+			newNodes = append(newNodes, newNode)
+		}
+	}
+	cfg.Nodes = newNodes
+	newNodes = nil
+
+	// parse schemas
+	newSchemas := make([]SchemaConfig, 0, len(cfg.Schemas))
+	for i := range cfg.Schemas {
+		originalSchema := cfg.Schemas[i]
+		newNodeNames := make([]string, 0, len(originalSchema.Nodes))
+		for j := range originalSchema.Nodes {
+			nodeName := originalSchema.Nodes[j]
+			nodeNameLen := len(nodeName)
+			splitCharIndex := strings.LastIndex(nodeName, "$")
+			if splitCharIndex > 0 && splitCharIndex < nodeNameLen-3 {
+				seqStr := nodeName[splitCharIndex+1 : nodeNameLen]
+				nodeNamePrefix := nodeName[:splitCharIndex]
+				seqArr := strings.Split(seqStr, "-")
+				if len(seqArr) == 2 {
+					startSeq, err1 := strconv.Atoi(seqArr[0])
+					endSeq, err2 := strconv.Atoi(seqArr[1])
+					if err1 == nil && err2 == nil &&
+						startSeq >= 0 && endSeq > startSeq && endSeq < 100 {
+						for seq := startSeq; seq <= endSeq; seq++ {
+							newNodeName := fmt.Sprintf("%s%d", nodeNamePrefix, seq)
+							newNodeNames = append(newNodeNames, newNodeName)
+						}
+					}
+				}
+			} else {
+				newNodeNames = append(newNodeNames, nodeName)
+			}
+		}
+		newSchema := originalSchema
+		newSchema.Nodes = newNodeNames
+		newSchemas = append(newSchemas, newSchema)
+	}
+	cfg.Schemas = newSchemas
+	newSchemas = nil
+
 	return &cfg, nil
 }
 
