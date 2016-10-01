@@ -222,7 +222,7 @@ func (c *ClientConn) Close() error {
 	c.c.Close()
 
 	c.closed = true
-	delete(c.proxy.conns, c.connectionID)
+	c.proxy.RemoveConnection(c.connectionID)
 	return nil
 }
 
@@ -243,12 +243,12 @@ func (c *ClientConn) dispatch(data []byte) error {
 		return c.handleInitDB(string(data))
 	case mysql.COM_FIELD_LIST:
 		return c.handleFieldList(data)
-	// case mysql.COM_STMT_PREPARE:
-	// 	return c.handleStmtPrepare(string(data))
-	// case mysql.COM_STMT_EXECUTE:
-	// 	return c.handleStmtExecute(data)
-	// case mysql.COM_STMT_CLOSE:
-	// 	return c.handleStmtClose(data)
+	case mysql.COM_STMT_PREPARE:
+		return c.handleStmtPrepare(string(data))
+	case mysql.COM_STMT_EXECUTE:
+		return c.handleStmtExecute(data)
+	case mysql.COM_STMT_CLOSE:
+		return c.handleStmtClose(data)
 	// case mysql.COM_STMT_SEND_LONG_DATA:
 	// 	return c.handleStmtSendLongData(data)
 	// case mysql.COM_STMT_RESET:

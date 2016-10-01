@@ -47,6 +47,8 @@ import (
 	"unicode/utf8"
 )
 
+var debug = false
+
 var encodeMap [256]byte
 var encodeRef = map[byte]byte{
 	'\x00': '0',
@@ -350,18 +352,20 @@ func Escape(sql string) string {
 
 // PrintPacketData print packet data. just for debug.
 func PrintPacketData(source string, data []byte) {
-	str := ""
-	maxLength := 100
-	if len(data) < maxLength {
-		maxLength = len(data)
-	}
-	for _, byt := range data[:maxLength] {
-		if byt < 16 {
-			str += fmt.Sprintf(" 0%x", byt)
-
-		} else {
-			str += fmt.Sprintf(" %x", byt)
+	if debug {
+		str := ""
+		maxLength := 1000
+		if len(data) < maxLength {
+			maxLength = len(data)
 		}
+		for _, byt := range data[:maxLength] {
+			if byt < 16 {
+				str += fmt.Sprintf(" 0%x", byt)
+
+			} else {
+				str += fmt.Sprintf(" %x", byt)
+			}
+		}
+		fmt.Printf("Packet Data from %s:\n%s\n\n", source, str)
 	}
-	// fmt.Printf("Packet Data from %s:\n%s\n\n", source, str)
 }

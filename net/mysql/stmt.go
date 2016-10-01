@@ -48,7 +48,9 @@ type Stmt struct {
 	Query     string
 	Statement sqlparser.Statement
 	ParamNum  int
+	Params    []*Field
 	ColumnNum int
+	Columns   []*Field
 	Args      []interface{}
 }
 

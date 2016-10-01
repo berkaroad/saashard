@@ -400,10 +400,6 @@ var keywords = map[string]int{
 	"utf8mb4_general_ci":  UTF8MB4_GENERAL_CI,
 	"utf8mb4_unicode_ci":  UTF8MB4_UNICODE_CI,
 	"utf8mb4_bin":         UTF8MB4_BIN,
-
-	//for admin
-	"admin": ADMIN,
-	"help":  HELP,
 }
 
 // Lex returns the next token form the Tokenizer.

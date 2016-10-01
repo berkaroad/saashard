@@ -9,11 +9,9 @@ import (
 	"github.com/berkaroad/saashard/errors"
 	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/sqlparser"
-	"github.com/berkaroad/saashard/utils/golog"
 )
 
 func (c *ClientConn) handleStmtPrepare(sql string) error {
-	println("handleStmtPrepare", sql)
 	var err error
 	s := mysql.NewStmt(c.pkg, c.capability, &c.status)
 	sql = strings.TrimRight(sql, ";")
@@ -21,7 +19,6 @@ func (c *ClientConn) handleStmtPrepare(sql string) error {
 	var statement sqlparser.Statement
 	statement, err = sqlparser.Parse(sql)
 	if err != nil {
-		golog.Error("proxy", "handle_stmt", err.Error(), 0, "sql", sql)
 		return mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s': '%s'", sql, err.Error()))
 	}
 
@@ -38,7 +35,7 @@ func (c *ClientConn) handleStmtPrepare(sql string) error {
 	// Get backend conn from master.
 	conn, err = c.getOrCreateMasterConn(node)
 	if err != nil {
-		return fmt.Errorf("prepare error: %s", err.Error())
+		return err
 	}
 
 	var mysqlConn = conn.(*mysqlBackend.Conn)
@@ -47,18 +44,23 @@ func (c *ClientConn) handleStmtPrepare(sql string) error {
 	var stmtFromBackend *mysql.Stmt
 	stmtFromBackend, err = mysqlConn.Prepare(sqlparser.String(statement))
 	if err != nil {
-		return fmt.Errorf("prepare error 1 %s, sql1=%s, sql2=%s", err, sql, sqlparser.String(statement))
+		return err
 	}
 	if stmtFromBackend == nil {
 		return errors.New("prepare error no stmt from backend")
 	}
 	s.ParamNum = stmtFromBackend.ParamNum
+	s.Params = stmtFromBackend.Params
+
 	s.ColumnNum = stmtFromBackend.ColumnNum
-
-	s.ID = c.stmtID
+	s.Columns = stmtFromBackend.Columns
+	for i := 0; i < len(s.Columns); i++ {
+		s.Columns[i].Schema = []byte(c.db)
+	}
 	c.stmtID++
+	s.ID = c.stmtID
 
-	if err = c.pkg.WriteStmtPrepare(c.capability, c.status, s); err != nil {
+	if err = c.pkg.WriteStmtPrepareResponse(c.capability, c.status, s); err != nil {
 		return err
 	}
 
@@ -67,7 +69,7 @@ func (c *ClientConn) handleStmtPrepare(sql string) error {
 
 	err = stmtFromBackend.Close()
 	if err != nil {
-		return fmt.Errorf("prepare error %s", err)
+		return err
 	}
 	return err
 }
@@ -81,13 +83,15 @@ func (c *ClientConn) handleStmtExecute(data []byte) error {
 	case *sqlparser.Select:
 		err = c.handlePrepareSelect(stmt, s.Query, s.Args)
 	case *sqlparser.Insert:
-		// err = c.handlePrepareExec(s.Statement, s.Query, s.args)
+		err = c.handlePrepareExec(s.Statement, s.Query, s.Args)
 	case *sqlparser.Update:
-		// err = c.handlePrepareExec(s.s, s.sql, s.args)
+		err = c.handlePrepareExec(s.Statement, s.Query, s.Args)
 	case *sqlparser.Delete:
-		// err = c.handlePrepareExec(s.s, s.sql, s.args)
+		err = c.handlePrepareExec(s.Statement, s.Query, s.Args)
 	case *sqlparser.Replace:
-		// err = c.handlePrepareExec(s.s, s.sql, s.args)
+		err = c.handlePrepareExec(s.Statement, s.Query, s.Args)
+	case *sqlparser.Commit:
+		err = c.handlePrepareExec(s.Statement, s.Query, s.Args)
 	default:
 		err = fmt.Errorf("command %T not supported now", stmt)
 	}
@@ -104,25 +108,16 @@ func (c *ClientConn) handlePrepareSelect(stmt *sqlparser.Select, sql string, arg
 	}
 
 	var conn backend.Connection
-	// Get backend conn from slave or master.
-	if !c.isInTransaction() && len(node.DataHost.Slaves) > 0 {
-		if conn = c.backendSlaveConns[node]; conn == nil {
-			var dbHost *backend.DBHost
-			dbHost, _ = node.DataHost.GetSlave()
-			if conn, err = dbHost.GetConnection(node.Database); err != nil {
-				return err
-			}
-			c.backendSlaveConns[node] = conn
-		}
-	} else {
-		if conn = c.backendMasterConns[node]; conn == nil {
-			var dbHost *backend.DBHost
-			dbHost = node.DataHost.Master
-			if conn, err = dbHost.GetConnection(node.Database); err != nil {
-				return err
-			}
-			c.backendMasterConns[node] = conn
-		}
+	// Get backend conn from master.
+	conn, err = c.getOrCreateMasterConn(node)
+	// // Get backend conn from slave or master.
+	// if !c.isInTransaction() && len(node.DataHost.Slaves) > 0 {
+	// 	conn, err = c.getOrCreateSlaveConn(node)
+	// } else {
+	// 	conn, err = c.getOrCreateMasterConn(node)
+	// }
+	if err != nil {
+		return err
 	}
 
 	var mysqlConn = conn.(*mysqlBackend.Conn)
@@ -131,7 +126,6 @@ func (c *ClientConn) handlePrepareSelect(stmt *sqlparser.Select, sql string, arg
 	var rs *mysql.Result
 	rs, err = mysqlConn.Execute(sql, args)
 	if err != nil {
-		golog.Error("ClientConn", "handlePrepareSelect", err.Error(), c.connectionID)
 		return err
 	}
 
@@ -143,55 +137,58 @@ func (c *ClientConn) handlePrepareSelect(stmt *sqlparser.Select, sql string, arg
 	return err
 }
 
-// func (c *ClientConn) handlePrepareExec(stmt sqlparser.Statement, sql string, args []interface{}) error {
-// 	defaultRule := c.schema.rule.DefaultRule
-// 	if len(defaultRule.Nodes) == 0 {
-// 		return errors.ErrNoDefaultNode
-// 	}
-// 	defaultNode := c.proxy.GetNode(defaultRule.Nodes[0])
+func (c *ClientConn) handlePrepareExec(stmt sqlparser.Statement, sql string, args []interface{}) error {
+	var err error
+	node := c.proxy.nodes[c.schemas[c.db].Nodes[0]]
+	// If in transaction, must exec in the same node.
+	if c.isInTransaction() && node != c.nodeInTrans {
+		return errors.ErrTransInMulti
+	}
 
-// 	//execute in Master DB
-// 	conn, err := c.getBackendConn(defaultNode, false)
-// 	defer c.closeConn(conn, false)
-// 	if err != nil {
-// 		return err
-// 	}
+	var conn backend.Connection
+	// Get backend conn from master.
+	conn, err = c.getOrCreateMasterConn(node)
+	// // Get backend conn from slave or master.
+	// if !c.isInTransaction() && len(node.DataHost.Slaves) > 0 {
+	// 	conn, err = c.getOrCreateSlaveConn(node)
+	// } else {
+	// 	conn, err = c.getOrCreateMasterConn(node)
+	// }
+	if err != nil {
+		return err
+	}
 
-// 	if conn == nil {
-// 		return c.writeOK(nil)
-// 	}
+	var mysqlConn = conn.(*mysqlBackend.Conn)
+	mysqlConn.UseDB(node.Database)
 
-// 	var rs []*mysql.Result
-// 	rs, err = c.executeInNode(conn, sql, args)
-// 	c.closeConn(conn, false)
+	var rs *mysql.Result
+	rs, err = mysqlConn.Execute(sql, args)
+	if err != nil {
+		return err
+	}
 
-// 	if err != nil {
-// 		golog.Error("ClientConn", "handlePrepareExec", err.Error(), c.connectionId)
-// 		return err
-// 	}
+	status := c.status | rs.Status
+	if rs.Resultset != nil {
+		err = c.pkg.WriteResultSet(c.capability, status, rs)
+	} else {
+		err = c.pkg.WriteOK(c.capability, status, rs)
+	}
 
-// 	status := c.status | rs[0].Status
-// 	if rs[0].Resultset != nil {
-// 		err = c.writeResultset(status, rs[0].Resultset)
-// 	} else {
-// 		err = c.writeOK(rs[0])
-// 	}
-
-// 	return err
-// }
+	return err
+}
 
 func (c *ClientConn) handleStmtClose(data []byte) error {
-	println("handleStmtClose", string(data))
+	mysql.PrintPacketData("handleStmtClose", data)
 	return nil
 }
 
 func (c *ClientConn) handleStmtSendLongData(data []byte) error {
-	println("handleStmtSendLongData", string(data))
+	mysql.PrintPacketData("handleStmtSendLongData", data)
 	return nil
 }
 
 func (c *ClientConn) handleStmtReset(data []byte) error {
-	println("handleStmtReset", string(data))
+	mysql.PrintPacketData("handleStmtReset", data)
 	return nil
 }
 

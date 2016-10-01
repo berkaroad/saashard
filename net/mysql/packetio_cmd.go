@@ -42,7 +42,6 @@ import (
 	"math"
 
 	"github.com/berkaroad/saashard/errors"
-	"github.com/berkaroad/saashard/sqlparser"
 )
 
 // WriteCommand write command.
@@ -147,21 +146,10 @@ func (p *PacketIO) InitDB(capability uint32, status *uint16, dbName string) erro
 func (p *PacketIO) Query(capability uint32, status *uint16, query string) (*Result, error) {
 	var result *Result
 	var err error
-	if capability&CLIENT_MULTI_STATEMENTS == 0 {
-		if err := p.WriteCommandStr(COM_QUERY, query); err != nil {
-			return nil, err
-		}
-		result, err = p.ReadResultSet(capability, status, false)
-	} else {
-		sqlStatementList := sqlparser.SplitSQLStatement(query)
-		for _, sqlStatement := range sqlStatementList {
-			if err := p.WriteCommandStr(COM_QUERY, sqlStatement); err != nil {
-				return nil, err
-			}
-			result, err = p.ReadResultSet(capability, status, false)
-		}
+	if err = p.WriteCommandStr(COM_QUERY, query); err != nil {
+		return nil, err
 	}
-
+	result, err = p.ReadResultSet(capability, status, false)
 	return result, err
 }
 
@@ -281,8 +269,8 @@ func (p *PacketIO) Ping(capability uint32, status *uint16) error {
 //
 
 // StmtPrepare use command COM_STMT_PREPARE
-func (p *PacketIO) StmtPrepare(capability uint32, query string) (stmtID uint32, columnNumber, paramNumber int, err error) {
-	if err = p.WriteCommandStr(COM_STMT_PREPARE, query); err != nil {
+func (p *PacketIO) StmtPrepare(capability uint32, stmt *Stmt) (err error) {
+	if err = p.WriteCommandStr(COM_STMT_PREPARE, stmt.Query); err != nil {
 		return
 	}
 	var data []byte
@@ -302,29 +290,49 @@ func (p *PacketIO) StmtPrepare(capability uint32, query string) (stmtID uint32, 
 	pos := 1
 
 	//for statement id
-	stmtID = binary.LittleEndian.Uint32(data[pos:])
+	stmt.ID = binary.LittleEndian.Uint32(data[pos:])
 	pos += 4
 
 	//number columns
-	columnNumber = int(binary.LittleEndian.Uint16(data[pos:]))
+	stmt.ColumnNum = int(binary.LittleEndian.Uint16(data[pos:]))
+	stmt.Columns = make([]*Field, stmt.ColumnNum)
 	pos += 2
 
 	//number params
-	paramNumber = int(binary.LittleEndian.Uint16(data[pos:]))
+	stmt.ParamNum = int(binary.LittleEndian.Uint16(data[pos:]))
+	stmt.Params = make([]*Field, stmt.ParamNum)
 	pos += 2
 
 	//warnings
 	//warnings = binary.LittleEndian.Uint16(data[pos:])
 
-	if paramNumber > 0 {
-		if err := p.readUntilEOF(); err != nil {
-			return 0, 0, 0, err
+	if stmt.ParamNum > 0 {
+		datas, err := p.readUntilEOF()
+		if err != nil {
+			return err
+		}
+		for i := 0; i < len(datas); i++ {
+			data := datas[i]
+			f, err := FieldData(data).Parse()
+			if err != nil {
+				return err
+			}
+			stmt.Params[i] = f
 		}
 	}
 
-	if columnNumber > 0 {
-		if err := p.readUntilEOF(); err != nil {
-			return 0, 0, 0, err
+	if stmt.ColumnNum > 0 {
+		datas, err := p.readUntilEOF()
+		if err != nil {
+			return err
+		}
+		for i := 0; i < len(datas); i++ {
+			data := datas[i]
+			f, err := FieldData(data).Parse()
+			if err != nil {
+				return err
+			}
+			stmt.Columns[i] = f
 		}
 	}
 	return
@@ -415,9 +423,9 @@ func (p *PacketIO) StmtExecute(stmtID uint32, args []interface{}) error {
 		length += len(paramValues[i])
 	}
 
-	data := make([]byte, 4, 4+length)
-
-	data = append(data, COM_STMT_EXECUTE)
+	data := make([]byte, 0, length)
+	// data := make([]byte, 4, 4+length)
+	// data = append(data, COM_STMT_EXECUTE)
 	data = append(data, byte(stmtID), byte(stmtID>>8), byte(stmtID>>16), byte(stmtID>>24))
 
 	//flag: CURSOR_TYPE_NO_CURSOR
@@ -442,8 +450,8 @@ func (p *PacketIO) StmtExecute(stmtID uint32, args []interface{}) error {
 			}
 		}
 	}
-	p.Sequence = 0
-	return p.WritePacket(data)
+	PrintPacketData("StmtExecute", data)
+	return p.WriteCommandBuf(COM_STMT_EXECUTE, data)
 }
 
 // StmtSendLongData use command COM_STMT_SEND_LONG_DATA

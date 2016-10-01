@@ -190,9 +190,13 @@ func (c *ClientConn) executePlanWithQueryCommand(statements []sqlparser.Statemen
 						c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 						if connID == c.connectionID {
 							c.Close()
-						} else if specConn, ok := c.proxy.conns[connID]; ok {
-							err = mysql.NewDefaultError(mysql.ER_QUERY_INTERRUPTED)
-							specConn.Close()
+						} else if specConn := c.proxy.GetConnection(connID); specConn != nil {
+							if specConn.user == c.user {
+								err = mysql.NewDefaultError(mysql.ER_QUERY_INTERRUPTED)
+								specConn.Close()
+							} else {
+								err = mysql.NewDefaultError(mysql.ER_KILL_DENIED_ERROR, connID)
+							}
 						} else {
 							err = mysql.NewDefaultError(mysql.ER_NO_SUCH_THREAD, connID)
 						}
@@ -206,7 +210,7 @@ func (c *ClientConn) executePlanWithQueryCommand(statements []sqlparser.Statemen
 						c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 						if connID == c.connectionID {
 							c.Close()
-						} else if specConn, ok := c.proxy.conns[connID]; ok {
+						} else if specConn := c.proxy.GetConnection(connID); specConn != nil {
 							err = mysql.NewDefaultError(mysql.ER_QUERY_INTERRUPTED)
 							specConn.Close()
 						} else {

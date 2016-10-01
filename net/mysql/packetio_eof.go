@@ -65,7 +65,8 @@ func (p *PacketIO) isEOFPacket(data []byte) bool {
 	return data[0] == EOF_HEADER && len(data) <= 5
 }
 
-func (p *PacketIO) readUntilEOF() (err error) {
+func (p *PacketIO) readUntilEOF() (datas [][]byte, err error) {
+	datas = make([][]byte, 0, 2)
 	var data []byte
 	for {
 		data, err = p.ReadPacket()
@@ -78,5 +79,6 @@ func (p *PacketIO) readUntilEOF() (err error) {
 		if p.isEOFPacket(data) {
 			return
 		}
+		datas = append(datas, data)
 	}
 }

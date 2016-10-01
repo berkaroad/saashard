@@ -42,6 +42,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -61,6 +62,7 @@ var (
 
 // Server proxy daemon
 type Server struct {
+	sync.Mutex
 	cfg     *config.Config
 	bindIP  net.IP
 	port    int
@@ -168,6 +170,28 @@ func (p *Server) Close() {
 	}
 }
 
+// GetConnection get connection
+func (p *Server) GetConnection(connectionID uint32) *ClientConn {
+	defer p.Unlock()
+
+	p.Lock()
+	if conn, ok := p.conns[connectionID]; ok {
+		return conn
+	}
+	return nil
+}
+
+// RemoveConnection remove connection
+func (p *Server) RemoveConnection(connectionID uint32) {
+	defer p.Unlock()
+
+	p.Lock()
+	if conn, ok := p.conns[connectionID]; ok {
+		conn.Close()
+		delete(p.conns, connectionID)
+	}
+}
+
 func (p *Server) onConn(c net.Conn) {
 	p.counter.IncrClientConns()
 	conn := p.newClientConn(c) //新建一个conn
@@ -201,7 +225,9 @@ func (p *Server) onConn(c net.Conn) {
 	}
 
 	conn.schemas = p.getSchemasByUser(conn.user)
+	p.Lock()
 	p.conns[conn.connectionID] = conn // save conn
+	p.Unlock()
 	conn.Run()
 }
 

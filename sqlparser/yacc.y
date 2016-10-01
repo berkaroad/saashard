@@ -182,8 +182,6 @@ var (
 // Replace
 %token <empty> REPLACE
 
-// admin
-%token <empty> ADMIN HELP
 //offset
 %token <empty> OFFSET
 //collate
@@ -526,11 +524,7 @@ use_statement:
 
 
 admin_statement:
-  ADMIN
-  { $$ = nil }
-| ADMIN HELP
-  { $$ = nil }
-| KILL NUMBER
+  KILL NUMBER
   {
     $$ = &KillConnection{ConnectionID: NumVal($2)}
   }

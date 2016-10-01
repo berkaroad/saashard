@@ -9,19 +9,8 @@ import (
 	"github.com/berkaroad/saashard/errors"
 )
 
-var paramFieldData []byte
-var columnFieldData []byte
-
-func init() {
-	var p = &Field{Name: []byte("?")}
-	var c = &Field{}
-
-	paramFieldData = p.Dump()
-	columnFieldData = c.Dump()
-}
-
-// WriteStmtPrepare write stmt prepare
-func (p *PacketIO) WriteStmtPrepare(capability uint32, status uint16, s *Stmt) error {
+// WriteStmtPrepareResponse write stmt prepare
+func (p *PacketIO) WriteStmtPrepareResponse(capability uint32, status uint16, s *Stmt) error {
 	var err error
 	data := make([]byte, 4, 128)
 	total := make([]byte, 0, 1024)
@@ -46,7 +35,7 @@ func (p *PacketIO) WriteStmtPrepare(capability uint32, status uint16, s *Stmt) e
 	if s.ParamNum > 0 {
 		for i := 0; i < s.ParamNum; i++ {
 			data = data[0:4]
-			data = append(data, []byte(paramFieldData)...)
+			data = append(data, s.Params[i].Dump()...)
 
 			total, err = p.WritePacketBatch(total, data, false)
 			if err != nil {
@@ -63,7 +52,7 @@ func (p *PacketIO) WriteStmtPrepare(capability uint32, status uint16, s *Stmt) e
 	if s.ColumnNum > 0 {
 		for i := 0; i < s.ColumnNum; i++ {
 			data = data[0:4]
-			data = append(data, []byte(columnFieldData)...)
+			data = append(data, s.Columns[i].Dump()...)
 
 			total, err = p.WritePacketBatch(total, data, false)
 			if err != nil {
@@ -141,8 +130,6 @@ func (p *PacketIO) ReadStmtExecuteRequest(data []byte, findStmtByID func(id uint
 			if err := p.bindStmtArgs(s, nullBitmaps, paramTypes, paramValues); err != nil {
 				return nil, err
 			}
-		} else {
-			println("new param bound flag=", data[pos])
 		}
 	}
 	return s, nil
@@ -163,9 +150,7 @@ func (p *PacketIO) bindStmtArgs(s *Stmt, nullBitmap, paramTypes, paramValues []b
 			args[i] = nil
 			continue
 		}
-		println("sql=", s.Query)
-		println("paramTypes's length=", len(paramTypes))
-		println("paramValues's length=", len(paramValues))
+
 		tp := paramTypes[i<<1]
 		isUnsigned := (paramTypes[(i<<1)+1] & 0x80) > 0
 

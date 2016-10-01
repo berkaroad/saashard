@@ -247,7 +247,8 @@ func (c *Conn) Prepare(query string) (*mysql.Stmt, error) {
 	var err error
 
 	stmt := mysql.NewStmt(c.pkg, c.capability, &c.status)
-	if stmt.ID, stmt.ColumnNum, stmt.ParamNum, err = c.pkg.StmtPrepare(c.capability, query); err != nil {
+	stmt.Query = query
+	if err = c.pkg.StmtPrepare(c.capability, stmt); err != nil {
 		return nil, err
 	}
 

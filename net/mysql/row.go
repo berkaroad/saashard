@@ -56,8 +56,9 @@ func (p RowData) Parse(isBinary bool, fields []*Field) (r *Row, err error) {
 
 	if r.isBinary {
 		r.fieldValues, r.nullBitmap, r.fieldValuesCache, err = parseAsBinaryRow(p, r.fields)
+	} else {
+		r.fieldValues, r.fieldValuesCache, err = parseAsTextRow(p, r.fields)
 	}
-	r.fieldValues, r.fieldValuesCache, err = parseAsTextRow(p, r.fields)
 	return
 }
 
