@@ -211,8 +211,12 @@ func (c *ClientConn) executePlanWithQueryCommand(statements []sqlparser.Statemen
 						if connID == c.connectionID {
 							c.Close()
 						} else if specConn := c.proxy.GetConnection(connID); specConn != nil {
-							err = mysql.NewDefaultError(mysql.ER_QUERY_INTERRUPTED)
-							specConn.Close()
+							if specConn.user == c.user {
+								err = mysql.NewDefaultError(mysql.ER_QUERY_INTERRUPTED)
+								specConn.Close()
+							} else {
+								err = mysql.NewDefaultError(mysql.ER_KILL_DENIED_ERROR, connID)
+							}
 						} else {
 							err = mysql.NewDefaultError(mysql.ER_NO_SUCH_THREAD, connID)
 						}
