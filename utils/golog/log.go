@@ -45,7 +45,7 @@ var LevelName [6]string = [6]string{"TRACE", "DEBUG", "INFO", "WARN", "ERROR", "
 const (
 	LogSqlOn       = "on"
 	LogSqlOff      = "off"
-	TimeFormat     = "2006/01/02 15:04:05"
+	TimeFormat     = "2006/01/02 15:04:05.000"
 	maxBufPoolSize = 16
 )
 
