@@ -40,14 +40,9 @@ import (
 	"fmt"
 	"net"
 	"strings"
-	"time"
 
 	"github.com/berkaroad/saashard/backend"
 	"github.com/berkaroad/saashard/net/mysql"
-)
-
-var (
-	pingPeriod = int64(time.Second * 16)
 )
 
 func init() {
@@ -67,14 +62,11 @@ type Conn struct {
 	connectionID uint32
 
 	capability uint32
-
-	status uint16
+	status     uint16
 
 	collation mysql.CollationID
 	charset   string
 	salt      []byte
-
-	pushTimestamp int64
 }
 
 // GetConnectionID get connection id
@@ -101,7 +93,7 @@ func (c *Conn) Connect(dbHost *backend.DBHost, db string) error {
 func (c *Conn) Reconnect() error {
 	var needReconnect = true
 	if c.conn != nil {
-		if c.Ping() == nil {
+		if err := c.Ping(); err == nil {
 			needReconnect = false
 		} else {
 			c.Close()
