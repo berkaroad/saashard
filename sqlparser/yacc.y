@@ -1332,7 +1332,7 @@ order:
 
 asc_desc_opt:
   {
-    $$ = AST_ASC
+    $$ = ""
   }
 | ASC
   {

@@ -3191,7 +3191,7 @@ yydefault:
 		yyDollar = yyS[yypt-0 : yypt+1]
 		//line yacc.y:1334
 		{
-			yyVAL.str = AST_ASC
+			yyVAL.str = ""
 		}
 	case 232:
 		yyDollar = yyS[yypt-1 : yypt+1]

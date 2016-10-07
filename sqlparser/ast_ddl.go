@@ -379,7 +379,11 @@ func (node *IndexColName) Format(buf *TrackedBuffer) {
 	if node.Length != nil {
 		strLength = "(" + String(node.Length) + ")"
 	}
-	buf.Fprintf("%v%s %s", node.ColumnName, strLength, node.AscOrDesc)
+	strAscOrDesc := ""
+	if node.AscOrDesc != "" {
+		strAscOrDesc = " " + node.AscOrDesc
+	}
+	buf.Fprintf("%v%s%s", node.ColumnName, strLength, strAscOrDesc)
 }
 
 // OptionKeyValues option key value list
