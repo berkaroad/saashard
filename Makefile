@@ -21,10 +21,10 @@ saashard:
 	@bash genver.sh
 
 run: build
-	./bin/saashard -config conf/ss.yaml
+	./bin/saashard --config=conf/ss.yaml --cpuprofile=bin/saashard.cpuprof --memprofile=bin/saashard.memprof
 
 dev: build
-	./bin/saashard -config conf/dev.yaml
+	./bin/saashard --config=conf/dev.yaml --cpuprofile=bin/saashard.cpuprof --memprofile=bin/saashard.memprof
 
 test: saashard
 	go install github.com/berkaroad/saashard/utils/golog

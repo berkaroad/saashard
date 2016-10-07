@@ -39,10 +39,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"path"
 	"runtime"
+	"runtime/pprof"
 	"strings"
 	"syscall"
 
@@ -56,6 +58,8 @@ var (
 	configFile = flag.String("config", "/opt/saashard/conf/ss.yaml", "saashard config file")
 	logLevel   = flag.String("log-level", "", "log level [debug|info|warn|error], default error")
 	version    = flag.Bool("v", false, "the version of saashard")
+	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+	memprofile = flag.String("memprofile", "", "write memory profile to file")
 )
 
 const (
@@ -82,6 +86,28 @@ func main() {
 	fmt.Printf("Build time:%s\n", saashard.Compile)
 	if *version {
 		return
+	}
+	if len(*cpuprofile) != 0 {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
+	if len(*memprofile) != 0 {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		runtime.GC()
+		if err := pprof.WriteHeapProfile(f); err != nil {
+			log.Fatal("could not write memory profile: ", err)
+		}
 	}
 	if len(*configFile) == 0 {
 		fmt.Println("must use a config file")
