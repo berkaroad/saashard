@@ -15,7 +15,8 @@ CREATE TABLE `top_category` (
   `name` VARCHAR(50) NOT NULL COMMENT '',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `code_UNIQUE` (`tenant_id` ASC, `code` ASC),
-  UNIQUE INDEX `name_UNIQUE` (`tenant_id` ASC, `name` ASC));
+  UNIQUE INDEX `name_UNIQUE` (`tenant_id` ASC, `name` ASC)
+);
 
 CREATE TABLE `sub_category` (
   `id` INT NOT NULL COMMENT '',
@@ -26,7 +27,9 @@ CREATE TABLE `sub_category` (
   `description` VARCHAR(200) NULL COMMENT '',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `code_UNIQUE` (`tenant_id` ASC, `code` ASC),
-  UNIQUE INDEX `name_UNIQUE` (`tenant_id` ASC, `name` ASC));
+  UNIQUE INDEX `name_UNIQUE` (`tenant_id` ASC, `name` ASC),
+  CONSTRAINT `fk_sub_category_top_category_id` FOREIGN KEY (`top_category_id`) references `top_category`(`id`)
+);
 
 -- Generate tables config for saashard
 /*
