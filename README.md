@@ -1,4 +1,6 @@
 # SaaShard
+[中文版](README.md "中文版")
+
 SaaShard is a MySQL sharding solution, that based on SaaS application.
 
 SaaS application, use multi-tenancy technologyis.
