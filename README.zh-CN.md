@@ -1,4 +1,6 @@
 # SaaShard
+[english version](README.md "english version")
+
 SaaShard是一款针对SaaS系统设计的数据库分片和读写分离方案。
 
 SaaS系统，具有租户的概念，每个租户间的数据是独立的。基于这个特点，可以通过租户字段进行水平拆分（Sharding）数据库。这样，每个特定租户的SQL执行，都只会定位到单个数据库，这也就保证了可以尽量保留单库查询的能力。
