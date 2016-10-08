@@ -45,20 +45,28 @@
 <a id="支持读写分离" class="anchor" href="#%E6%94%AF%E6%8C%81%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>支持读写分离</h3>
 
 <ul>
-<li>在写库（Master）上执行:DML（update、insert、replace、delete）、DDL（create、drop、alter）、set语句</li>
-<li>在读库（Slave）上执行：show、select</li>
+<li>在主库（Master）上执行:DML（update、insert、replace、delete）、DDL（create、drop、alter）、set语句</li>
+<li>在从库（Slave）上执行：show、select</li>
 </ul>
 
 <p>读操作，如果有多台读库（Slave），则会以权重轮询方式，进行负载均衡。</p>
 
 <h3>
-<a id="部分支持hint" class="anchor" href="#%E9%83%A8%E5%88%86%E6%94%AF%E6%8C%81hint" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>部分支持Hint</h3>
+<a id="支持hint" class="anchor" href="#%E6%94%AF%E6%8C%81hint" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>支持Hint</h3>
 
-<p>仅支持select语句和DDL；set和show语句，暂时不支持。</p>
+<p>支持select语句和DDL；set和show语句，暂时不支持。</p>
 
 <ul>
 <li>针对select语句，可以通过<code>/*!saashard master*/</code>强制在master上执行；</li>
 <li>针对DDL，可以通过<code>/*!saashard nodes=node1,node2*/</code>强制在指定的数据节点列表上执行（不设置默认在所有节点上执行）。</li>
+</ul>
+
+<h3>
+<a id="后端连接池管理" class="anchor" href="#%E5%90%8E%E7%AB%AF%E8%BF%9E%E6%8E%A5%E6%B1%A0%E7%AE%A1%E7%90%86" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>后端连接池管理</h3>
+
+<ul>
+<li>主库（Master）和从库（Slave）的连接池管理</li>
+<li>连接池最大连接数限制，超出则等待1秒再取，尝试3次仍然失败后则关闭客户端连接</li>
 </ul>
       </section>
     </div>
