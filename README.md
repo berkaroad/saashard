@@ -1,9 +1,11 @@
 # SaaShard
-SaaShard是一款针对SaaS系统设计的数据库分片和读写分离方案。
+[中文版](README.zh-CN.md "中文版")
 
-SaaS系统，具有租户的概念，每个租户间的数据是独立的。基于这个特点，可以通过租户字段进行水平拆分（Sharding）数据库。这样，每个特定租户的SQL执行，都只会定位到单个数据库，这也就保证了可以尽量保留单库查询的能力。
+SaaShard is a MySQL sharding solution, that based on SaaS application.
 
-目前只考虑MySQL的实现，并且现阶段只实现按DB分片。
+SaaS application, use multi-tenancy technologyis.
+Each tenancy's data is isolated from db logically.For this feature, we can horizontal split data by the field 'tenant_id'.
+Each sql statement that related with special tenancy, is only located at single db. So, we can remain the query capability as soon as possible.
 
 ## Compile and Run
 
