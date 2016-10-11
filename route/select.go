@@ -134,9 +134,12 @@ func (r *Router) buildSelectPlan(statement *sqlparser.Select) (*normalPlan, erro
 	if schemaConfig.ShardEnabled() {
 		if isOnlySystemDB = sqlparser.IsOnlySystemDBInTableExprs(statement.From); !isOnlySystemDB {
 			var err error
-			if err = sqlparser.CheckTableExprsInSelect(statement, schemaConfig.GetTables()); err != nil {
-				return nil, err
+			if !schemaConfig.CheckTableDisabled {
+				if err = sqlparser.CheckTableExprsInSelect(statement, schemaConfig.GetTables()); err != nil {
+					return nil, err
+				}
 			}
+
 			var colValue sqlparser.ValExpr
 			if colValue, err = sqlparser.CheckColumnInSelect(statement, schemaConfig.ShardKey); err != nil {
 				return nil, err
@@ -170,9 +173,12 @@ func (r *Router) buildUnionPlan(statement *sqlparser.Union) (*normalPlan, error)
 	nodeIndex := 0
 	if schemaConfig.ShardEnabled() {
 		var err error
-		if err = sqlparser.CheckTableExprsInSelect(statement, schemaConfig.GetTables()); err != nil {
-			return nil, err
+		if !schemaConfig.CheckTableDisabled {
+			if err = sqlparser.CheckTableExprsInSelect(statement, schemaConfig.GetTables()); err != nil {
+				return nil, err
+			}
 		}
+
 		var colValue sqlparser.ValExpr
 		if colValue, err = sqlparser.CheckColumnInSelect(statement, schemaConfig.ShardKey); err != nil {
 			return nil, err

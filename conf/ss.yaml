@@ -109,6 +109,13 @@ schemas :
     # shard_algo [hash|mod], default is hash.
     shard_algo : hash
     nodes: ["db1_node1", "db1_node2"]
+    # check table or not, default is enabled. If disabled, you can use view in sharding, but is not recommended.
+    #check_table_disabled : true
+    tables :
+    -
+        name : table1
+    -
+        name : table2
 
 - 
     name : db2
@@ -129,3 +136,10 @@ schemas :
     shard_algo : hash
     #  nodes '["db3_node$0-99"]' mean ["db3_node0","db3_node1", ... "db3_node99"]
     nodes: ["db3_node$0-99"]
+    # check table or not, default is enabled. If disabled, you can use view in sharding, but is not recommended.
+    #check_table_disabled : true
+    tables :
+    -
+        name : table1
+    -
+        name : table2

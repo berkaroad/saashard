@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/berkaroad/saashard/errors"
+	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/sqlparser"
 )
 
@@ -34,12 +35,14 @@ func (r *Router) buildInsertPlan(statement *sqlparser.Insert) (*normalPlan, erro
 	statement.Table.Qualifier = nil
 	nodeIndex := 0
 	if schemaConfig.ShardEnabled() {
-		// check table exists or not.
-		table := string(statement.Table.Name)
-		table = strings.Trim(strings.ToLower(table), "`")
-		tables := schemaConfig.GetTables()
-		if _, ok := tables[table]; !ok {
-			return nil, errors.ErrTableNotExists
+		if !schemaConfig.CheckTableDisabled {
+			// check table exists or not.
+			table := string(statement.Table.Name)
+			table = strings.Trim(strings.ToLower(table), "`")
+			tables := schemaConfig.GetTables()
+			if _, ok := tables[table]; !ok {
+				return nil, mysql.NewDefaultError(mysql.ER_NO_SUCH_TABLE, r.SchemaName, table)
+			}
 		}
 
 		colValue, err := sqlparser.CheckColumnInInsertOrReplace(statement.Columns, statement.Rows, statement.OnDup, schemaConfig.ShardKey)
@@ -67,12 +70,14 @@ func (r *Router) buildUpdatePlan(statement *sqlparser.Update) (*normalPlan, erro
 	statement.Table.Qualifier = nil
 	nodeIndex := 0
 	if schemaConfig.ShardEnabled() {
-		// check table exists or not.
-		table := string(statement.Table.Name)
-		table = strings.Trim(strings.ToLower(table), "`")
-		tables := schemaConfig.GetTables()
-		if _, ok := tables[table]; !ok {
-			return nil, errors.ErrTableNotExists
+		if !schemaConfig.CheckTableDisabled {
+			// check table exists or not.
+			table := string(statement.Table.Name)
+			table = strings.Trim(strings.ToLower(table), "`")
+			tables := schemaConfig.GetTables()
+			if _, ok := tables[table]; !ok {
+				return nil, mysql.NewDefaultError(mysql.ER_NO_SUCH_TABLE, r.SchemaName, table)
+			}
 		}
 
 		// UPDATE expression, couldn't contain shardkey.
@@ -116,13 +121,16 @@ func (r *Router) buildDeletePlan(statement *sqlparser.Delete) (*normalPlan, erro
 	statement.Table.Qualifier = nil
 	nodeIndex := 0
 	if schemaConfig.ShardEnabled() {
-		// check table exists or not.
-		table := string(statement.Table.Name)
-		table = strings.Trim(strings.ToLower(table), "`")
-		tables := schemaConfig.GetTables()
-		if _, ok := tables[table]; !ok {
-			return nil, errors.ErrTableNotExists
+		if !schemaConfig.CheckTableDisabled {
+			// check table exists or not.
+			table := string(statement.Table.Name)
+			table = strings.Trim(strings.ToLower(table), "`")
+			tables := schemaConfig.GetTables()
+			if _, ok := tables[table]; !ok {
+				return nil, mysql.NewDefaultError(mysql.ER_NO_SUCH_TABLE, r.SchemaName, table)
+			}
 		}
+
 		// WHERE expression, should contain shardkey.
 		if statement.Where == nil || statement.Where.Expr == nil {
 			return nil, errors.ErrWhereOrJoinOnKey
@@ -155,12 +163,14 @@ func (r *Router) buildReplacePlan(statement *sqlparser.Replace) (*normalPlan, er
 	statement.Table.Qualifier = nil
 	nodeIndex := 0
 	if schemaConfig.ShardEnabled() {
-		// check table exists or not.
-		table := string(statement.Table.Name)
-		table = strings.Trim(strings.ToLower(table), "`")
-		tables := schemaConfig.GetTables()
-		if _, ok := tables[table]; !ok {
-			return nil, errors.ErrTableNotExists
+		if !schemaConfig.CheckTableDisabled {
+			// check table exists or not.
+			table := string(statement.Table.Name)
+			table = strings.Trim(strings.ToLower(table), "`")
+			tables := schemaConfig.GetTables()
+			if _, ok := tables[table]; !ok {
+				return nil, mysql.NewDefaultError(mysql.ER_NO_SUCH_TABLE, r.SchemaName, table)
+			}
 		}
 
 		colValue, err := sqlparser.CheckColumnInInsertOrReplace(statement.Columns, statement.Rows, nil, schemaConfig.ShardKey)

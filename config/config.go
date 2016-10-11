@@ -86,14 +86,15 @@ type NodeConfig struct {
 
 // SchemaConfig is a config of schema.
 type SchemaConfig struct {
-	Name        string        `yaml:"name"`
-	User        string        `yaml:"user"`
-	Password    string        `yaml:"password"`
-	MaxRowCount int           `yaml:"max_row_count"`
-	ShardKey    string        `yaml:"shard_key"`
-	ShardAlgo   string        `yaml:"shard_algo"`
-	Nodes       []string      `yaml:"nodes"`
-	Tables      []TableConfig `yaml:"tables"`
+	Name               string        `yaml:"name"`
+	User               string        `yaml:"user"`
+	Password           string        `yaml:"password"`
+	MaxRowCount        int           `yaml:"max_row_count"`
+	ShardKey           string        `yaml:"shard_key"`
+	ShardAlgo          string        `yaml:"shard_algo"`
+	Nodes              []string      `yaml:"nodes"`
+	CheckTableDisabled bool          `yaml:"check_table_disabled"`
+	Tables             []TableConfig `yaml:"tables"`
 
 	tables map[string]*TableConfig
 }

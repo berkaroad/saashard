@@ -41,6 +41,7 @@
 package sqlparser
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -166,7 +167,7 @@ func CheckTableExprs(tabExprs TableExprs, tableNames interface{}) (err error) {
 				if !isSystemDB {
 					tableName := strings.Trim(strings.ToLower(string(simpExpr.Name)), "`")
 					if isValid := utils.Contains(tableNames, tableName); !isValid {
-						err = errors.ErrTableNotExists
+						err = &errors.SqlError{Code: 1146, Message: fmt.Sprintf("Table '%-.192s.%-.192s' doesn't exist", "", tableName), State: "42S02"}
 						break
 					}
 				}

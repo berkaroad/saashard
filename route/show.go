@@ -318,7 +318,7 @@ func (r *Router) buildShowTablesPlan(statement *sqlparser.ShowTables) (*normalPl
 	}
 	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
-	if schemaConfig.ShardEnabled() {
+	if schemaConfig.ShardEnabled() && !schemaConfig.CheckTableDisabled {
 		result := new(mysql.Result)
 		result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
 		result.Resultset = new(mysql.Resultset)
@@ -370,7 +370,7 @@ func (r *Router) buildShowFullTablesPlan(statement *sqlparser.ShowFullTables) (*
 	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 
-	if schemaConfig.ShardEnabled() {
+	if schemaConfig.ShardEnabled() && !schemaConfig.CheckTableDisabled {
 		result := new(mysql.Result)
 		result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
 		result.Resultset = new(mysql.Resultset)
@@ -432,7 +432,7 @@ func (r *Router) buildShowTableStatusPlan(statement *sqlparser.ShowTableStatus) 
 	}
 	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
-	if schemaConfig.ShardEnabled() {
+	if schemaConfig.ShardEnabled() && !schemaConfig.CheckTableDisabled {
 		nameColName := &sqlparser.ColName{Name: []byte("Name")}
 		nameList := sqlparser.ValTuple{}
 		for _, table := range schemaConfig.Tables {
@@ -451,7 +451,6 @@ func (r *Router) buildShowTableStatusPlan(statement *sqlparser.ShowTableStatus) 
 }
 
 func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normalPlan, error) {
-
 	schemaConfig := r.Schemas[r.SchemaName]
 	db := string(statement.From.Qualifier)
 	isSysDB := sqlparser.IsSystemDB(db)
@@ -465,11 +464,13 @@ func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normal
 		if schemaConfig = r.Schemas[db]; schemaConfig == nil {
 			return nil, errors.ErrDatabaseNotExists
 		}
-		table := string(statement.From.Name)
-		table = strings.Trim(strings.ToLower(table), "`")
-		tables := schemaConfig.GetTables()
-		if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
-			return nil, errors.ErrTableNotExists
+		if schemaConfig.ShardEnabled() && !schemaConfig.CheckTableDisabled {
+			table := string(statement.From.Name)
+			table = strings.Trim(strings.ToLower(table), "`")
+			tables := schemaConfig.GetTables()
+			if _, ok := tables[table]; !ok {
+				return nil, mysql.NewDefaultError(mysql.ER_NO_SUCH_TABLE, db, table)
+			}
 		}
 	}
 	if statement.From != nil && !isSysDB {
@@ -491,27 +492,32 @@ func (r *Router) buildShowColumnsPlan(statement *sqlparser.ShowColumns) (*normal
 }
 
 func (r *Router) buildShowFullColumnsPlan(statement *sqlparser.ShowFullColumns) (*normalPlan, error) {
-
+	schemaConfig := r.Schemas[r.SchemaName]
 	db := string(statement.From.Qualifier)
-	if db == "" {
-		db = r.SchemaName
-	} else {
-		db = strings.Trim(strings.ToLower(db), "`")
-	}
-	var schemaConfig *config.SchemaConfig
-	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
-		return nil, errors.ErrDatabaseNotExists
-	}
-	table := string(statement.From.Name)
-	table = strings.Trim(strings.ToLower(table), "`")
-	tables := schemaConfig.GetTables()
-	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
-		return nil, errors.ErrTableNotExists
-	}
+	isSysDB := sqlparser.IsSystemDB(db)
 
-	if statement.From != nil {
+	if !isSysDB {
+		if db == "" {
+			db = r.SchemaName
+		} else {
+			db = strings.Trim(strings.ToLower(db), "`")
+		}
+		if schemaConfig = r.Schemas[db]; schemaConfig == nil {
+			return nil, errors.ErrDatabaseNotExists
+		}
+		if schemaConfig.ShardEnabled() && !schemaConfig.CheckTableDisabled {
+			table := string(statement.From.Name)
+			table = strings.Trim(strings.ToLower(table), "`")
+			tables := schemaConfig.GetTables()
+			if _, ok := tables[table]; !ok {
+				return nil, mysql.NewDefaultError(mysql.ER_NO_SUCH_TABLE, db, table)
+			}
+		}
+	}
+	if statement.From != nil && !isSysDB {
 		statement.From.Qualifier = nil
 	}
+
 	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
@@ -527,27 +533,32 @@ func (r *Router) buildShowFullColumnsPlan(statement *sqlparser.ShowFullColumns) 
 }
 
 func (r *Router) buildShowIndexPlan(statement *sqlparser.ShowIndex) (*normalPlan, error) {
-
+	schemaConfig := r.Schemas[r.SchemaName]
 	db := string(statement.From.Qualifier)
-	if db == "" {
-		db = r.SchemaName
-	} else {
-		db = strings.Trim(strings.ToLower(db), "`")
-	}
-	var schemaConfig *config.SchemaConfig
-	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
-		return nil, errors.ErrDatabaseNotExists
-	}
-	table := string(statement.From.Name)
-	table = strings.Trim(strings.ToLower(table), "`")
-	tables := schemaConfig.GetTables()
-	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
-		return nil, errors.ErrTableNotExists
-	}
+	isSysDB := sqlparser.IsSystemDB(db)
 
-	if statement.From != nil {
+	if !isSysDB {
+		if db == "" {
+			db = r.SchemaName
+		} else {
+			db = strings.Trim(strings.ToLower(db), "`")
+		}
+		if schemaConfig = r.Schemas[db]; schemaConfig == nil {
+			return nil, errors.ErrDatabaseNotExists
+		}
+		if schemaConfig.ShardEnabled() && !schemaConfig.CheckTableDisabled {
+			table := string(statement.From.Name)
+			table = strings.Trim(strings.ToLower(table), "`")
+			tables := schemaConfig.GetTables()
+			if _, ok := tables[table]; !ok {
+				return nil, mysql.NewDefaultError(mysql.ER_NO_SUCH_TABLE, db, table)
+			}
+		}
+	}
+	if statement.From != nil && !isSysDB {
 		statement.From.Qualifier = nil
 	}
+
 	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
@@ -563,16 +574,21 @@ func (r *Router) buildShowIndexPlan(statement *sqlparser.ShowIndex) (*normalPlan
 }
 
 func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*normalPlan, error) {
+	schemaConfig := r.Schemas[r.SchemaName]
 	db := string(statement.From.Name)
-	if db == "" {
-		db = r.SchemaName
-	} else {
-		db = strings.ToLower(db)
+	isSysDB := sqlparser.IsSystemDB(db)
+
+	if !isSysDB {
+		if db == "" {
+			db = r.SchemaName
+		} else {
+			db = strings.ToLower(db)
+		}
+		if schemaConfig = r.Schemas[db]; schemaConfig == nil {
+			return nil, errors.ErrDatabaseNotExists
+		}
 	}
-	var schemaConfig *config.SchemaConfig
-	if schemaConfig = r.Schemas[db]; schemaConfig == nil {
-		return nil, errors.ErrDatabaseNotExists
-	}
+
 	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
@@ -711,25 +727,25 @@ func (r *Router) buildShowTriggersPlan(statement *sqlparser.ShowTriggers) (*norm
 
 		plan.Result = result
 	} else {
-		switch v := statement.LikeOrWhere.(type) {
-		case *sqlparser.WhereExpr:
-			if comparisonExpr, ok := v.Expr.(*sqlparser.ComparisonExpr); ok {
-				if colName, ok := comparisonExpr.Left.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "table" {
-					if colValue, ok := comparisonExpr.Right.(*sqlparser.StrVal); ok {
-						println("Triggers from table ", sqlparser.String(colValue))
-					}
-				} else if colName, ok := comparisonExpr.Right.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "table" {
-					if colValue, ok := comparisonExpr.Left.(*sqlparser.StrVal); ok {
-						println("Triggers from table ", sqlparser.String(colValue))
-					}
-				}
-			}
+		// switch v := statement.LikeOrWhere.(type) {
+		// case *sqlparser.WhereExpr:
+		// 	if comparisonExpr, ok := v.Expr.(*sqlparser.ComparisonExpr); ok {
+		// 		if colName, ok := comparisonExpr.Left.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "table" {
+		// 			if colValue, ok := comparisonExpr.Right.(*sqlparser.StrVal); ok {
+		// 				println("Triggers from table ", sqlparser.String(colValue))
+		// 			}
+		// 		} else if colName, ok := comparisonExpr.Right.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "table" {
+		// 			if colValue, ok := comparisonExpr.Left.(*sqlparser.StrVal); ok {
+		// 				println("Triggers from table ", sqlparser.String(colValue))
+		// 			}
+		// 		}
+		// 	}
 
-		case *sqlparser.LikeExpr:
-			if table, ok := v.Expr.(*sqlparser.StrVal); ok {
-				println("Triggers from table ", sqlparser.String(table))
-			}
-		}
+		// case *sqlparser.LikeExpr:
+		// 	if table, ok := v.Expr.(*sqlparser.StrVal); ok {
+		// 		println("Triggers from table ", sqlparser.String(table))
+		// 	}
+		// }
 	}
 	return plan, nil
 }
@@ -747,22 +763,21 @@ func (r *Router) buildShowProcedureStatusPlan(statement *sqlparser.ShowProcedure
 	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 
-	if !schemaConfig.ShardEnabled() {
-
-		switch v := statement.LikeOrWhere.(type) {
-		case *sqlparser.WhereExpr:
-			if comparisonExpr, ok := v.Expr.(*sqlparser.ComparisonExpr); ok {
-				if colName, ok := comparisonExpr.Left.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "db" {
-					if colValue, ok := comparisonExpr.Right.(*sqlparser.StrVal); ok {
-						println("Procedure from db ", sqlparser.String(colValue))
-					}
-				} else if colName, ok := comparisonExpr.Right.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "db" {
-					if colValue, ok := comparisonExpr.Left.(*sqlparser.StrVal); ok {
-						println("Procedure from db ", sqlparser.String(colValue))
-					}
-				}
-			}
-		}
+	if schemaConfig.ShardEnabled() {
+		// switch v := statement.LikeOrWhere.(type) {
+		// case *sqlparser.WhereExpr:
+		// 	if comparisonExpr, ok := v.Expr.(*sqlparser.ComparisonExpr); ok {
+		// 		if colName, ok := comparisonExpr.Left.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "db" {
+		// 			if colValue, ok := comparisonExpr.Right.(*sqlparser.StrVal); ok {
+		// 				println("Procedure from db ", sqlparser.String(colValue))
+		// 			}
+		// 		} else if colName, ok := comparisonExpr.Right.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "db" {
+		// 			if colValue, ok := comparisonExpr.Left.(*sqlparser.StrVal); ok {
+		// 				println("Procedure from db ", sqlparser.String(colValue))
+		// 			}
+		// 		}
+		// 	}
+		// }
 	} else {
 		result := new(mysql.Result)
 		result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
@@ -907,20 +922,20 @@ func (r *Router) buildShowFunctionStatusPlan(statement *sqlparser.ShowFunctionSt
 	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
 	if !schemaConfig.ShardEnabled() {
-		switch v := statement.LikeOrWhere.(type) {
-		case *sqlparser.WhereExpr:
-			if comparisonExpr, ok := v.Expr.(*sqlparser.ComparisonExpr); ok {
-				if colName, ok := comparisonExpr.Left.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "db" {
-					if colValue, ok := comparisonExpr.Right.(*sqlparser.StrVal); ok {
-						println("Function from db ", sqlparser.String(colValue))
-					}
-				} else if colName, ok := comparisonExpr.Right.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "db" {
-					if colValue, ok := comparisonExpr.Left.(*sqlparser.StrVal); ok {
-						println("Function from db ", sqlparser.String(colValue))
-					}
-				}
-			}
-		}
+		// switch v := statement.LikeOrWhere.(type) {
+		// case *sqlparser.WhereExpr:
+		// 	if comparisonExpr, ok := v.Expr.(*sqlparser.ComparisonExpr); ok {
+		// 		if colName, ok := comparisonExpr.Left.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "db" {
+		// 			if colValue, ok := comparisonExpr.Right.(*sqlparser.StrVal); ok {
+		// 				println("Function from db ", sqlparser.String(colValue))
+		// 			}
+		// 		} else if colName, ok := comparisonExpr.Right.(*sqlparser.ColName); ok && strings.Trim(strings.ToLower(string(colName.Name)), "`") == "db" {
+		// 			if colValue, ok := comparisonExpr.Left.(*sqlparser.StrVal); ok {
+		// 				println("Function from db ", sqlparser.String(colValue))
+		// 			}
+		// 		}
+		// 	}
+		// }
 	} else {
 		result := new(mysql.Result)
 		result.Status = mysql.SERVER_STATUS_AUTOCOMMIT
@@ -1090,6 +1105,15 @@ func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) 
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
+	if schemaConfig.ShardEnabled() && !schemaConfig.CheckTableDisabled {
+		table := string(statement.Name.Name)
+		table = strings.Trim(strings.ToLower(table), "`")
+		tables := schemaConfig.GetTables()
+		if _, ok := tables[table]; !ok {
+			return nil, mysql.NewDefaultError(mysql.ER_NO_SUCH_TABLE, db, table)
+		}
+	}
+
 	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
@@ -1100,13 +1124,6 @@ func (r *Router) buildShowCreateTablePlan(statement *sqlparser.ShowCreateTable) 
 	}
 	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
-
-	table := string(statement.Name.Name)
-	table = strings.Trim(strings.ToLower(table), "`")
-	tables := schemaConfig.GetTables()
-	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
-		return nil, errors.ErrTableNotExists
-	}
 
 	return plan, nil
 }
@@ -1123,6 +1140,15 @@ func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*
 		return nil, errors.ErrDatabaseNotExists
 	}
 	statement.Name.Qualifier = []byte(r.Nodes[schemaConfig.Nodes[0]].Database)
+	if schemaConfig.ShardEnabled() && !schemaConfig.CheckTableDisabled {
+		table := string(statement.Name.Name)
+		table = strings.Trim(strings.ToLower(table), "`")
+		tables := schemaConfig.GetTables()
+		if _, ok := tables[table]; !ok {
+			return nil, mysql.NewDefaultError(mysql.ER_NO_SUCH_TABLE, db, table)
+		}
+	}
+
 	hint := ReadHint(&statement.Comments)
 
 	plan := new(normalPlan)
@@ -1133,13 +1159,6 @@ func (r *Router) buildShowCreateViewPlan(statement *sqlparser.ShowCreateView) (*
 	}
 	plan.onSlave = true && !r.InTrans && !hint.OnMaster
 	plan.Statement = statement
-
-	table := string(statement.Name.Name)
-	table = strings.Trim(strings.ToLower(table), "`")
-	tables := schemaConfig.GetTables()
-	if _, ok := tables[table]; schemaConfig.ShardEnabled() && !ok {
-		return nil, errors.ErrTableNotExists
-	}
 
 	return plan, nil
 }
