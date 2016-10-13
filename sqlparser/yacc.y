@@ -195,7 +195,7 @@ var (
 // Data Type Tokens
 %token <empty> BIT TINYINT SMALLINT MEDIUMINT INT INTEGER BIGINT REAL DOUBLE FLOAT DECIMAL
 %token <empty> DATE TIME TIMESTAMP DATETIME YEAR
-%token <empty> CHAR VARCHAR TINYTEXT TEXT MEDIUMTEXT LONGTEXT
+%token <empty> CHAR NCHAR VARCHAR NVARCHAR TINYTEXT TEXT MEDIUMTEXT LONGTEXT
 %token <empty> VARBINARY TINYBLOB BLOB MEDIUMBLOB LONGBLOB
 
 
@@ -2007,13 +2007,25 @@ data_type:
   {
     $$ = &DataType{ TypeName: "char", IsBinary: $2, Charset: $3, Collate: $4 }
   }
+| NCHAR data_type_binary_opt data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{ TypeName: "nchar", IsBinary: $2, Charset: $3, Collate: $4 }
+  }
 | CHAR '(' NUMBER ')' data_type_binary_opt data_type_charset_opt data_type_collate_opt
   {
     $$ = &DataType{ TypeName: "char(" + string($3) + ")", IsBinary: $5, Charset: $6, Collate: $7 }
   }
+| NCHAR '(' NUMBER ')' data_type_binary_opt data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{ TypeName: "nchar(" + string($3) + ")", IsBinary: $5, Charset: $6, Collate: $7 }
+  }
 | VARCHAR '(' NUMBER ')' data_type_binary_opt data_type_charset_opt data_type_collate_opt
   {
     $$ = &DataType{ TypeName: "varchar(" + string($3) + ")", IsBinary: $5, Charset: $6, Collate: $7 }
+  }
+| NVARCHAR '(' NUMBER ')' data_type_binary_opt data_type_charset_opt data_type_collate_opt
+  {
+    $$ = &DataType{ TypeName: "nvarchar(" + string($3) + ")", IsBinary: $5, Charset: $6, Collate: $7 }
   }
 | BINARY
   {
