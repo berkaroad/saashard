@@ -148,6 +148,8 @@ var keywords = map[string]int{
 	// Data Type
 	"bit":        BIT,
 	"tinyint":    TINYINT,
+	"bool":       BOOL,
+	"boolean":    BOOLEAN,
 	"smallint":   SMALLINT,
 	"mediumint":  MEDIUMINT,
 	"int":        INT,

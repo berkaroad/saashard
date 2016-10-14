@@ -193,7 +193,7 @@ var (
 %token <empty> BTREE HASH
 
 // Data Type Tokens
-%token <empty> BIT TINYINT SMALLINT MEDIUMINT INT INTEGER BIGINT REAL DOUBLE FLOAT DECIMAL
+%token <empty> BIT TINYINT BOOL BOOLEAN SMALLINT MEDIUMINT INT INTEGER BIGINT REAL DOUBLE FLOAT DECIMAL
 %token <empty> DATE TIME TIMESTAMP DATETIME YEAR
 %token <empty> CHAR NCHAR VARCHAR NVARCHAR TINYTEXT TEXT MEDIUMTEXT LONGTEXT
 %token <empty> VARBINARY TINYBLOB BLOB MEDIUMBLOB LONGBLOB
@@ -1894,6 +1894,14 @@ data_type:
 | TINYINT '(' NUMBER ')' data_type_unsigned_opt data_type_zerofill_opt
   { 
     $$ = &DataType{ TypeName: "tinyint(" + string($3) + ")", IsUnsigned: $5, IsZeroFill: $6 } 
+  }
+| BOOL
+  { 
+    $$ = &DataType{ TypeName: "bool" } 
+  }
+| BOOLEAN
+  { 
+    $$ = &DataType{ TypeName: "bool" } 
   }
 | SMALLINT data_type_unsigned_opt data_type_zerofill_opt
   { 
