@@ -288,10 +288,11 @@ func (c *ClientConn) getOrCreateMasterConn(node *backend.DataNode) (conn backend
 			if conn, err = dbHost.GetConnection(node.Database); err != nil {
 				return
 			}
+			// When get connection from pool, set autocommit.
+			conn.SetAutoCommit(c.isAutoCommit())
 			c.backendMasterConns[node] = conn
 		}
 	}
-	conn.SetAutoCommit(c.isAutoCommit())
 	return
 }
 
