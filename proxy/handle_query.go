@@ -155,8 +155,7 @@ func (c *ClientConn) executePlanWithQueryCommand(statements []sqlparser.Statemen
 					err = c.handleInitDB(v.DB)
 					return
 				case *sqlparser.Begin:
-					sql := sqlparser.String(statement)
-					if result, err = mysqlConn.Query(sql); err != nil {
+					if err = mysqlConn.Begin(); err != nil {
 						return
 					}
 					c.status |= mysql.SERVER_STATUS_IN_TRANS
@@ -165,22 +164,24 @@ func (c *ClientConn) executePlanWithQueryCommand(statements []sqlparser.Statemen
 					err = c.pkg.WriteOK(c.capability, c.status, result)
 					return
 				case *sqlparser.Commit:
-					sql := sqlparser.String(statement)
-					if result, err = mysqlConn.Query(sql); err != nil {
+					if err = mysqlConn.Commit(); err != nil {
 						return
 					}
 					c.status &= ^mysql.SERVER_STATUS_IN_TRANS
-					c.nodeInTrans = nil
+					if c.status&mysql.SERVER_STATUS_AUTOCOMMIT > 0 {
+						c.nodeInTrans = nil
+					}
 					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 					err = c.pkg.WriteOK(c.capability, c.status, result)
 					return
 				case *sqlparser.Rollback:
-					sql := sqlparser.String(statement)
-					if result, err = mysqlConn.Query(sql); err != nil {
+					if err = mysqlConn.Rollback(); err != nil {
 						return
 					}
 					c.status &= ^mysql.SERVER_STATUS_IN_TRANS
-					c.nodeInTrans = nil
+					if c.status&mysql.SERVER_STATUS_AUTOCOMMIT > 0 {
+						c.nodeInTrans = nil
+					}
 					c.status &= ^mysql.SERVER_MORE_RESULTS_EXISTS
 					err = c.pkg.WriteOK(c.capability, c.status, result)
 					return

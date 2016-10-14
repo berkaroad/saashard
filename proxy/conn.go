@@ -291,6 +291,7 @@ func (c *ClientConn) getOrCreateMasterConn(node *backend.DataNode) (conn backend
 			c.backendMasterConns[node] = conn
 		}
 	}
+	conn.SetAutoCommit(c.isAutoCommit())
 	return
 }
 

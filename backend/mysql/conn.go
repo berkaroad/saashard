@@ -291,6 +291,18 @@ func (c *Conn) GetCharset() string {
 	return c.charset
 }
 
+// SetAutoCommit set autocommit.
+func (c *Conn) SetAutoCommit(autocommit bool) error {
+	strAutoCommit := "0"
+	if autocommit {
+		strAutoCommit = "1"
+	}
+	if _, err := c.pkg.Query(c.capability, &(c.status), fmt.Sprintf("set autocommit %s", strAutoCommit)); err != nil {
+		return err
+	}
+	return nil
+}
+
 // IsAutoCommit status.
 func (c *Conn) IsAutoCommit() bool {
 	return c.status&mysql.SERVER_STATUS_AUTOCOMMIT > 0
