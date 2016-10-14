@@ -272,7 +272,7 @@ var (
 %type <updateExpr> update_expression
 %type <expr> where_or_like_opt
 %type <empty> exists_opt not_exists_opt
-%type <bytes> index_category_opt index_type_opt
+%type <bytes> index_category_opt index_type index_type_opt index_option_opt
 %type <idxColName> index_column_name
 %type <idxColNames> index_column_list
 %type <bytes> sql_id
@@ -542,9 +542,9 @@ create_statement:
   {
     $$ = &CreateTable{Comments : Comments($2), Table: $5, CreateDefs: $7, TableOptions: $9 }
   }
-| CREATE comments_list_opt index_category_opt INDEX sql_id index_type_opt ON table_name '(' index_column_list ')'
+| CREATE comments_list_opt index_category_opt INDEX sql_id index_type_opt ON table_name '(' index_column_list ')' index_option_opt
   {
-    $$ = &CreateIndex{Comments : Comments($2), IndexCategory: $3, Name: $5, IndexType: $6, Table: $8, IndexColumns: $10 }
+    $$ = &CreateIndex{Comments : Comments($2), IndexCategory: $3, Name: $5, IndexType: $6, Table: $8, IndexColumns: $10, IndexOption: $12 }
   }
 
 alter_statement:
@@ -1469,10 +1469,19 @@ index_column_name:
 
 index_type_opt:
   { $$ = nil }
-| USING BTREE
-  { $$ = []byte("btree") }
+| index_type
+  { $$ = $1 }
+
+index_type:
+  USING BTREE
+  { $$ = []byte("using btree") }
 | USING HASH
-  { $$ = []byte("hash") }
+  { $$ = []byte("using hash") }
+
+index_option_opt:
+  { $$ = nil }
+| index_type
+  { $$ = $1 }
 
 sql_id:
   ID

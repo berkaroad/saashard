@@ -59,6 +59,7 @@ type CreateIndex struct {
 	Table         *TableName
 	IndexType     []byte
 	IndexColumns  IndexColNames
+	IndexOption   []byte
 }
 
 // Format CreateIndex
@@ -69,9 +70,13 @@ func (node *CreateIndex) Format(buf *TrackedBuffer) {
 	}
 	indexType := ""
 	if node.IndexType != nil && len(node.IndexType) > 0 {
-		indexType = " using " + string(node.IndexType)
+		indexType = " " + string(node.IndexType)
 	}
-	buf.Fprintf("create %v%s index %s%s on %v(%v)", node.Comments, strIndexCategory, node.Name, indexType, node.Table, node.IndexColumns)
+	indexOption := ""
+	if node.IndexOption != nil && len(node.IndexOption) > 0 {
+		indexOption = " " + string(node.IndexOption)
+	}
+	buf.Fprintf("create %v%s index %s%s on %v(%v)%s", node.Comments, strIndexCategory, node.Name, indexType, node.Table, node.IndexColumns, indexOption)
 }
 
 func (node *CreateIndex) IStatement()    {}
@@ -186,7 +191,7 @@ func (node *CreatePrimaryKeyDefinition) Format(buf *TrackedBuffer) {
 	}
 	indexType := ""
 	if node.IndexType != nil {
-		indexType = " using " + string(node.IndexType)
+		indexType = " " + string(node.IndexType)
 	}
 	buf.Fprintf("primary key%s(%v)", indexType, node.IndexColumns)
 }
@@ -216,7 +221,7 @@ func (node *CreateUniqueIndexDefinition) Format(buf *TrackedBuffer) {
 	}
 	indexType := ""
 	if node.IndexType != nil {
-		indexType = " using " + string(node.IndexType)
+		indexType = " " + string(node.IndexType)
 	}
 	buf.Fprintf("%s(%v)", indexType, node.IndexColumns)
 }
@@ -239,7 +244,7 @@ func (node *CreateIndexDefinition) Format(buf *TrackedBuffer) {
 	}
 	indexType := ""
 	if node.IndexType != nil {
-		indexType = " using " + string(node.IndexType)
+		indexType = " " + string(node.IndexType)
 	}
 	buf.Fprintf("%s(%v)", indexType, node.IndexColumns)
 }
@@ -498,7 +503,7 @@ func (node *AddIndexSpec) Format(buf *TrackedBuffer) {
 	}
 	indexType := ""
 	if node.IndexType != nil {
-		indexType = " using " + string(node.IndexType)
+		indexType = " " + string(node.IndexType)
 	}
 	buf.Fprintf("%s(%v)", indexType, node.IndexColumns)
 }
@@ -535,7 +540,7 @@ func (node *AddPrimaryKeySpec) Format(buf *TrackedBuffer) {
 	}
 	indexType := ""
 	if node.IndexType != nil {
-		indexType = " using " + string(node.IndexType)
+		indexType = " " + string(node.IndexType)
 	}
 	buf.Fprintf(" primary key%s(%v)", indexType, node.IndexColumns)
 }
@@ -576,7 +581,7 @@ func (node *AddUniqueIndexSpec) Format(buf *TrackedBuffer) {
 	}
 	indexType := ""
 	if node.IndexType != nil {
-		indexType = " using " + string(node.IndexType)
+		indexType = " " + string(node.IndexType)
 	}
 	buf.Fprintf("%s(%v)", indexType, node.IndexColumns)
 }
