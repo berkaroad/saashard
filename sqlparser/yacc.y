@@ -2172,8 +2172,10 @@ reference_on_delete_or_update_opt:
   { $$ = []byte("on delete " + string($3)) }
 | ON UPDATE reference_option
   { $$ = []byte("on update " + string($3)) }
+| ON UPDATE reference_option ON DELETE reference_option
+  { $$ = []byte("on update " + string($3) + " on delete " + string($6)) }
 | ON DELETE reference_option ON UPDATE reference_option
-  { $$ = []byte("on delete " + string($3) + " on update " + string($6)) }
+  { $$ = []byte("on update " + string($6) + " on delete " + string($3)) }
 
 reference_option_opt:
   { $$ = nil }
