@@ -233,7 +233,7 @@ var (
 %type <str> ignore_opt
 %type <selectExprs> select_expression_list
 %type <selectExpr> select_expression
-%type <bytes> as_lower_opt as_opt
+%type <bytes> as_opt
 %type <expr> expression
 %type <tableExprs> table_expression_list
 %type <tableExpr> table_expression
@@ -786,13 +786,13 @@ select_expression:
   {
     $$ = &StarExpr{}
   }
-| expression as_lower_opt
-  {
-    $$ = &NonStarExpr{Expr: $1, As: $2}
-  }
 | ID '.' '*'
   {
-    $$ = &StarExpr{TableName: $1}
+    $$ = &StarExpr{TableName: bytes.ToLower($1)}
+  }
+| expression as_opt
+  {
+    $$ = &NonStarExpr{Expr: $1, As: $2}
   }
 
 expression:
@@ -805,7 +805,7 @@ expression:
     $$ = $1
   }
 
-as_lower_opt:
+as_opt:
   {
     $$ = nil
   }
@@ -840,19 +840,6 @@ table_expression:
 | table_expression join_type table_expression ON boolean_expression %prec JOIN
   {
     $$ = &JoinTableExpr{LeftExpr: $1, Join: $2, RightExpr: $3, On: $5}
-  }
-
-as_opt:
-  {
-    $$ = nil
-  }
-| ID
-  {
-    $$ = $1
-  }
-| AS ID
-  {
-    $$ = $2
   }
 
 join_type:
@@ -894,13 +881,9 @@ join_type:
   }
 
 simple_table_expression:
-ID
+  table_name
   {
-    $$ = &TableName{Name: $1}
-  }
-| ID '.' ID
-  {
-    $$ = &TableName{Qualifier: $1, Name: $3}
+    $$ = $1
   }
 | subquery
   {
@@ -908,11 +891,11 @@ ID
   }
 
 table_name:
-ID
+sql_id
   {
     $$ = &TableName{Name: $1}
   }
-| ID '.' ID
+| sql_id '.' sql_id
   {
     $$ = &TableName{Qualifier: $1, Name: $3}
   }
@@ -1266,7 +1249,7 @@ column_name:
   }
 | ID '.' sql_id
   {
-    $$ = &ColName{Qualifier: $1, Name: $3}
+    $$ = &ColName{Qualifier: bytes.ToLower($1), Name: $3}
   }
 
 value:
