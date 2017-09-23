@@ -79,7 +79,6 @@ func TestParseSelect(t *testing.T) {
 		case *Update:
 			t.Log("Update statement", String(v.Where.Expr))
 		}
-		t.Fail()
 	}
 
 }

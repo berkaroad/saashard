@@ -17,7 +17,7 @@ build-windows: saashard
 
 saashard:
 	go get github.com/go-yaml/yaml
-	cd ./sqlparser && go tool yacc -o yacc.go -v yacc.output yacc.y && gofmt -w yacc.go
+	# cd ./sqlparser && go tool yacc -o yacc.go -v yacc.output yacc.y && gofmt -w yacc.go
 	@bash genver.sh
 
 run: build
@@ -27,7 +27,7 @@ dev: build
 	./bin/saashard --config=conf/dev.yaml --cpuprofile=bin/saashard.cpuprof --memprofile=bin/saashard.memprof
 
 test: saashard
-	go install github.com/berkaroad/saashard/utils/golog
+	go install github.com/berkaroad/saashard/utils/simplelog
 	go install github.com/berkaroad/saashard/config
 	go install github.com/berkaroad/saashard/errors
 	go install github.com/berkaroad/saashard/sqlparser/sqltypes

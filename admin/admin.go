@@ -27,7 +27,7 @@ import (
 	"strconv"
 
 	"github.com/berkaroad/saashard/config"
-	"github.com/berkaroad/saashard/utils/golog"
+	"github.com/berkaroad/saashard/utils/simplelog"
 )
 
 // Server Admin
@@ -56,10 +56,8 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		return nil, err
 	}
 
-	golog.Info("server/admin", "NewServer", "Server running", 0,
-		"netProto",
+	simplelog.Info("%s %s %s netProto=%s,address=%s", "server/admin", "NewServer", "Server running",
 		netProto,
-		"address",
 		addr)
 	return admin, nil
 }
@@ -72,7 +70,7 @@ func (admin *Server) Run() {
 	for admin.running {
 		conn, err := admin.listener.Accept()
 		if err != nil {
-			golog.Error("server/admin", "Run", err.Error(), 0)
+			simplelog.Error("%s %s %s", "server/admin", "Run", err.Error())
 			continue
 		}
 		go admin.onConn(conn)
@@ -88,5 +86,5 @@ func (admin *Server) Close() {
 }
 
 func (admin *Server) onConn(c net.Conn) {
-	golog.Info("server/admin", "onConn", c.RemoteAddr().String(), 0)
+	simplelog.Info("%s %s %s", "server/admin", "onConn", c.RemoteAddr().String())
 }

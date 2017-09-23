@@ -1,22 +1,8 @@
-//line yacc.y:1
+//line yacc.y:2
 
 // Copyright 2012, Google Inc. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
-// Copyright 2016 The kingshard Authors. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License"): you may
-// not use this file except in compliance with the License. You may obtain
-// a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
 
 // The MIT License (MIT)
 
@@ -44,7 +30,7 @@ package sqlparser
 
 import __yyfmt__ "fmt"
 
-//line yacc.y:43
+//line yacc.y:28
 import "bytes"
 
 // SetParseTree to build ast.
@@ -69,7 +55,7 @@ var (
 	VALUES_BYTES = []byte("values")
 )
 
-//line yacc.y:70
+//line yacc.y:56
 type yySymType struct {
 	yys         int
 	empty       struct{}
@@ -1840,91 +1826,91 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:308
+		//line yacc.y:294
 		{
 			SetParseTree(yylex, yyDollar[1].statement)
 		}
 	case 2:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:314
+		//line yacc.y:300
 		{
 			yyVAL.statement = yyDollar[1].selStmt
 		}
 	case 3:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:316
+		//line yacc.y:302
 		{
 			yyVAL.statement = yyDollar[1].setStmt
 		}
 	case 4:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:318
+		//line yacc.y:304
 		{
 			yyVAL.statement = yyDollar[1].showStmt
 		}
 	case 5:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:320
+		//line yacc.y:306
 		{
 			yyVAL.statement = yyDollar[1].showStmt
 		}
 	case 11:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:327
+		//line yacc.y:313
 		{
 			yyVAL.statement = yyDollar[1].ddlStmt
 		}
 	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:329
+		//line yacc.y:315
 		{
 			yyVAL.statement = yyDollar[1].ddlStmt
 		}
 	case 13:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:331
+		//line yacc.y:317
 		{
 			yyVAL.statement = yyDollar[1].ddlStmt
 		}
 	case 14:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:333
+		//line yacc.y:319
 		{
 			yyVAL.statement = yyDollar[1].ddlStmt
 		}
 	case 20:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:340
+		//line yacc.y:326
 		{
 			yyVAL.statement = nil
 		}
 	case 21:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:344
+		//line yacc.y:330
 		{
 			yyVAL.selStmt = &SimpleSelect{Comments: Comments(yyDollar[2].bytes2), Distinct: yyDollar[3].str, SelectExprs: yyDollar[4].selectExprs, Limit: yyDollar[5].limit}
 		}
 	case 22:
 		yyDollar = yyS[yypt-12 : yypt+1]
-		//line yacc.y:348
+		//line yacc.y:334
 		{
 			yyVAL.selStmt = &Select{Comments: Comments(yyDollar[2].bytes2), Distinct: yyDollar[3].str, SelectExprs: yyDollar[4].selectExprs, From: yyDollar[6].tableExprs, Where: NewWhere(AST_WHERE, yyDollar[7].boolExpr), GroupBy: GroupBy(yyDollar[8].valExprs), Having: NewWhere(AST_HAVING, yyDollar[9].boolExpr), OrderBy: yyDollar[10].orderBy, Limit: yyDollar[11].limit, Lock: yyDollar[12].str}
 		}
 	case 23:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:352
+		//line yacc.y:338
 		{
 			yyVAL.selStmt = &Union{Type: yyDollar[2].str, Left: yyDollar[1].selStmt, Right: yyDollar[3].selStmt}
 		}
 	case 24:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:358
+		//line yacc.y:344
 		{
 			yyVAL.statement = &Insert{Comments: Comments(yyDollar[2].bytes2), Ignore: yyDollar[3].str, Table: yyDollar[5].tableName, Columns: yyDollar[6].columns, Rows: yyDollar[7].insRows, OnDup: OnDup(yyDollar[8].updateExprs)}
 		}
 	case 25:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:362
+		//line yacc.y:348
 		{
 			cols := make(Columns, 0, len(yyDollar[7].updateExprs))
 			vals := make(ValTuple, 0, len(yyDollar[7].updateExprs))
@@ -1936,13 +1922,13 @@ yydefault:
 		}
 	case 26:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:374
+		//line yacc.y:360
 		{
 			yyVAL.statement = &Replace{Comments: Comments(yyDollar[2].bytes2), Table: yyDollar[4].tableName, Columns: yyDollar[5].columns, Rows: yyDollar[6].insRows}
 		}
 	case 27:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:378
+		//line yacc.y:364
 		{
 			cols := make(Columns, 0, len(yyDollar[6].updateExprs))
 			vals := make(ValTuple, 0, len(yyDollar[6].updateExprs))
@@ -1954,91 +1940,91 @@ yydefault:
 		}
 	case 28:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:390
+		//line yacc.y:376
 		{
 			yyVAL.statement = &Update{Comments: Comments(yyDollar[2].bytes2), Table: yyDollar[3].tableName, Exprs: yyDollar[5].updateExprs, Where: NewWhere(AST_WHERE, yyDollar[6].boolExpr), OrderBy: yyDollar[7].orderBy, Limit: yyDollar[8].limit}
 		}
 	case 29:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:396
+		//line yacc.y:382
 		{
 			yyVAL.statement = &Delete{Comments: Comments(yyDollar[2].bytes2), Table: yyDollar[4].tableName, Where: NewWhere(AST_WHERE, yyDollar[5].boolExpr), OrderBy: yyDollar[6].orderBy, Limit: yyDollar[7].limit}
 		}
 	case 30:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:402
+		//line yacc.y:388
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].selStmt}
 		}
 	case 31:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:406
+		//line yacc.y:392
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].statement}
 		}
 	case 32:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:410
+		//line yacc.y:396
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].statement}
 		}
 	case 33:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:414
+		//line yacc.y:400
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].statement}
 		}
 	case 34:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:418
+		//line yacc.y:404
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].statement}
 		}
 	case 35:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:422
+		//line yacc.y:408
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].setStmt}
 		}
 	case 36:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:426
+		//line yacc.y:412
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].showStmt}
 		}
 	case 37:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:430
+		//line yacc.y:416
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].showStmt}
 		}
 	case 38:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:434
+		//line yacc.y:420
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].ddlStmt}
 		}
 	case 39:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:438
+		//line yacc.y:424
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].ddlStmt}
 		}
 	case 40:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:442
+		//line yacc.y:428
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].ddlStmt}
 		}
 	case 41:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:446
+		//line yacc.y:432
 		{
 			yyVAL.statement = &Explain{Statement: yyDollar[2].ddlStmt}
 		}
 	case 42:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:452
+		//line yacc.y:438
 		{
 			yyVAL.setStmt = &SetVariable{
 				Comments: Comments(yyDollar[2].bytes2),
@@ -2048,7 +2034,7 @@ yydefault:
 		}
 	case 43:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:460
+		//line yacc.y:446
 		{
 			yyVAL.setStmt = &SetCharset{
 				Comments: Comments(yyDollar[2].bytes2),
@@ -2057,7 +2043,7 @@ yydefault:
 		}
 	case 44:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:467
+		//line yacc.y:453
 		{
 			yyVAL.setStmt = &SetCharset{
 				Comments: Comments(yyDollar[2].bytes2),
@@ -2066,7 +2052,7 @@ yydefault:
 		}
 	case 45:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:474
+		//line yacc.y:460
 		{
 			yyVAL.setStmt = &SetNames{
 				Comments: Comments(yyDollar[2].bytes2),
@@ -2075,7 +2061,7 @@ yydefault:
 		}
 	case 46:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:481
+		//line yacc.y:467
 		{
 			yyVAL.setStmt = &SetNames{
 				Comments: Comments(yyDollar[2].bytes2),
@@ -2085,7 +2071,7 @@ yydefault:
 		}
 	case 47:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:489
+		//line yacc.y:475
 		{
 			yyVAL.setStmt = &SetTransactionIsolationLevel{
 				Comments:       Comments(yyDollar[2].bytes2),
@@ -2095,854 +2081,854 @@ yydefault:
 		}
 	case 48:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:499
+		//line yacc.y:485
 		{
 			yyVAL.statement = &Begin{}
 		}
 	case 49:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:503
+		//line yacc.y:489
 		{
 			yyVAL.statement = &Begin{}
 		}
 	case 50:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:509
+		//line yacc.y:495
 		{
 			yyVAL.statement = &Commit{}
 		}
 	case 51:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:515
+		//line yacc.y:501
 		{
 			yyVAL.statement = &Rollback{}
 		}
 	case 52:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:521
+		//line yacc.y:507
 		{
 			yyVAL.statement = &UseDB{DB: string(yyDollar[2].bytes)}
 		}
 	case 53:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:528
+		//line yacc.y:514
 		{
 			yyVAL.statement = &KillConnection{ConnectionID: NumVal(yyDollar[2].bytes)}
 		}
 	case 54:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:532
+		//line yacc.y:518
 		{
 			yyVAL.statement = &KillConnection{ConnectionID: NumVal(yyDollar[3].bytes)}
 		}
 	case 55:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:536
+		//line yacc.y:522
 		{
 			yyVAL.statement = &KillQuery{ConnectionID: NumVal(yyDollar[3].bytes)}
 		}
 	case 56:
 		yyDollar = yyS[yypt-9 : yypt+1]
-		//line yacc.y:542
+		//line yacc.y:528
 		{
 			yyVAL.ddlStmt = &CreateTable{Comments: Comments(yyDollar[2].bytes2), Table: yyDollar[5].tableName, CreateDefs: yyDollar[7].createDefs, TableOptions: yyDollar[9].optKeyVals}
 		}
 	case 57:
 		yyDollar = yyS[yypt-12 : yypt+1]
-		//line yacc.y:546
+		//line yacc.y:532
 		{
 			yyVAL.ddlStmt = &CreateIndex{Comments: Comments(yyDollar[2].bytes2), IndexCategory: yyDollar[3].bytes, Name: yyDollar[5].bytes, IndexType: yyDollar[6].bytes, Table: yyDollar[8].tableName, IndexColumns: yyDollar[10].idxColNames, IndexOption: yyDollar[12].bytes}
 		}
 	case 58:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:552
+		//line yacc.y:538
 		{
 			yyVAL.ddlStmt = &AlterTable{Comments: Comments(yyDollar[2].bytes2), Ignore: yyDollar[3].str, Table: yyDollar[5].tableName, AlterSpecs: yyDollar[6].alterSpecs}
 		}
 	case 59:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:558
+		//line yacc.y:544
 		{
 			yyVAL.ddlStmt = &RenameTable{Comments: Comments(yyDollar[2].bytes2), OldName: yyDollar[4].tableName, NewName: yyDollar[6].tableName}
 		}
 	case 60:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:564
+		//line yacc.y:550
 		{
 			yyVAL.ddlStmt = &DropTable{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName, RefOption: yyDollar[6].bytes}
 		}
 	case 61:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:568
+		//line yacc.y:554
 		{
 			yyVAL.ddlStmt = &DropIndex{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[4].bytes, Table: yyDollar[6].tableName}
 		}
 	case 62:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:574
+		//line yacc.y:560
 		{
 			yyVAL.showStmt = &ShowCharset{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 63:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:578
+		//line yacc.y:564
 		{
 			yyVAL.showStmt = &ShowCharset{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[4].expr}
 		}
 	case 64:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:582
+		//line yacc.y:568
 		{
 			yyVAL.showStmt = &ShowCollation{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[4].expr}
 		}
 	case 65:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:586
+		//line yacc.y:572
 		{
 			yyVAL.showStmt = &ShowVariables{Comments: Comments(yyDollar[2].bytes2), Scope: string(yyDollar[3].bytes), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 66:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:590
+		//line yacc.y:576
 		{
 			yyVAL.showStmt = &ShowStatus{Comments: Comments(yyDollar[2].bytes2), Scope: string(yyDollar[3].bytes), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 67:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:594
+		//line yacc.y:580
 		{
 			yyVAL.showStmt = &ShowDatabases{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[4].expr}
 		}
 	case 68:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:598
+		//line yacc.y:584
 		{
 			yyVAL.showStmt = &ShowDatabases{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[4].expr}
 		}
 	case 69:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:602
+		//line yacc.y:588
 		{
 			yyVAL.showStmt = &ShowTables{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[4].expr}
 		}
 	case 70:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:606
+		//line yacc.y:592
 		{
 			yyVAL.showStmt = &ShowTables{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, LikeOrWhere: yyDollar[6].expr}
 		}
 	case 71:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:610
+		//line yacc.y:596
 		{
 			yyVAL.showStmt = &ShowFullTables{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 72:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:614
+		//line yacc.y:600
 		{
 			yyVAL.showStmt = &ShowFullTables{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[6].tableName, LikeOrWhere: yyDollar[7].expr}
 		}
 	case 73:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:618
+		//line yacc.y:604
 		{
 			yyVAL.showStmt = &ShowTableStatus{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 74:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:622
+		//line yacc.y:608
 		{
 			yyVAL.showStmt = &ShowTableStatus{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[6].tableName, LikeOrWhere: yyDollar[7].expr}
 		}
 	case 75:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:626
+		//line yacc.y:612
 		{
 			yyVAL.showStmt = &ShowColumns{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, LikeOrWhere: yyDollar[6].expr}
 		}
 	case 76:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:630
+		//line yacc.y:616
 		{
 			yyVAL.showStmt = &ShowColumns{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, LikeOrWhere: yyDollar[6].expr}
 		}
 	case 77:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:634
+		//line yacc.y:620
 		{
 			yyVAL.showStmt = &ShowFullColumns{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[6].tableName, LikeOrWhere: yyDollar[7].expr}
 		}
 	case 78:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:638
+		//line yacc.y:624
 		{
 			yyVAL.showStmt = &ShowFullColumns{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[6].tableName, LikeOrWhere: yyDollar[7].expr}
 		}
 	case 79:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:642
+		//line yacc.y:628
 		{
 			yyVAL.showStmt = &ShowProcedureStatus{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 80:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:646
+		//line yacc.y:632
 		{
 			yyVAL.showStmt = &ShowFunctionStatus{Comments: Comments(yyDollar[2].bytes2), LikeOrWhere: yyDollar[5].expr}
 		}
 	case 81:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:650
+		//line yacc.y:636
 		{
 			yyVAL.showStmt = &ShowIndex{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, Where: yyDollar[6].boolExpr}
 		}
 	case 82:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:654
+		//line yacc.y:640
 		{
 			yyVAL.showStmt = &ShowIndex{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, Where: yyDollar[6].boolExpr}
 		}
 	case 83:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:658
+		//line yacc.y:644
 		{
 			yyVAL.showStmt = &ShowIndex{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, Where: yyDollar[6].boolExpr}
 		}
 	case 84:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:662
+		//line yacc.y:648
 		{
 			yyVAL.showStmt = &ShowTriggers{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[5].tableName, LikeOrWhere: yyDollar[6].expr}
 		}
 	case 85:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:666
+		//line yacc.y:652
 		{
 			yyVAL.showStmt = &ShowCreateDatabase{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 86:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:670
+		//line yacc.y:656
 		{
 			yyVAL.showStmt = &ShowCreateTable{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 87:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:674
+		//line yacc.y:660
 		{
 			yyVAL.showStmt = &ShowCreateView{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 88:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:678
+		//line yacc.y:664
 		{
 			yyVAL.showStmt = &ShowCreateProcedure{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 89:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:682
+		//line yacc.y:668
 		{
 			yyVAL.showStmt = &ShowCreateFunction{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 90:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:686
+		//line yacc.y:672
 		{
 			yyVAL.showStmt = &ShowCreateTrigger{Comments: Comments(yyDollar[2].bytes2), Name: yyDollar[5].tableName}
 		}
 	case 91:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:690
+		//line yacc.y:676
 		{
 			yyVAL.showStmt = &ShowProcessList{Comments: Comments(yyDollar[2].bytes2)}
 		}
 	case 92:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:694
+		//line yacc.y:680
 		{
 			yyVAL.showStmt = &ShowFullProcessList{Comments: Comments(yyDollar[2].bytes2)}
 		}
 	case 93:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:698
+		//line yacc.y:684
 		{
 			yyVAL.showStmt = &ShowSlaveStatus{Comments: Comments(yyDollar[2].bytes2)}
 		}
 	case 94:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:702
+		//line yacc.y:688
 		{
 			yyVAL.showStmt = &ShowEngines{}
 		}
 	case 95:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:706
+		//line yacc.y:692
 		{
 			yyVAL.showStmt = &ShowEngines{}
 		}
 	case 96:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:710
+		//line yacc.y:696
 		{
 			yyVAL.showStmt = &ShowPlugins{}
 		}
 	case 97:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:714
+		//line yacc.y:700
 		{
 			yyVAL.showStmt = &ShowProfiles{}
 		}
 	case 98:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:720
+		//line yacc.y:706
 		{
 			yyVAL.showStmt = &ShowColumns{Comments: Comments(yyDollar[2].bytes2), From: yyDollar[3].tableName}
 		}
 	case 99:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:725
+		//line yacc.y:711
 		{
 			SetAllowComments(yylex, true)
 		}
 	case 100:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:729
+		//line yacc.y:715
 		{
 			yyVAL.bytes2 = yyDollar[2].bytes2
 			SetAllowComments(yylex, false)
 		}
 	case 101:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:735
+		//line yacc.y:721
 		{
 			yyVAL.bytes2 = nil
 		}
 	case 102:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:739
+		//line yacc.y:725
 		{
 			yyVAL.bytes2 = append(yyDollar[1].bytes2, yyDollar[2].bytes)
 		}
 	case 103:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:745
+		//line yacc.y:731
 		{
 			yyVAL.str = AST_UNION
 		}
 	case 104:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:749
+		//line yacc.y:735
 		{
 			yyVAL.str = AST_UNION_ALL
 		}
 	case 105:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:753
+		//line yacc.y:739
 		{
 			yyVAL.str = AST_SET_MINUS
 		}
 	case 106:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:757
+		//line yacc.y:743
 		{
 			yyVAL.str = AST_EXCEPT
 		}
 	case 107:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:761
+		//line yacc.y:747
 		{
 			yyVAL.str = AST_INTERSECT
 		}
 	case 108:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:766
+		//line yacc.y:752
 		{
 			yyVAL.str = ""
 		}
 	case 109:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:770
+		//line yacc.y:756
 		{
 			yyVAL.str = AST_DISTINCT
 		}
 	case 110:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:776
+		//line yacc.y:762
 		{
 			yyVAL.selectExprs = SelectExprs{yyDollar[1].selectExpr}
 		}
 	case 111:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:780
+		//line yacc.y:766
 		{
 			yyVAL.selectExprs = append(yyVAL.selectExprs, yyDollar[3].selectExpr)
 		}
 	case 112:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:786
+		//line yacc.y:772
 		{
 			yyVAL.selectExpr = &StarExpr{}
 		}
 	case 113:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:790
+		//line yacc.y:776
 		{
 			yyVAL.selectExpr = &StarExpr{TableName: bytes.ToLower(yyDollar[1].bytes)}
 		}
 	case 114:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:794
+		//line yacc.y:780
 		{
 			yyVAL.selectExpr = &NonStarExpr{Expr: yyDollar[1].expr, As: yyDollar[2].bytes}
 		}
 	case 115:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:800
+		//line yacc.y:786
 		{
 			yyVAL.expr = yyDollar[1].boolExpr
 		}
 	case 116:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:804
+		//line yacc.y:790
 		{
 			yyVAL.expr = yyDollar[1].valExpr
 		}
 	case 117:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:809
+		//line yacc.y:795
 		{
 			yyVAL.bytes = nil
 		}
 	case 118:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:813
+		//line yacc.y:799
 		{
 			yyVAL.bytes = yyDollar[1].bytes
 		}
 	case 119:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:817
+		//line yacc.y:803
 		{
 			yyVAL.bytes = yyDollar[2].bytes
 		}
 	case 120:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:823
+		//line yacc.y:809
 		{
 			yyVAL.tableExprs = TableExprs{yyDollar[1].tableExpr}
 		}
 	case 121:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:827
+		//line yacc.y:813
 		{
 			yyVAL.tableExprs = append(yyVAL.tableExprs, yyDollar[3].tableExpr)
 		}
 	case 122:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:833
+		//line yacc.y:819
 		{
 			yyVAL.tableExpr = &AliasedTableExpr{Expr: yyDollar[1].smTableExpr, As: yyDollar[2].bytes, Hints: yyDollar[3].indexHints}
 		}
 	case 123:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:837
+		//line yacc.y:823
 		{
 			yyVAL.tableExpr = &ParenTableExpr{Expr: yyDollar[2].tableExpr}
 		}
 	case 124:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:841
+		//line yacc.y:827
 		{
 			yyVAL.tableExpr = &JoinTableExpr{LeftExpr: yyDollar[1].tableExpr, Join: yyDollar[2].str, RightExpr: yyDollar[3].tableExpr, On: yyDollar[5].boolExpr}
 		}
 	case 125:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:847
+		//line yacc.y:833
 		{
 			yyVAL.str = AST_JOIN
 		}
 	case 126:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:851
+		//line yacc.y:837
 		{
 			yyVAL.str = AST_STRAIGHT_JOIN
 		}
 	case 127:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:855
+		//line yacc.y:841
 		{
 			yyVAL.str = AST_LEFT_JOIN
 		}
 	case 128:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:859
+		//line yacc.y:845
 		{
 			yyVAL.str = AST_LEFT_JOIN
 		}
 	case 129:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:863
+		//line yacc.y:849
 		{
 			yyVAL.str = AST_RIGHT_JOIN
 		}
 	case 130:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:867
+		//line yacc.y:853
 		{
 			yyVAL.str = AST_RIGHT_JOIN
 		}
 	case 131:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:871
+		//line yacc.y:857
 		{
 			yyVAL.str = AST_JOIN
 		}
 	case 132:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:875
+		//line yacc.y:861
 		{
 			yyVAL.str = AST_CROSS_JOIN
 		}
 	case 133:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:879
+		//line yacc.y:865
 		{
 			yyVAL.str = AST_NATURAL_JOIN
 		}
 	case 134:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:885
+		//line yacc.y:871
 		{
 			yyVAL.smTableExpr = yyDollar[1].tableName
 		}
 	case 135:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:889
+		//line yacc.y:875
 		{
 			yyVAL.smTableExpr = yyDollar[1].subquery
 		}
 	case 136:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:895
+		//line yacc.y:881
 		{
 			yyVAL.tableName = &TableName{Name: yyDollar[1].bytes}
 		}
 	case 137:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:899
+		//line yacc.y:885
 		{
 			yyVAL.tableName = &TableName{Qualifier: yyDollar[1].bytes, Name: yyDollar[3].bytes}
 		}
 	case 138:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:904
+		//line yacc.y:890
 		{
 			yyVAL.indexHints = nil
 		}
 	case 139:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:908
+		//line yacc.y:894
 		{
 			yyVAL.indexHints = &IndexHints{Type: AST_USE, Indexes: yyDollar[4].bytes2}
 		}
 	case 140:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:912
+		//line yacc.y:898
 		{
 			yyVAL.indexHints = &IndexHints{Type: AST_IGNORE, Indexes: yyDollar[4].bytes2}
 		}
 	case 141:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:916
+		//line yacc.y:902
 		{
 			yyVAL.indexHints = &IndexHints{Type: AST_FORCE, Indexes: yyDollar[4].bytes2}
 		}
 	case 142:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:922
+		//line yacc.y:908
 		{
 			yyVAL.bytes2 = [][]byte{yyDollar[1].bytes}
 		}
 	case 143:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:926
+		//line yacc.y:912
 		{
 			yyVAL.bytes2 = append(yyDollar[1].bytes2, yyDollar[3].bytes)
 		}
 	case 144:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:932
+		//line yacc.y:918
 		{
 			yyVAL.valExprs = ValExprs{yyDollar[1].valExpr}
 		}
 	case 145:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:936
+		//line yacc.y:922
 		{
 			yyVAL.valExprs = append(yyDollar[1].valExprs, yyDollar[3].valExpr)
 		}
 	case 146:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:941
+		//line yacc.y:927
 		{
 			yyVAL.boolExpr = nil
 		}
 	case 147:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:945
+		//line yacc.y:931
 		{
 			yyVAL.boolExpr = yyDollar[2].boolExpr
 		}
 	case 149:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:952
+		//line yacc.y:938
 		{
 			yyVAL.boolExpr = &AndExpr{Left: yyDollar[1].boolExpr, Right: yyDollar[3].boolExpr}
 		}
 	case 150:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:956
+		//line yacc.y:942
 		{
 			yyVAL.boolExpr = &OrExpr{Left: yyDollar[1].boolExpr, Right: yyDollar[3].boolExpr}
 		}
 	case 151:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:960
+		//line yacc.y:946
 		{
 			yyVAL.boolExpr = &NotExpr{Expr: yyDollar[2].boolExpr}
 		}
 	case 152:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:964
+		//line yacc.y:950
 		{
 			yyVAL.boolExpr = &ParenBoolExpr{Expr: yyDollar[2].boolExpr}
 		}
 	case 153:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:970
+		//line yacc.y:956
 		{
 			yyVAL.boolExpr = &ComparisonExpr{Left: yyDollar[1].valExpr, Operator: yyDollar[2].str, Right: yyDollar[3].valExpr}
 		}
 	case 154:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:974
+		//line yacc.y:960
 		{
 			yyVAL.boolExpr = &ComparisonExpr{Left: yyDollar[1].valExpr, Operator: AST_IN, Right: yyDollar[3].tuple}
 		}
 	case 155:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:978
+		//line yacc.y:964
 		{
 			yyVAL.boolExpr = &ComparisonExpr{Left: yyDollar[1].valExpr, Operator: AST_NOT_IN, Right: yyDollar[4].tuple}
 		}
 	case 156:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:982
+		//line yacc.y:968
 		{
 			yyVAL.boolExpr = &ComparisonExpr{Left: yyDollar[1].valExpr, Operator: AST_LIKE, Right: yyDollar[3].valExpr}
 		}
 	case 157:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:986
+		//line yacc.y:972
 		{
 			yyVAL.boolExpr = &ComparisonExpr{Left: yyDollar[1].valExpr, Operator: AST_NOT_LIKE, Right: yyDollar[4].valExpr}
 		}
 	case 158:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:990
+		//line yacc.y:976
 		{
 			yyVAL.boolExpr = &RangeCond{Left: yyDollar[1].valExpr, Operator: AST_BETWEEN, From: yyDollar[3].valExpr, To: yyDollar[5].valExpr}
 		}
 	case 159:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:994
+		//line yacc.y:980
 		{
 			yyVAL.boolExpr = &RangeCond{Left: yyDollar[1].valExpr, Operator: AST_NOT_BETWEEN, From: yyDollar[4].valExpr, To: yyDollar[6].valExpr}
 		}
 	case 160:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:998
+		//line yacc.y:984
 		{
 			yyVAL.boolExpr = &NullCheck{Operator: AST_IS_NULL, Expr: yyDollar[1].valExpr}
 		}
 	case 161:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1002
+		//line yacc.y:988
 		{
 			yyVAL.boolExpr = &NullCheck{Operator: AST_IS_NOT_NULL, Expr: yyDollar[1].valExpr}
 		}
 	case 162:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1006
+		//line yacc.y:992
 		{
 			yyVAL.boolExpr = &ExistsExpr{Subquery: yyDollar[2].subquery}
 		}
 	case 163:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1012
+		//line yacc.y:998
 		{
 			yyVAL.str = AST_EQ
 		}
 	case 164:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1016
+		//line yacc.y:1002
 		{
 			yyVAL.str = AST_LT
 		}
 	case 165:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1020
+		//line yacc.y:1006
 		{
 			yyVAL.str = AST_GT
 		}
 	case 166:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1024
+		//line yacc.y:1010
 		{
 			yyVAL.str = AST_LE
 		}
 	case 167:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1028
+		//line yacc.y:1014
 		{
 			yyVAL.str = AST_GE
 		}
 	case 168:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1032
+		//line yacc.y:1018
 		{
 			yyVAL.str = AST_NE
 		}
 	case 169:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1036
+		//line yacc.y:1022
 		{
 			yyVAL.str = AST_NSE
 		}
 	case 170:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1042
+		//line yacc.y:1028
 		{
 			yyVAL.insRows = yyDollar[2].values
 		}
 	case 171:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1046
+		//line yacc.y:1032
 		{
 			yyVAL.insRows = yyDollar[1].selStmt
 		}
 	case 172:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1052
+		//line yacc.y:1038
 		{
 			yyVAL.values = Values{yyDollar[1].tuple}
 		}
 	case 173:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1056
+		//line yacc.y:1042
 		{
 			yyVAL.values = append(yyDollar[1].values, yyDollar[3].tuple)
 		}
 	case 174:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1062
+		//line yacc.y:1048
 		{
 			yyVAL.tuple = ValTuple(yyDollar[2].valExprs)
 		}
 	case 175:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1066
+		//line yacc.y:1052
 		{
 			yyVAL.tuple = yyDollar[1].subquery
 		}
 	case 176:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1072
+		//line yacc.y:1058
 		{
 			yyVAL.subquery = &Subquery{yyDollar[2].selStmt}
 		}
 	case 177:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1078
+		//line yacc.y:1064
 		{
 			yyVAL.valExprs = ValExprs{yyDollar[1].valExpr}
 		}
 	case 178:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1082
+		//line yacc.y:1068
 		{
 			yyVAL.valExprs = append(yyDollar[1].valExprs, yyDollar[3].valExpr)
 		}
 	case 179:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1088
+		//line yacc.y:1074
 		{
 			yyVAL.valExpr = yyDollar[1].valExpr
 		}
 	case 180:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1092
+		//line yacc.y:1078
 		{
 			yyVAL.valExpr = yyDollar[1].colName
 		}
 	case 181:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1096
+		//line yacc.y:1082
 		{
 			yyVAL.valExpr = yyDollar[1].tuple
 		}
 	case 182:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1100
+		//line yacc.y:1086
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_BITAND, Right: yyDollar[3].valExpr}
 		}
 	case 183:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1104
+		//line yacc.y:1090
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_BITOR, Right: yyDollar[3].valExpr}
 		}
 	case 184:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1108
+		//line yacc.y:1094
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_BITXOR, Right: yyDollar[3].valExpr}
 		}
 	case 185:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1112
+		//line yacc.y:1098
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_PLUS, Right: yyDollar[3].valExpr}
 		}
 	case 186:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1116
+		//line yacc.y:1102
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_MINUS, Right: yyDollar[3].valExpr}
 		}
 	case 187:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1120
+		//line yacc.y:1106
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_MULT, Right: yyDollar[3].valExpr}
 		}
 	case 188:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1124
+		//line yacc.y:1110
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_DIV, Right: yyDollar[3].valExpr}
 		}
 	case 189:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1128
+		//line yacc.y:1114
 		{
 			yyVAL.valExpr = &BinaryExpr{Left: yyDollar[1].valExpr, Operator: AST_MOD, Right: yyDollar[3].valExpr}
 		}
 	case 190:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1132
+		//line yacc.y:1118
 		{
 			if num, ok := yyDollar[2].valExpr.(NumVal); ok {
 				switch yyDollar[1].byt {
@@ -2959,277 +2945,277 @@ yydefault:
 		}
 	case 191:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1147
+		//line yacc.y:1133
 		{
 			yyVAL.valExpr = yyDollar[1].funcExpr
 		}
 	case 192:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1151
+		//line yacc.y:1137
 		{
 			yyVAL.valExpr = yyDollar[1].caseExpr
 		}
 	case 193:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1157
+		//line yacc.y:1143
 		{
 			yyVAL.funcExpr = &FuncExpr{Name: yyDollar[1].bytes}
 		}
 	case 194:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1161
+		//line yacc.y:1147
 		{
 			yyVAL.funcExpr = &FuncExpr{Name: yyDollar[1].bytes, Exprs: ValExprs{&ColName{Name: []byte("*")}}}
 		}
 	case 195:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1165
+		//line yacc.y:1151
 		{
 			yyVAL.funcExpr = &FuncExpr{Name: yyDollar[1].bytes, Exprs: yyDollar[3].valExprs}
 		}
 	case 196:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:1169
+		//line yacc.y:1155
 		{
 			yyVAL.funcExpr = &FuncExpr{Name: yyDollar[1].bytes, Distinct: true, Exprs: yyDollar[4].valExprs}
 		}
 	case 197:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:1173
+		//line yacc.y:1159
 		{
 			yyVAL.funcExpr = &FuncExpr{Name: []byte("locate"), Exprs: ValExprs{yyDollar[3].valExpr, yyDollar[5].valExpr}}
 		}
 	case 198:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1177
+		//line yacc.y:1163
 		{
 			yyVAL.funcExpr = &FuncExpr{Name: yyDollar[1].bytes, Exprs: yyDollar[3].valExprs}
 		}
 	case 199:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1183
+		//line yacc.y:1169
 		{
 			yyVAL.bytes = IF_BYTES
 		}
 	case 200:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1187
+		//line yacc.y:1173
 		{
 			yyVAL.bytes = VALUES_BYTES
 		}
 	case 201:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1193
+		//line yacc.y:1179
 		{
 			yyVAL.byt = AST_UPLUS
 		}
 	case 202:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1197
+		//line yacc.y:1183
 		{
 			yyVAL.byt = AST_UMINUS
 		}
 	case 203:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1201
+		//line yacc.y:1187
 		{
 			yyVAL.byt = AST_TILDA
 		}
 	case 204:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:1207
+		//line yacc.y:1193
 		{
 			yyVAL.caseExpr = &CaseExpr{Expr: yyDollar[2].valExpr, Whens: yyDollar[3].whens, Else: yyDollar[4].valExpr}
 		}
 	case 205:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1212
+		//line yacc.y:1198
 		{
 			yyVAL.valExpr = nil
 		}
 	case 206:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1216
+		//line yacc.y:1202
 		{
 			yyVAL.valExpr = yyDollar[1].valExpr
 		}
 	case 207:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1222
+		//line yacc.y:1208
 		{
 			yyVAL.whens = []*When{yyDollar[1].when}
 		}
 	case 208:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1226
+		//line yacc.y:1212
 		{
 			yyVAL.whens = append(yyDollar[1].whens, yyDollar[2].when)
 		}
 	case 209:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1232
+		//line yacc.y:1218
 		{
 			yyVAL.when = &When{Cond: yyDollar[2].boolExpr, Val: yyDollar[4].valExpr}
 		}
 	case 210:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1237
+		//line yacc.y:1223
 		{
 			yyVAL.valExpr = nil
 		}
 	case 211:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1241
+		//line yacc.y:1227
 		{
 			yyVAL.valExpr = yyDollar[2].valExpr
 		}
 	case 212:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1247
+		//line yacc.y:1233
 		{
 			yyVAL.colName = &ColName{Name: yyDollar[1].bytes}
 		}
 	case 213:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1251
+		//line yacc.y:1237
 		{
 			yyVAL.colName = &ColName{Qualifier: bytes.ToLower(yyDollar[1].bytes), Name: yyDollar[3].bytes}
 		}
 	case 214:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1257
+		//line yacc.y:1243
 		{
 			yyVAL.valExpr = StrVal(yyDollar[1].bytes)
 		}
 	case 215:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1261
+		//line yacc.y:1247
 		{
 			yyVAL.valExpr = NumVal(yyDollar[1].bytes)
 		}
 	case 216:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1265
+		//line yacc.y:1251
 		{
 			yyVAL.valExpr = ValArg(yyDollar[1].bytes)
 		}
 	case 217:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1269
+		//line yacc.y:1255
 		{
 			yyVAL.valExpr = &NullVal{}
 		}
 	case 218:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1274
+		//line yacc.y:1260
 		{
 			yyVAL.valExprs = nil
 		}
 	case 219:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1278
+		//line yacc.y:1264
 		{
 			yyVAL.valExprs = yyDollar[3].valExprs
 		}
 	case 220:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1283
+		//line yacc.y:1269
 		{
 			yyVAL.boolExpr = nil
 		}
 	case 221:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1287
+		//line yacc.y:1273
 		{
 			yyVAL.boolExpr = yyDollar[2].boolExpr
 		}
 	case 222:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1292
+		//line yacc.y:1278
 		{
 			yyVAL.orderBy = nil
 		}
 	case 223:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1296
+		//line yacc.y:1282
 		{
 			yyVAL.orderBy = yyDollar[3].orderBy
 		}
 	case 224:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1302
+		//line yacc.y:1288
 		{
 			yyVAL.orderBy = OrderBy{yyDollar[1].order}
 		}
 	case 225:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1306
+		//line yacc.y:1292
 		{
 			yyVAL.orderBy = append(yyDollar[1].orderBy, yyDollar[3].order)
 		}
 	case 226:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1312
+		//line yacc.y:1298
 		{
 			yyVAL.order = &Order{Expr: yyDollar[1].valExpr, Direction: yyDollar[2].str}
 		}
 	case 227:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1317
+		//line yacc.y:1303
 		{
 			yyVAL.str = ""
 		}
 	case 228:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1321
+		//line yacc.y:1307
 		{
 			yyVAL.str = AST_ASC
 		}
 	case 229:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1325
+		//line yacc.y:1311
 		{
 			yyVAL.str = AST_DESC
 		}
 	case 230:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1330
+		//line yacc.y:1316
 		{
 			yyVAL.limit = nil
 		}
 	case 231:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1334
+		//line yacc.y:1320
 		{
 			yyVAL.limit = &Limit{Rowcount: yyDollar[2].valExpr}
 		}
 	case 232:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1338
+		//line yacc.y:1324
 		{
 			yyVAL.limit = &Limit{Offset: yyDollar[2].valExpr, Rowcount: yyDollar[4].valExpr}
 		}
 	case 233:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1342
+		//line yacc.y:1328
 		{
 			yyVAL.limit = &Limit{Offset: yyDollar[4].valExpr, Rowcount: yyDollar[2].valExpr}
 		}
 	case 234:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1347
+		//line yacc.y:1333
 		{
 			yyVAL.str = ""
 		}
 	case 235:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1351
+		//line yacc.y:1337
 		{
 			yyVAL.str = AST_FOR_UPDATE
 		}
 	case 236:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1355
+		//line yacc.y:1341
 		{
 			if !bytes.Equal(yyDollar[3].bytes, SHARE) {
 				yylex.Error("expecting share")
@@ -3243,1069 +3229,1069 @@ yydefault:
 		}
 	case 237:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1368
+		//line yacc.y:1354
 		{
 			yyVAL.columns = nil
 		}
 	case 238:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1372
+		//line yacc.y:1358
 		{
 			yyVAL.columns = yyDollar[2].columns
 		}
 	case 239:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1378
+		//line yacc.y:1364
 		{
 			yyVAL.columns = Columns{&NonStarExpr{Expr: yyDollar[1].colName}}
 		}
 	case 240:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1382
+		//line yacc.y:1368
 		{
 			yyVAL.columns = append(yyVAL.columns, &NonStarExpr{Expr: yyDollar[3].colName})
 		}
 	case 241:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1387
+		//line yacc.y:1373
 		{
 			yyVAL.updateExprs = nil
 		}
 	case 242:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:1391
+		//line yacc.y:1377
 		{
 			yyVAL.updateExprs = yyDollar[5].updateExprs
 		}
 	case 243:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1397
+		//line yacc.y:1383
 		{
 			yyVAL.updateExprs = UpdateExprs{yyDollar[1].updateExpr}
 		}
 	case 244:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1401
+		//line yacc.y:1387
 		{
 			yyVAL.updateExprs = append(yyDollar[1].updateExprs, yyDollar[3].updateExpr)
 		}
 	case 245:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1407
+		//line yacc.y:1393
 		{
 			yyVAL.updateExpr = &UpdateExpr{Name: yyDollar[1].colName, Expr: yyDollar[3].valExpr}
 		}
 	case 246:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1412
+		//line yacc.y:1398
 		{
 			yyVAL.empty = struct{}{}
 		}
 	case 247:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1414
+		//line yacc.y:1400
 		{
 			yyVAL.empty = struct{}{}
 		}
 	case 248:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1417
+		//line yacc.y:1403
 		{
 			yyVAL.empty = struct{}{}
 		}
 	case 249:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1419
+		//line yacc.y:1405
 		{
 			yyVAL.empty = struct{}{}
 		}
 	case 250:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1422
+		//line yacc.y:1408
 		{
 			yyVAL.str = ""
 		}
 	case 251:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1424
+		//line yacc.y:1410
 		{
 			yyVAL.str = AST_IGNORE
 		}
 	case 252:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1427
+		//line yacc.y:1413
 		{
 			yyVAL.bytes = nil
 		}
 	case 253:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1429
+		//line yacc.y:1415
 		{
 			yyVAL.bytes = []byte("unique")
 		}
 	case 254:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1431
+		//line yacc.y:1417
 		{
 			yyVAL.bytes = []byte("fulltext")
 		}
 	case 255:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1435
+		//line yacc.y:1421
 		{
 			yyVAL.idxColNames = IndexColNames{yyDollar[1].idxColName}
 		}
 	case 256:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1439
+		//line yacc.y:1425
 		{
 			yyVAL.idxColNames = append(yyDollar[1].idxColNames, yyDollar[3].idxColName)
 		}
 	case 257:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1445
+		//line yacc.y:1431
 		{
 			yyVAL.idxColName = &IndexColName{ColumnName: yyDollar[1].colName, AscOrDesc: yyDollar[2].str}
 		}
 	case 258:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:1449
+		//line yacc.y:1435
 		{
 			yyVAL.idxColName = &IndexColName{ColumnName: yyDollar[1].colName, Length: NumVal(yyDollar[3].bytes), AscOrDesc: yyDollar[5].str}
 		}
 	case 259:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1454
+		//line yacc.y:1440
 		{
 			yyVAL.bytes = nil
 		}
 	case 260:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1456
+		//line yacc.y:1442
 		{
 			yyVAL.bytes = yyDollar[1].bytes
 		}
 	case 261:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1460
+		//line yacc.y:1446
 		{
 			yyVAL.bytes = []byte("using btree")
 		}
 	case 262:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1462
+		//line yacc.y:1448
 		{
 			yyVAL.bytes = []byte("using hash")
 		}
 	case 263:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1465
+		//line yacc.y:1451
 		{
 			yyVAL.bytes = nil
 		}
 	case 264:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1467
+		//line yacc.y:1453
 		{
 			yyVAL.bytes = yyDollar[1].bytes
 		}
 	case 265:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1471
+		//line yacc.y:1457
 		{
 			yyVAL.bytes = bytes.ToLower(yyDollar[1].bytes)
 		}
 	case 266:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1475
+		//line yacc.y:1461
 		{
 			yyVAL.bytes = []byte("database")
 		}
 	case 267:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1486
+		//line yacc.y:1472
 		{
 			yyVAL.bytes = []byte("armscii8")
 		}
 	case 268:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1488
+		//line yacc.y:1474
 		{
 			yyVAL.bytes = []byte("ascii")
 		}
 	case 269:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1490
+		//line yacc.y:1476
 		{
 			yyVAL.bytes = []byte("big5")
 		}
 	case 270:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1492
+		//line yacc.y:1478
 		{
 			yyVAL.bytes = []byte("binary")
 		}
 	case 271:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1494
+		//line yacc.y:1480
 		{
 			yyVAL.bytes = []byte("cp1250")
 		}
 	case 272:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1496
+		//line yacc.y:1482
 		{
 			yyVAL.bytes = []byte("cp1251")
 		}
 	case 273:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1498
+		//line yacc.y:1484
 		{
 			yyVAL.bytes = []byte("cp1256")
 		}
 	case 274:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1500
+		//line yacc.y:1486
 		{
 			yyVAL.bytes = []byte("cp1257")
 		}
 	case 275:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1502
+		//line yacc.y:1488
 		{
 			yyVAL.bytes = []byte("cp850")
 		}
 	case 276:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1504
+		//line yacc.y:1490
 		{
 			yyVAL.bytes = []byte("cp852")
 		}
 	case 277:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1506
+		//line yacc.y:1492
 		{
 			yyVAL.bytes = []byte("cp866")
 		}
 	case 278:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1508
+		//line yacc.y:1494
 		{
 			yyVAL.bytes = []byte("cp932")
 		}
 	case 279:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1510
+		//line yacc.y:1496
 		{
 			yyVAL.bytes = []byte("dec8")
 		}
 	case 280:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1512
+		//line yacc.y:1498
 		{
 			yyVAL.bytes = []byte("eucjpms")
 		}
 	case 281:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1514
+		//line yacc.y:1500
 		{
 			yyVAL.bytes = []byte("euckr")
 		}
 	case 282:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1516
+		//line yacc.y:1502
 		{
 			yyVAL.bytes = []byte("gb2312")
 		}
 	case 283:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1518
+		//line yacc.y:1504
 		{
 			yyVAL.bytes = []byte("gbk")
 		}
 	case 284:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1520
+		//line yacc.y:1506
 		{
 			yyVAL.bytes = []byte("geostd8")
 		}
 	case 285:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1522
+		//line yacc.y:1508
 		{
 			yyVAL.bytes = []byte("greek")
 		}
 	case 286:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1524
+		//line yacc.y:1510
 		{
 			yyVAL.bytes = []byte("hebrew")
 		}
 	case 287:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1526
+		//line yacc.y:1512
 		{
 			yyVAL.bytes = []byte("hp8")
 		}
 	case 288:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1528
+		//line yacc.y:1514
 		{
 			yyVAL.bytes = []byte("keybcs2")
 		}
 	case 289:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1530
+		//line yacc.y:1516
 		{
 			yyVAL.bytes = []byte("koi8r")
 		}
 	case 290:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1532
+		//line yacc.y:1518
 		{
 			yyVAL.bytes = []byte("koi8u")
 		}
 	case 291:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1534
+		//line yacc.y:1520
 		{
 			yyVAL.bytes = []byte("latin1")
 		}
 	case 292:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1536
+		//line yacc.y:1522
 		{
 			yyVAL.bytes = []byte("latin2")
 		}
 	case 293:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1538
+		//line yacc.y:1524
 		{
 			yyVAL.bytes = []byte("latin5")
 		}
 	case 294:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1540
+		//line yacc.y:1526
 		{
 			yyVAL.bytes = []byte("latin7")
 		}
 	case 295:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1542
+		//line yacc.y:1528
 		{
 			yyVAL.bytes = []byte("macce")
 		}
 	case 296:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1544
+		//line yacc.y:1530
 		{
 			yyVAL.bytes = []byte("macroman")
 		}
 	case 297:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1546
+		//line yacc.y:1532
 		{
 			yyVAL.bytes = []byte("sjis")
 		}
 	case 298:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1548
+		//line yacc.y:1534
 		{
 			yyVAL.bytes = []byte("swe7")
 		}
 	case 299:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1550
+		//line yacc.y:1536
 		{
 			yyVAL.bytes = []byte("tis620")
 		}
 	case 300:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1552
+		//line yacc.y:1538
 		{
 			yyVAL.bytes = []byte("ucs2")
 		}
 	case 301:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1554
+		//line yacc.y:1540
 		{
 			yyVAL.bytes = []byte("ujis")
 		}
 	case 302:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1556
+		//line yacc.y:1542
 		{
 			yyVAL.bytes = []byte("utf16")
 		}
 	case 303:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1558
+		//line yacc.y:1544
 		{
 			yyVAL.bytes = []byte("utf16le")
 		}
 	case 304:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1560
+		//line yacc.y:1546
 		{
 			yyVAL.bytes = []byte("utf32")
 		}
 	case 305:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1562
+		//line yacc.y:1548
 		{
 			yyVAL.bytes = []byte("utf8")
 		}
 	case 306:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1564
+		//line yacc.y:1550
 		{
 			yyVAL.bytes = []byte("utf8mb4")
 		}
 	case 307:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1568
+		//line yacc.y:1554
 		{
 			yyVAL.bytes = []byte("armscii8_general_ci")
 		}
 	case 308:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1570
+		//line yacc.y:1556
 		{
 			yyVAL.bytes = []byte("armscii8_bin")
 		}
 	case 309:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1572
+		//line yacc.y:1558
 		{
 			yyVAL.bytes = []byte("ascii_general_ci")
 		}
 	case 310:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1574
+		//line yacc.y:1560
 		{
 			yyVAL.bytes = []byte("ascii_bin")
 		}
 	case 311:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1576
+		//line yacc.y:1562
 		{
 			yyVAL.bytes = []byte("big5_chinese_ci")
 		}
 	case 312:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1578
+		//line yacc.y:1564
 		{
 			yyVAL.bytes = []byte("big5_bin")
 		}
 	case 313:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1580
+		//line yacc.y:1566
 		{
 			yyVAL.bytes = []byte("binary")
 		}
 	case 314:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1582
+		//line yacc.y:1568
 		{
 			yyVAL.bytes = []byte("cp1250_general_ci")
 		}
 	case 315:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1584
+		//line yacc.y:1570
 		{
 			yyVAL.bytes = []byte("cp1250_bin")
 		}
 	case 316:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1586
+		//line yacc.y:1572
 		{
 			yyVAL.bytes = []byte("cp1251_chinese_ci")
 		}
 	case 317:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1588
+		//line yacc.y:1574
 		{
 			yyVAL.bytes = []byte("cp1251_chinese_cs")
 		}
 	case 318:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1590
+		//line yacc.y:1576
 		{
 			yyVAL.bytes = []byte("cp1251_bin")
 		}
 	case 319:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1592
+		//line yacc.y:1578
 		{
 			yyVAL.bytes = []byte("cp1256_chinese_ci")
 		}
 	case 320:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1594
+		//line yacc.y:1580
 		{
 			yyVAL.bytes = []byte("cp1256_bin")
 		}
 	case 321:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1596
+		//line yacc.y:1582
 		{
 			yyVAL.bytes = []byte("cp1257_chinese_ci")
 		}
 	case 322:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1598
+		//line yacc.y:1584
 		{
 			yyVAL.bytes = []byte("cp1257_bin")
 		}
 	case 323:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1600
+		//line yacc.y:1586
 		{
 			yyVAL.bytes = []byte("cp850_chinese_ci")
 		}
 	case 324:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1602
+		//line yacc.y:1588
 		{
 			yyVAL.bytes = []byte("cp850_bin")
 		}
 	case 325:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1604
+		//line yacc.y:1590
 		{
 			yyVAL.bytes = []byte("cp852_chinese_ci")
 		}
 	case 326:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1606
+		//line yacc.y:1592
 		{
 			yyVAL.bytes = []byte("cp852_bin")
 		}
 	case 327:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1608
+		//line yacc.y:1594
 		{
 			yyVAL.bytes = []byte("cp866_chinese_ci")
 		}
 	case 328:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1610
+		//line yacc.y:1596
 		{
 			yyVAL.bytes = []byte("cp866_bin")
 		}
 	case 329:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1612
+		//line yacc.y:1598
 		{
 			yyVAL.bytes = []byte("cp932_japanese_ci")
 		}
 	case 330:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1614
+		//line yacc.y:1600
 		{
 			yyVAL.bytes = []byte("cp932_bin")
 		}
 	case 331:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1616
+		//line yacc.y:1602
 		{
 			yyVAL.bytes = []byte("dec8_swedish_ci")
 		}
 	case 332:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1618
+		//line yacc.y:1604
 		{
 			yyVAL.bytes = []byte("dec8_bin")
 		}
 	case 333:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1620
+		//line yacc.y:1606
 		{
 			yyVAL.bytes = []byte("eucjpms_japanese_ci")
 		}
 	case 334:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1622
+		//line yacc.y:1608
 		{
 			yyVAL.bytes = []byte("eucjpms_bin")
 		}
 	case 335:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1624
+		//line yacc.y:1610
 		{
 			yyVAL.bytes = []byte("euckr_korean_ci")
 		}
 	case 336:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1626
+		//line yacc.y:1612
 		{
 			yyVAL.bytes = []byte("euckr_bin")
 		}
 	case 337:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1628
+		//line yacc.y:1614
 		{
 			yyVAL.bytes = []byte("gb2312_chinese_ci")
 		}
 	case 338:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1630
+		//line yacc.y:1616
 		{
 			yyVAL.bytes = []byte("gb2312_bin")
 		}
 	case 339:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1632
+		//line yacc.y:1618
 		{
 			yyVAL.bytes = []byte("gbk_chinese_ci")
 		}
 	case 340:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1634
+		//line yacc.y:1620
 		{
 			yyVAL.bytes = []byte("gbk_bin")
 		}
 	case 341:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1636
+		//line yacc.y:1622
 		{
 			yyVAL.bytes = []byte("geostd8_general_ci")
 		}
 	case 342:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1638
+		//line yacc.y:1624
 		{
 			yyVAL.bytes = []byte("geostd8_bin")
 		}
 	case 343:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1640
+		//line yacc.y:1626
 		{
 			yyVAL.bytes = []byte("greek_general_ci")
 		}
 	case 344:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1642
+		//line yacc.y:1628
 		{
 			yyVAL.bytes = []byte("greek_bin")
 		}
 	case 345:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1644
+		//line yacc.y:1630
 		{
 			yyVAL.bytes = []byte("hebrew_general_ci")
 		}
 	case 346:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1646
+		//line yacc.y:1632
 		{
 			yyVAL.bytes = []byte("hebrew_bin")
 		}
 	case 347:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1648
+		//line yacc.y:1634
 		{
 			yyVAL.bytes = []byte("hp8_english_ci")
 		}
 	case 348:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1650
+		//line yacc.y:1636
 		{
 			yyVAL.bytes = []byte("hp8_bin")
 		}
 	case 349:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1652
+		//line yacc.y:1638
 		{
 			yyVAL.bytes = []byte("keybcs2_general_ci")
 		}
 	case 350:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1654
+		//line yacc.y:1640
 		{
 			yyVAL.bytes = []byte("keybcs2_bin")
 		}
 	case 351:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1656
+		//line yacc.y:1642
 		{
 			yyVAL.bytes = []byte("koi8r_general_ci")
 		}
 	case 352:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1658
+		//line yacc.y:1644
 		{
 			yyVAL.bytes = []byte("koi8r_bin")
 		}
 	case 353:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1660
+		//line yacc.y:1646
 		{
 			yyVAL.bytes = []byte("koi8u_general_ci")
 		}
 	case 354:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1662
+		//line yacc.y:1648
 		{
 			yyVAL.bytes = []byte("koi8u_bin")
 		}
 	case 355:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1664
+		//line yacc.y:1650
 		{
 			yyVAL.bytes = []byte("latin1_general_ci")
 		}
 	case 356:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1666
+		//line yacc.y:1652
 		{
 			yyVAL.bytes = []byte("latin1_general_cs")
 		}
 	case 357:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1668
+		//line yacc.y:1654
 		{
 			yyVAL.bytes = []byte("latin1_bin")
 		}
 	case 358:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1670
+		//line yacc.y:1656
 		{
 			yyVAL.bytes = []byte("latin2_general_ci")
 		}
 	case 359:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1672
+		//line yacc.y:1658
 		{
 			yyVAL.bytes = []byte("latin2_bin")
 		}
 	case 360:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1674
+		//line yacc.y:1660
 		{
 			yyVAL.bytes = []byte("latin5_turkish_ci")
 		}
 	case 361:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1676
+		//line yacc.y:1662
 		{
 			yyVAL.bytes = []byte("latin5_bin")
 		}
 	case 362:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1678
+		//line yacc.y:1664
 		{
 			yyVAL.bytes = []byte("latin7_general_ci")
 		}
 	case 363:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1680
+		//line yacc.y:1666
 		{
 			yyVAL.bytes = []byte("latin7_general_cs")
 		}
 	case 364:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1682
+		//line yacc.y:1668
 		{
 			yyVAL.bytes = []byte("latin7_bin")
 		}
 	case 365:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1684
+		//line yacc.y:1670
 		{
 			yyVAL.bytes = []byte("macce_general_ci")
 		}
 	case 366:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1686
+		//line yacc.y:1672
 		{
 			yyVAL.bytes = []byte("macce_bin")
 		}
 	case 367:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1688
+		//line yacc.y:1674
 		{
 			yyVAL.bytes = []byte("macroman_general_ci")
 		}
 	case 368:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1690
+		//line yacc.y:1676
 		{
 			yyVAL.bytes = []byte("macroman_bin")
 		}
 	case 369:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1692
+		//line yacc.y:1678
 		{
 			yyVAL.bytes = []byte("sjis_japanese_ci")
 		}
 	case 370:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1694
+		//line yacc.y:1680
 		{
 			yyVAL.bytes = []byte("sjis_bin")
 		}
 	case 371:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1696
+		//line yacc.y:1682
 		{
 			yyVAL.bytes = []byte("swe7_swedish_ci")
 		}
 	case 372:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1698
+		//line yacc.y:1684
 		{
 			yyVAL.bytes = []byte("swe7_bin")
 		}
 	case 373:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1700
+		//line yacc.y:1686
 		{
 			yyVAL.bytes = []byte("tis620_thai_ci")
 		}
 	case 374:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1702
+		//line yacc.y:1688
 		{
 			yyVAL.bytes = []byte("tis620_bin")
 		}
 	case 375:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1704
+		//line yacc.y:1690
 		{
 			yyVAL.bytes = []byte("ucs2_general_ci")
 		}
 	case 376:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1706
+		//line yacc.y:1692
 		{
 			yyVAL.bytes = []byte("ucs2_unicode_ci")
 		}
 	case 377:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1708
+		//line yacc.y:1694
 		{
 			yyVAL.bytes = []byte("ucs2_bin")
 		}
 	case 378:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1710
+		//line yacc.y:1696
 		{
 			yyVAL.bytes = []byte("ujis_japanese_ci")
 		}
 	case 379:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1712
+		//line yacc.y:1698
 		{
 			yyVAL.bytes = []byte("ujis_bin")
 		}
 	case 380:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1714
+		//line yacc.y:1700
 		{
 			yyVAL.bytes = []byte("utf16_general_ci")
 		}
 	case 381:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1716
+		//line yacc.y:1702
 		{
 			yyVAL.bytes = []byte("utf16_unicode_ci")
 		}
 	case 382:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1718
+		//line yacc.y:1704
 		{
 			yyVAL.bytes = []byte("utf16_bin")
 		}
 	case 383:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1720
+		//line yacc.y:1706
 		{
 			yyVAL.bytes = []byte("utf16le_general_ci")
 		}
 	case 384:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1722
+		//line yacc.y:1708
 		{
 			yyVAL.bytes = []byte("utf16le_bin")
 		}
 	case 385:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1724
+		//line yacc.y:1710
 		{
 			yyVAL.bytes = []byte("utf32_general_ci")
 		}
 	case 386:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1726
+		//line yacc.y:1712
 		{
 			yyVAL.bytes = []byte("utf32_unicode_ci")
 		}
 	case 387:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1728
+		//line yacc.y:1714
 		{
 			yyVAL.bytes = []byte("utf32_bin")
 		}
 	case 388:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1730
+		//line yacc.y:1716
 		{
 			yyVAL.bytes = []byte("utf8_general_ci")
 		}
 	case 389:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1732
+		//line yacc.y:1718
 		{
 			yyVAL.bytes = []byte("utf8_unicode_ci")
 		}
 	case 390:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1734
+		//line yacc.y:1720
 		{
 			yyVAL.bytes = []byte("utf8_bin")
 		}
 	case 391:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1736
+		//line yacc.y:1722
 		{
 			yyVAL.bytes = []byte("utf8mb4_general_ci")
 		}
 	case 392:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1738
+		//line yacc.y:1724
 		{
 			yyVAL.bytes = []byte("utf8mb4_unicode_ci")
 		}
 	case 393:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1740
+		//line yacc.y:1726
 		{
 			yyVAL.bytes = []byte("utf8mb4_bin")
 		}
 	case 394:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1745
+		//line yacc.y:1731
 		{
 			yyVAL.bytes = []byte("read committed")
 		}
 	case 395:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1747
+		//line yacc.y:1733
 		{
 			yyVAL.bytes = []byte("read uncommitted")
 		}
 	case 396:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1749
+		//line yacc.y:1735
 		{
 			yyVAL.bytes = []byte("repeatable read")
 		}
 	case 397:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1751
+		//line yacc.y:1737
 		{
 			yyVAL.bytes = []byte("serializable")
 		}
 	case 398:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1754
+		//line yacc.y:1740
 		{
 			yyVAL.bytes = nil
 		}
 	case 399:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1756
+		//line yacc.y:1742
 		{
 			yyVAL.bytes = []byte("session")
 		}
 	case 400:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1758
+		//line yacc.y:1744
 		{
 			yyVAL.bytes = []byte("global")
 		}
 	case 401:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:1761
+		//line yacc.y:1747
 		{
 			yyVAL.expr = nil
 		}
 	case 402:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1763
+		//line yacc.y:1749
 		{
 			yyVAL.expr = &LikeExpr{Expr: yyDollar[2].valExpr}
 		}
 	case 403:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1767
+		//line yacc.y:1753
 		{
 			yyVAL.expr = &WhereExpr{Expr: yyDollar[2].boolExpr}
 		}
 	case 404:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1773
+		//line yacc.y:1759
 		{
 			yyVAL.createDefs = CreateDefinitions{yyDollar[1].createDef}
 		}
 	case 405:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1777
+		//line yacc.y:1763
 		{
 			yyVAL.createDefs = append(yyDollar[1].createDefs, yyDollar[3].createDef)
 		}
 	case 406:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:1783
+		//line yacc.y:1769
 		{
 			yyVAL.createDef = &CreateColumnDefinition{ColumnName: yyDollar[1].colName, ColumnDef: yyDollar[2].columnDef}
 		}
 	case 407:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:1787
+		//line yacc.y:1773
 		{
 			yyVAL.createDef = &CreatePrimaryKeyDefinition{Symbol: yyDollar[1].bytes, IndexType: yyDollar[4].bytes, IndexColumns: yyDollar[6].idxColNames}
 		}
 	case 408:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:1791
+		//line yacc.y:1777
 		{
 			yyVAL.createDef = &CreateIndexDefinition{Name: yyDollar[2].bytes, IndexType: yyDollar[3].bytes, IndexColumns: yyDollar[5].idxColNames}
 		}
 	case 409:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:1795
+		//line yacc.y:1781
 		{
 			yyVAL.createDef = &CreateIndexDefinition{Name: yyDollar[2].bytes, IndexType: yyDollar[3].bytes, IndexColumns: yyDollar[5].idxColNames}
 		}
 	case 410:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:1799
+		//line yacc.y:1785
 		{
 			yyVAL.createDef = &CreateUniqueIndexDefinition{Symbol: yyDollar[1].bytes, Name: yyDollar[3].bytes, IndexType: yyDollar[4].bytes, IndexColumns: yyDollar[6].idxColNames}
 		}
 	case 411:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:1803
+		//line yacc.y:1789
 		{
 			yyVAL.createDef = &CreateUniqueIndexDefinition{Symbol: yyDollar[1].bytes, Name: yyDollar[4].bytes, IndexType: yyDollar[5].bytes, IndexColumns: yyDollar[7].idxColNames}
 		}
 	case 412:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:1807
+		//line yacc.y:1793
 		{
 			yyVAL.createDef = &CreateUniqueIndexDefinition{Symbol: yyDollar[1].bytes, Name: yyDollar[4].bytes, IndexType: yyDollar[5].bytes, IndexColumns: yyDollar[7].idxColNames}
 		}
 	case 413:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:1811
+		//line yacc.y:1797
 		{
 			yyVAL.createDef = &CreateForeignKeyDefinition{Symbol: yyDollar[1].bytes, IndexColumns: yyDollar[5].idxColNames, ReferenceDef: yyDollar[7].bytes}
 		}
 	case 414:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:1817
+		//line yacc.y:1803
 		{
 			yyVAL.columnDef = &ColumnDefinition{Type: yyDollar[1].dataType,
 				IsAutoIncrement: yyDollar[2].boolean,
@@ -4317,7 +4303,7 @@ yydefault:
 		}
 	case 415:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:1827
+		//line yacc.y:1813
 		{
 			yyVAL.columnDef = &ColumnDefinition{Type: yyDollar[1].dataType,
 				IsNotNull:       yyDollar[2].boolean,
@@ -4330,7 +4316,7 @@ yydefault:
 		}
 	case 416:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:1838
+		//line yacc.y:1824
 		{
 			yyVAL.columnDef = &ColumnDefinition{Type: yyDollar[1].dataType,
 				DefaultValue:    yyDollar[2].valExpr,
@@ -4343,7 +4329,7 @@ yydefault:
 		}
 	case 417:
 		yyDollar = yyS[yypt-9 : yypt+1]
-		//line yacc.y:1849
+		//line yacc.y:1835
 		{
 			yyVAL.columnDef = &ColumnDefinition{Type: yyDollar[1].dataType,
 				IsNotNull:       yyDollar[2].boolean,
@@ -4357,7 +4343,7 @@ yydefault:
 		}
 	case 418:
 		yyDollar = yyS[yypt-9 : yypt+1]
-		//line yacc.y:1861
+		//line yacc.y:1847
 		{
 			yyVAL.columnDef = &ColumnDefinition{Type: yyDollar[1].dataType,
 				IsNotNull:       yyDollar[3].boolean,
@@ -4371,847 +4357,847 @@ yydefault:
 		}
 	case 419:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1875
+		//line yacc.y:1861
 		{
 			yyVAL.dataType = &DataType{TypeName: "bit"}
 		}
 	case 420:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1879
+		//line yacc.y:1865
 		{
 			yyVAL.dataType = &DataType{TypeName: "bit(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 421:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1883
+		//line yacc.y:1869
 		{
 			yyVAL.dataType = &DataType{TypeName: "tinyint", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 422:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:1887
+		//line yacc.y:1873
 		{
 			yyVAL.dataType = &DataType{TypeName: "tinyint(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 423:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1891
+		//line yacc.y:1877
 		{
 			yyVAL.dataType = &DataType{TypeName: "bool"}
 		}
 	case 424:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1895
+		//line yacc.y:1881
 		{
 			yyVAL.dataType = &DataType{TypeName: "bool"}
 		}
 	case 425:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1899
+		//line yacc.y:1885
 		{
 			yyVAL.dataType = &DataType{TypeName: "smallint", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 426:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:1903
+		//line yacc.y:1889
 		{
 			yyVAL.dataType = &DataType{TypeName: "smallint(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 427:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1907
+		//line yacc.y:1893
 		{
 			yyVAL.dataType = &DataType{TypeName: "mediumint", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 428:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:1911
+		//line yacc.y:1897
 		{
 			yyVAL.dataType = &DataType{TypeName: "mediumint(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 429:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1915
+		//line yacc.y:1901
 		{
 			yyVAL.dataType = &DataType{TypeName: "int", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 430:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:1919
+		//line yacc.y:1905
 		{
 			yyVAL.dataType = &DataType{TypeName: "int(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 431:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1923
+		//line yacc.y:1909
 		{
 			yyVAL.dataType = &DataType{TypeName: "integer", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 432:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:1927
+		//line yacc.y:1913
 		{
 			yyVAL.dataType = &DataType{TypeName: "integer(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 433:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1931
+		//line yacc.y:1917
 		{
 			yyVAL.dataType = &DataType{TypeName: "bigint", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 434:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:1935
+		//line yacc.y:1921
 		{
 			yyVAL.dataType = &DataType{TypeName: "bigint(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 435:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1939
+		//line yacc.y:1925
 		{
 			yyVAL.dataType = &DataType{TypeName: "real", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 436:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:1943
+		//line yacc.y:1929
 		{
 			yyVAL.dataType = &DataType{TypeName: "real(" + string(yyDollar[3].bytes) + "," + string(yyDollar[5].bytes) + ")", IsUnsigned: yyDollar[7].boolean, IsZeroFill: yyDollar[8].boolean}
 		}
 	case 437:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1947
+		//line yacc.y:1933
 		{
 			yyVAL.dataType = &DataType{TypeName: "double", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 438:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:1951
+		//line yacc.y:1937
 		{
 			yyVAL.dataType = &DataType{TypeName: "double(" + string(yyDollar[3].bytes) + "," + string(yyDollar[5].bytes) + ")", IsUnsigned: yyDollar[7].boolean, IsZeroFill: yyDollar[8].boolean}
 		}
 	case 439:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1955
+		//line yacc.y:1941
 		{
 			yyVAL.dataType = &DataType{TypeName: "float", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 440:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:1959
+		//line yacc.y:1945
 		{
 			yyVAL.dataType = &DataType{TypeName: "float(" + string(yyDollar[3].bytes) + "," + string(yyDollar[5].bytes) + ")", IsUnsigned: yyDollar[7].boolean, IsZeroFill: yyDollar[8].boolean}
 		}
 	case 441:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:1963
+		//line yacc.y:1949
 		{
 			yyVAL.dataType = &DataType{TypeName: "decimal", IsUnsigned: yyDollar[2].boolean, IsZeroFill: yyDollar[3].boolean}
 		}
 	case 442:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:1967
+		//line yacc.y:1953
 		{
 			yyVAL.dataType = &DataType{TypeName: "decimal(" + string(yyDollar[3].bytes) + ")", IsUnsigned: yyDollar[5].boolean, IsZeroFill: yyDollar[6].boolean}
 		}
 	case 443:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:1971
+		//line yacc.y:1957
 		{
 			yyVAL.dataType = &DataType{TypeName: "decimal(" + string(yyDollar[3].bytes) + "," + string(yyDollar[5].bytes) + ")", IsUnsigned: yyDollar[7].boolean, IsZeroFill: yyDollar[8].boolean}
 		}
 	case 444:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1975
+		//line yacc.y:1961
 		{
 			yyVAL.dataType = &DataType{TypeName: "date"}
 		}
 	case 445:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1979
+		//line yacc.y:1965
 		{
 			yyVAL.dataType = &DataType{TypeName: "time"}
 		}
 	case 446:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1983
+		//line yacc.y:1969
 		{
 			yyVAL.dataType = &DataType{TypeName: "time(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 447:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1987
+		//line yacc.y:1973
 		{
 			yyVAL.dataType = &DataType{TypeName: "timestamp"}
 		}
 	case 448:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1991
+		//line yacc.y:1977
 		{
 			yyVAL.dataType = &DataType{TypeName: "timestamp(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 449:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:1995
+		//line yacc.y:1981
 		{
 			yyVAL.dataType = &DataType{TypeName: "datetime"}
 		}
 	case 450:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:1999
+		//line yacc.y:1985
 		{
 			yyVAL.dataType = &DataType{TypeName: "datetime(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 451:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2003
+		//line yacc.y:1989
 		{
 			yyVAL.dataType = &DataType{TypeName: "year"}
 		}
 	case 452:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2007
+		//line yacc.y:1993
 		{
 			yyVAL.dataType = &DataType{TypeName: "char", IsBinary: yyDollar[2].boolean, Charset: yyDollar[3].bytes, Collate: yyDollar[4].bytes}
 		}
 	case 453:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2011
+		//line yacc.y:1997
 		{
 			yyVAL.dataType = &DataType{TypeName: "nchar", IsBinary: yyDollar[2].boolean, Charset: yyDollar[3].bytes, Collate: yyDollar[4].bytes}
 		}
 	case 454:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:2015
+		//line yacc.y:2001
 		{
 			yyVAL.dataType = &DataType{TypeName: "char(" + string(yyDollar[3].bytes) + ")", IsBinary: yyDollar[5].boolean, Charset: yyDollar[6].bytes, Collate: yyDollar[7].bytes}
 		}
 	case 455:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:2019
+		//line yacc.y:2005
 		{
 			yyVAL.dataType = &DataType{TypeName: "nchar(" + string(yyDollar[3].bytes) + ")", IsBinary: yyDollar[5].boolean, Charset: yyDollar[6].bytes, Collate: yyDollar[7].bytes}
 		}
 	case 456:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:2023
+		//line yacc.y:2009
 		{
 			yyVAL.dataType = &DataType{TypeName: "varchar(" + string(yyDollar[3].bytes) + ")", IsBinary: yyDollar[5].boolean, Charset: yyDollar[6].bytes, Collate: yyDollar[7].bytes}
 		}
 	case 457:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:2027
+		//line yacc.y:2013
 		{
 			yyVAL.dataType = &DataType{TypeName: "nvarchar(" + string(yyDollar[3].bytes) + ")", IsBinary: yyDollar[5].boolean, Charset: yyDollar[6].bytes, Collate: yyDollar[7].bytes}
 		}
 	case 458:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2031
+		//line yacc.y:2017
 		{
 			yyVAL.dataType = &DataType{TypeName: "binary"}
 		}
 	case 459:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2035
+		//line yacc.y:2021
 		{
 			yyVAL.dataType = &DataType{TypeName: "binary(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 460:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2039
+		//line yacc.y:2025
 		{
 			yyVAL.dataType = &DataType{TypeName: "varbinary(" + string(yyDollar[3].bytes) + ")"}
 		}
 	case 461:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2043
+		//line yacc.y:2029
 		{
 			yyVAL.dataType = &DataType{TypeName: "tinyblob"}
 		}
 	case 462:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2047
+		//line yacc.y:2033
 		{
 			yyVAL.dataType = &DataType{TypeName: "blob"}
 		}
 	case 463:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2051
+		//line yacc.y:2037
 		{
 			yyVAL.dataType = &DataType{TypeName: "mediumblob"}
 		}
 	case 464:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2055
+		//line yacc.y:2041
 		{
 			yyVAL.dataType = &DataType{TypeName: "longblob"}
 		}
 	case 465:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2059
+		//line yacc.y:2045
 		{
 			yyVAL.dataType = &DataType{TypeName: "tinytext", IsBinary: yyDollar[2].boolean, Charset: yyDollar[3].bytes, Collate: yyDollar[4].bytes}
 		}
 	case 466:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2063
+		//line yacc.y:2049
 		{
 			yyVAL.dataType = &DataType{TypeName: "text", IsBinary: yyDollar[2].boolean, Charset: yyDollar[3].bytes, Collate: yyDollar[4].bytes}
 		}
 	case 467:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2067
+		//line yacc.y:2053
 		{
 			yyVAL.dataType = &DataType{TypeName: "mediumtext", IsBinary: yyDollar[2].boolean, Charset: yyDollar[3].bytes, Collate: yyDollar[4].bytes}
 		}
 	case 468:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2071
+		//line yacc.y:2057
 		{
 			yyVAL.dataType = &DataType{TypeName: "longtext", IsBinary: yyDollar[2].boolean, Charset: yyDollar[3].bytes, Collate: yyDollar[4].bytes}
 		}
 	case 469:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:2075
+		//line yacc.y:2061
 		{
 			yyVAL.dataType = &DataType{TypeName: "enum(" + String(yyDollar[3].valExprs) + ")", Charset: yyDollar[5].bytes, Collate: yyDollar[6].bytes}
 		}
 	case 470:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:2079
+		//line yacc.y:2065
 		{
 			yyVAL.dataType = &DataType{TypeName: "set(" + String(yyDollar[3].valExprs) + ")", Charset: yyDollar[5].bytes, Collate: yyDollar[6].bytes}
 		}
 	case 471:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2085
+		//line yacc.y:2071
 		{
 			yyVAL.boolean = false
 		}
 	case 472:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2087
+		//line yacc.y:2073
 		{
 			yyVAL.boolean = true
 		}
 	case 473:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2091
+		//line yacc.y:2077
 		{
 			yyVAL.valExpr = yyDollar[2].valExpr
 		}
 	case 474:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2094
+		//line yacc.y:2080
 		{
 			yyVAL.boolean = false
 		}
 	case 475:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2096
+		//line yacc.y:2082
 		{
 			yyVAL.boolean = true
 		}
 	case 476:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2099
+		//line yacc.y:2085
 		{
 			yyVAL.bytes = nil
 		}
 	case 477:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2101
+		//line yacc.y:2087
 		{
 			yyVAL.bytes = []byte("unique key")
 		}
 	case 478:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2103
+		//line yacc.y:2089
 		{
 			yyVAL.bytes = []byte("unique key")
 		}
 	case 479:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2105
+		//line yacc.y:2091
 		{
 			yyVAL.bytes = []byte("primary key")
 		}
 	case 480:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2107
+		//line yacc.y:2093
 		{
 			yyVAL.bytes = []byte("primary key")
 		}
 	case 481:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2110
+		//line yacc.y:2096
 		{
 			yyVAL.valExpr = nil
 		}
 	case 482:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2112
+		//line yacc.y:2098
 		{
 			yyVAL.valExpr = StrVal(yyDollar[2].bytes)
 		}
 	case 483:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2117
+		//line yacc.y:2103
 		{
 			yyVAL.bytes = nil
 		}
 	case 484:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2119
+		//line yacc.y:2105
 		{
 			yyVAL.bytes = []byte("fixed")
 		}
 	case 485:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2121
+		//line yacc.y:2107
 		{
 			yyVAL.bytes = []byte("dynamic")
 		}
 	case 486:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2123
+		//line yacc.y:2109
 		{
 			yyVAL.bytes = []byte("default")
 		}
 	case 487:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2126
+		//line yacc.y:2112
 		{
 			yyVAL.bytes = nil
 		}
 	case 488:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2128
+		//line yacc.y:2114
 		{
 			yyVAL.bytes = []byte("disk")
 		}
 	case 489:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2130
+		//line yacc.y:2116
 		{
 			yyVAL.bytes = []byte("memory")
 		}
 	case 490:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2132
+		//line yacc.y:2118
 		{
 			yyVAL.bytes = []byte("default")
 		}
 	case 491:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2135
+		//line yacc.y:2121
 		{
 			yyVAL.bytes = nil
 		}
 	case 492:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2137
+		//line yacc.y:2123
 		{
 			yyVAL.bytes = yyDollar[1].bytes
 		}
 	case 493:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:2141
+		//line yacc.y:2127
 		{
 			yyVAL.bytes = []byte("references " + String(yyDollar[2].tableName) + "(" + String(yyDollar[4].idxColNames) + ")" + string(yyDollar[6].bytes) + string(yyDollar[7].bytes))
 		}
 	case 494:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2144
+		//line yacc.y:2130
 		{
 			yyVAL.bytes = nil
 		}
 	case 495:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2146
+		//line yacc.y:2132
 		{
 			yyVAL.bytes = []byte("match full")
 		}
 	case 496:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2148
+		//line yacc.y:2134
 		{
 			yyVAL.bytes = []byte("match partial")
 		}
 	case 497:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2150
+		//line yacc.y:2136
 		{
 			yyVAL.bytes = []byte("match simple")
 		}
 	case 498:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2153
+		//line yacc.y:2139
 		{
 			yyVAL.bytes = nil
 		}
 	case 499:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2155
+		//line yacc.y:2141
 		{
 			yyVAL.bytes = []byte("on delete " + string(yyDollar[3].bytes))
 		}
 	case 500:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2157
+		//line yacc.y:2143
 		{
 			yyVAL.bytes = []byte("on update " + string(yyDollar[3].bytes))
 		}
 	case 501:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:2159
+		//line yacc.y:2145
 		{
 			yyVAL.bytes = []byte("on update " + string(yyDollar[3].bytes) + " on delete " + string(yyDollar[6].bytes))
 		}
 	case 502:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:2161
+		//line yacc.y:2147
 		{
 			yyVAL.bytes = []byte("on update " + string(yyDollar[6].bytes) + " on delete " + string(yyDollar[3].bytes))
 		}
 	case 503:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2164
+		//line yacc.y:2150
 		{
 			yyVAL.bytes = nil
 		}
 	case 504:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2166
+		//line yacc.y:2152
 		{
 			yyVAL.bytes = yyDollar[1].bytes
 		}
 	case 505:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2170
+		//line yacc.y:2156
 		{
 			yyVAL.bytes = []byte("restrict")
 		}
 	case 506:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2172
+		//line yacc.y:2158
 		{
 			yyVAL.bytes = []byte("cascade")
 		}
 	case 507:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2174
+		//line yacc.y:2160
 		{
 			yyVAL.bytes = []byte("set null")
 		}
 	case 508:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2176
+		//line yacc.y:2162
 		{
 			yyVAL.bytes = []byte("no action")
 		}
 	case 509:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2179
+		//line yacc.y:2165
 		{
 			yyVAL.boolean = false
 		}
 	case 510:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2181
+		//line yacc.y:2167
 		{
 			yyVAL.boolean = true
 		}
 	case 511:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2184
+		//line yacc.y:2170
 		{
 			yyVAL.boolean = false
 		}
 	case 512:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2186
+		//line yacc.y:2172
 		{
 			yyVAL.boolean = true
 		}
 	case 513:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2189
+		//line yacc.y:2175
 		{
 			yyVAL.boolean = false
 		}
 	case 514:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2191
+		//line yacc.y:2177
 		{
 			yyVAL.boolean = true
 		}
 	case 515:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2194
+		//line yacc.y:2180
 		{
 			yyVAL.bytes = nil
 		}
 	case 516:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2196
+		//line yacc.y:2182
 		{
 			yyVAL.bytes = yyDollar[3].bytes
 		}
 	case 517:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2199
+		//line yacc.y:2185
 		{
 			yyVAL.bytes = nil
 		}
 	case 518:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2201
+		//line yacc.y:2187
 		{
 			yyVAL.bytes = yyDollar[2].bytes
 		}
 	case 519:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2204
+		//line yacc.y:2190
 		{
 			yyVAL.bytes = nil
 		}
 	case 520:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2206
+		//line yacc.y:2192
 		{
 			yyVAL.bytes = yyDollar[2].bytes
 		}
 	case 521:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2209
+		//line yacc.y:2195
 		{
 			yyVAL.optKeyVals = nil
 		}
 	case 522:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2211
+		//line yacc.y:2197
 		{
 			yyVAL.optKeyVals = yyDollar[1].optKeyVals
 		}
 	case 523:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2215
+		//line yacc.y:2201
 		{
 			yyVAL.optKeyVals = OptionKeyValues{yyDollar[1].optKeyVal}
 		}
 	case 524:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2217
+		//line yacc.y:2203
 		{
 			yyVAL.optKeyVals = append(yyDollar[1].optKeyVals, yyDollar[2].optKeyVal)
 		}
 	case 525:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2221
+		//line yacc.y:2207
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "engine", Value: string(yyDollar[3].bytes)}
 		}
 	case 526:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2225
+		//line yacc.y:2211
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "auto_increment", Value: string(yyDollar[3].bytes)}
 		}
 	case 527:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:2229
+		//line yacc.y:2215
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "charset", Value: string(yyDollar[5].bytes)}
 		}
 	case 528:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2233
+		//line yacc.y:2219
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "charset", Value: string(yyDollar[4].bytes)}
 		}
 	case 529:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2237
+		//line yacc.y:2223
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "charset", Value: string(yyDollar[4].bytes)}
 		}
 	case 530:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2241
+		//line yacc.y:2227
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "charset", Value: string(yyDollar[3].bytes)}
 		}
 	case 531:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2245
+		//line yacc.y:2231
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "collate", Value: string(yyDollar[4].bytes)}
 		}
 	case 532:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2249
+		//line yacc.y:2235
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "collate", Value: string(yyDollar[3].bytes)}
 		}
 	case 533:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2253
+		//line yacc.y:2239
 		{
 			yyVAL.optKeyVal = &OptionKeyValue{Key: "comment", Value: String(StrVal(yyDollar[3].bytes))}
 		}
 	case 534:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2258
+		//line yacc.y:2244
 		{
 			yyVAL.alterSpecs = nil
 		}
 	case 535:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2260
+		//line yacc.y:2246
 		{
 			yyVAL.alterSpecs = yyDollar[1].alterSpecs
 		}
 	case 536:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2264
+		//line yacc.y:2250
 		{
 			yyVAL.alterSpecs = AlterSpecifications{yyDollar[1].alterSpec}
 		}
 	case 537:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2266
+		//line yacc.y:2252
 		{
 			yyVAL.alterSpecs = append(yyDollar[1].alterSpecs, yyDollar[3].alterSpec)
 		}
 	case 538:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2270
+		//line yacc.y:2256
 		{
 			yyVAL.alterSpec = yyDollar[1].optKeyVals
 		}
 	case 539:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:2274
+		//line yacc.y:2260
 		{
 			yyVAL.alterSpec = &AddOrModifyColumnSpec{Action: "add", ColumnName: yyDollar[3].colName, ColumnDef: yyDollar[4].columnDef, FirstOrAfterColumn: yyDollar[5].fiOAfCol}
 		}
 	case 540:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:2278
+		//line yacc.y:2264
 		{
 			yyVAL.alterSpec = &AddIndexSpec{Name: yyDollar[3].bytes, IndexType: yyDollar[4].bytes, IndexColumns: yyDollar[6].idxColNames}
 		}
 	case 541:
 		yyDollar = yyS[yypt-7 : yypt+1]
-		//line yacc.y:2282
+		//line yacc.y:2268
 		{
 			yyVAL.alterSpec = &AddIndexSpec{Name: yyDollar[3].bytes, IndexType: yyDollar[4].bytes, IndexColumns: yyDollar[6].idxColNames}
 		}
 	case 542:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:2286
+		//line yacc.y:2272
 		{
 			yyVAL.alterSpec = &AddPrimaryKeySpec{Symbol: yyDollar[2].bytes, IndexType: yyDollar[5].bytes, IndexColumns: yyDollar[7].idxColNames}
 		}
 	case 543:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:2290
+		//line yacc.y:2276
 		{
 			yyVAL.alterSpec = &AddUniqueIndexSpec{Symbol: yyDollar[2].bytes, Name: yyDollar[4].bytes, IndexType: yyDollar[5].bytes, IndexColumns: yyDollar[7].idxColNames}
 		}
 	case 544:
 		yyDollar = yyS[yypt-9 : yypt+1]
-		//line yacc.y:2294
+		//line yacc.y:2280
 		{
 			yyVAL.alterSpec = &AddUniqueIndexSpec{Symbol: yyDollar[2].bytes, Name: yyDollar[5].bytes, IndexType: yyDollar[6].bytes, IndexColumns: yyDollar[8].idxColNames}
 		}
 	case 545:
 		yyDollar = yyS[yypt-9 : yypt+1]
-		//line yacc.y:2298
+		//line yacc.y:2284
 		{
 			yyVAL.alterSpec = &AddUniqueIndexSpec{Symbol: yyDollar[2].bytes, Name: yyDollar[5].bytes, IndexType: yyDollar[6].bytes, IndexColumns: yyDollar[8].idxColNames}
 		}
 	case 546:
 		yyDollar = yyS[yypt-8 : yypt+1]
-		//line yacc.y:2302
+		//line yacc.y:2288
 		{
 			yyVAL.alterSpec = &AddForeignKeySpec{Symbol: yyDollar[2].bytes, IndexColumns: yyDollar[6].idxColNames, ReferenceDef: yyDollar[8].bytes}
 		}
 	case 547:
 		yyDollar = yyS[yypt-6 : yypt+1]
-		//line yacc.y:2306
+		//line yacc.y:2292
 		{
 			yyVAL.alterSpec = &ChangeColumnSpec{OldColumnName: yyDollar[3].colName, ColumnName: yyDollar[4].colName, ColumnDef: yyDollar[5].columnDef, FirstOrAfterColumn: yyDollar[6].fiOAfCol}
 		}
 	case 548:
 		yyDollar = yyS[yypt-5 : yypt+1]
-		//line yacc.y:2310
+		//line yacc.y:2296
 		{
 			yyVAL.alterSpec = &AddOrModifyColumnSpec{Action: "modify", ColumnName: yyDollar[3].colName, ColumnDef: yyDollar[4].columnDef, FirstOrAfterColumn: yyDollar[5].fiOAfCol}
 		}
 	case 549:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2314
+		//line yacc.y:2300
 		{
 			yyVAL.alterSpec = &DropColumnSpec{ColumnName: yyDollar[3].colName}
 		}
 	case 550:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2318
+		//line yacc.y:2304
 		{
 			yyVAL.alterSpec = &DropPrimaryKeySpec{}
 		}
 	case 551:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2322
+		//line yacc.y:2308
 		{
 			yyVAL.alterSpec = &DropIndexSpec{Name: yyDollar[3].bytes}
 		}
 	case 552:
 		yyDollar = yyS[yypt-3 : yypt+1]
-		//line yacc.y:2326
+		//line yacc.y:2312
 		{
 			yyVAL.alterSpec = &DropIndexSpec{Name: yyDollar[3].bytes}
 		}
 	case 553:
 		yyDollar = yyS[yypt-4 : yypt+1]
-		//line yacc.y:2330
+		//line yacc.y:2316
 		{
 			yyVAL.alterSpec = &DropForeignKeySpec{Name: yyDollar[4].bytes}
 		}
 	case 554:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2334
+		//line yacc.y:2320
 		{
 			yyVAL.alterSpec = &DisableKeysSpec{}
 		}
 	case 555:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2338
+		//line yacc.y:2324
 		{
 			yyVAL.alterSpec = &EnableKeysSpec{}
 		}
 	case 556:
 		yyDollar = yyS[yypt-0 : yypt+1]
-		//line yacc.y:2343
+		//line yacc.y:2329
 		{
 			yyVAL.fiOAfCol = nil
 		}
 	case 557:
 		yyDollar = yyS[yypt-1 : yypt+1]
-		//line yacc.y:2345
+		//line yacc.y:2331
 		{
 			yyVAL.fiOAfCol = yyDollar[1].fiOAfCol
 		}
 	case 558:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2349
+		//line yacc.y:2335
 		{
 			yyVAL.fiOAfCol = &FirstOrAfterColumn{FirstOrAfter: "first", ColumnName: yyDollar[2].colName}
 		}
 	case 559:
 		yyDollar = yyS[yypt-2 : yypt+1]
-		//line yacc.y:2353
+		//line yacc.y:2339
 		{
 			yyVAL.fiOAfCol = &FirstOrAfterColumn{FirstOrAfter: "after", ColumnName: yyDollar[2].colName}
 		}
