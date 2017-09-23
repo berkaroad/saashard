@@ -273,7 +273,7 @@ func (c *ClientConn) getOrCreateMasterConn(node *backend.DataNode) (conn backend
 			}
 		}
 
-		if conn == nil {
+		if conn == nil || conn.IsClosed() {
 			dbHost := node.DataHost.Master
 			if conn, err = dbHost.GetConnection(node.Database); err != nil {
 				return
@@ -301,7 +301,7 @@ func (c *ClientConn) getOrCreateSlaveConn(node *backend.DataNode) (conn backend.
 	defer c.Unlock()
 
 	c.Lock()
-	if conn = c.backendSlaveConns[node]; conn == nil && !conn.IsClosed() {
+	if conn = c.backendSlaveConns[node]; conn == nil {
 		for cachedNode := range c.backendSlaveConns {
 			if cachedNode.DataHost == node.DataHost {
 				conn = c.backendSlaveConns[cachedNode]
@@ -310,7 +310,7 @@ func (c *ClientConn) getOrCreateSlaveConn(node *backend.DataNode) (conn backend.
 			}
 		}
 
-		if conn == nil {
+		if conn == nil || conn.IsClosed() {
 			var dbHost *backend.DBHost
 			dbHost, err = node.DataHost.GetSlave()
 			if err != nil {
@@ -329,7 +329,7 @@ func (c *ClientConn) returnSlaveConn(node *backend.DataNode) {
 	defer c.Unlock()
 
 	c.Lock()
-	if conn := c.backendSlaveConns[node]; conn != nil {
+	if conn := c.backendSlaveConns[node]; conn != nil && !conn.IsClosed() {
 		conn.ReturnConnection()
 		delete(c.backendSlaveConns, node)
 	}
