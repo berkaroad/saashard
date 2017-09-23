@@ -6,7 +6,7 @@ cd %~dp0sqlparser
 go tool yacc -o yacc.go -v yacc.output yacc.y && gofmt -w yacc.go
 cd %~dp0
 
-go install github.com/berkaroad/saashard/utils/golog
+go install github.com/berkaroad/saashard/utils/simplelog
 go install github.com/berkaroad/saashard/config
 go install github.com/berkaroad/saashard/errors
 go install github.com/berkaroad/saashard/sqlparser/sqltypes

@@ -1,17 +1,3 @@
-// Copyright 2016 The kingshard Authors. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License"): you may
-// not use this file except in compliance with the License. You may obtain
-// a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-
 // The MIT License (MIT)
 
 // Copyright (c) 2016 Jerry Bai
@@ -53,7 +39,7 @@ import (
 	"github.com/berkaroad/saashard/errors"
 	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/statistic"
-	"github.com/berkaroad/saashard/utils/golog"
+	"github.com/berkaroad/saashard/utils/simplelog"
 )
 
 var (
@@ -136,10 +122,9 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		return nil, err
 	}
 
-	golog.Info("server/proxy", "NewServer", "Server running", 0,
-		"netProto",
+	simplelog.Info("%s %s %s netProto=%s,address=%s",
+		"server/proxy", "NewServer", "Server running",
 		netProto,
-		"address",
 		addr)
 	return p, nil
 }
@@ -155,7 +140,7 @@ func (p *Server) Run() {
 	for p.running {
 		conn, err := p.listener.Accept()
 		if err != nil {
-			golog.Error("server/proxy", "Run", err.Error(), 0)
+			simplelog.Error("%s %s %s", "server/proxy", "Run", err.Error())
 			continue
 		}
 		go p.onConn(conn)
@@ -202,9 +187,9 @@ func (p *Server) onConn(c net.Conn) {
 			const size = 4096
 			buf := make([]byte, size)
 			buf = buf[:runtime.Stack(buf, false)] //获得当前goroutine的stacktrace
-			golog.Error("server", "onProxyConn", "error", 0,
-				"remoteAddr", c.RemoteAddr().String(),
-				"stack", string(buf),
+			simplelog.Error("%s %s %s remoteAddr=%s,stack=%s", "server", "onProxyConn", "error",
+				c.RemoteAddr().String(),
+				string(buf),
 			)
 		}
 
@@ -219,7 +204,7 @@ func (p *Server) onConn(c net.Conn) {
 		return
 	}
 	if err := conn.Handshake(); err != nil {
-		golog.Error("server/proxy", "onConn", err.Error(), 0)
+		simplelog.Error("%s %s %s", "server/proxy", "onConn", err.Error())
 		c.Close()
 		return
 	}

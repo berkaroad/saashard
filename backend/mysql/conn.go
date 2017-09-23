@@ -1,17 +1,3 @@
-// Copyright 2016 The kingshard Authors. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License"): you may
-// not use this file except in compliance with the License. You may obtain
-// a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-
 // The MIT License (MIT)
 
 // Copyright (c) 2016 Jerry Bai
@@ -158,7 +144,7 @@ func (c *Conn) Reconnect() error {
 
 // Close conn
 func (c *Conn) Close() error {
-	if c.conn != nil {
+	if !c.IsClosed() {
 		c.pkg.Quit(c.capability, &(c.status))
 		c.conn.Close()
 		c.conn = nil
@@ -178,15 +164,17 @@ func (c *Conn) ReturnConnection() {
 
 // Ping db
 func (c *Conn) Ping() error {
-	if err := c.pkg.Ping(c.capability, &(c.status)); err != nil {
-		return err
+	if c.IsClosed() {
+		c.Reconnect()
 	}
-
-	return nil
+	return c.pkg.Ping(c.capability, &(c.status))
 }
 
 // UseDB use db.
 func (c *Conn) UseDB(dbName string) error {
+	if c.IsClosed() {
+		c.Reconnect()
+	}
 	if c.db == dbName || len(dbName) == 0 {
 		return nil
 	}
@@ -209,18 +197,32 @@ func (c *Conn) GetAddr() string {
 	return c.dbHost.Addr
 }
 
+// IsClosed check connection status
+func (c *Conn) IsClosed() bool {
+	return c.conn == nil || c.pkg == nil
+}
+
 // Query command.
 func (c *Conn) Query(query string) (*mysql.Result, error) {
+	if c.IsClosed() {
+		c.Reconnect()
+	}
 	return c.pkg.Query(c.capability, &(c.status), query)
 }
 
 // FieldList return field list.
 func (c *Conn) FieldList(table string, wildcard string) ([]*mysql.Field, error) {
+	if c.IsClosed() {
+		c.Reconnect()
+	}
 	return c.pkg.FieldList(c.capability, table, wildcard)
 }
 
 // Execute command.
 func (c *Conn) Execute(command string, args []interface{}) (*mysql.Result, error) {
+	if c.IsClosed() {
+		c.Reconnect()
+	}
 	if len(args) == 0 {
 		return c.pkg.Query(c.capability, &(c.status), command)
 	}
@@ -236,6 +238,9 @@ func (c *Conn) Execute(command string, args []interface{}) (*mysql.Result, error
 
 // Prepare stmt.
 func (c *Conn) Prepare(query string) (*mysql.Stmt, error) {
+	if c.IsClosed() {
+		c.Reconnect()
+	}
 	var err error
 
 	stmt := mysql.NewStmt(c.pkg, c.capability, &c.status)
@@ -267,6 +272,9 @@ func (c *Conn) Rollback() error {
 
 // SetCharset set charset
 func (c *Conn) SetCharset(charset string) error {
+	if c.IsClosed() {
+		c.Reconnect()
+	}
 	charset = strings.Trim(charset, "\"'`")
 	if c.charset == charset {
 		return nil
@@ -293,6 +301,9 @@ func (c *Conn) GetCharset() string {
 
 // SetAutoCommit set autocommit.
 func (c *Conn) SetAutoCommit(autocommit bool) error {
+	if c.IsClosed() {
+		c.Reconnect()
+	}
 	strAutoCommit := "0"
 	if autocommit {
 		strAutoCommit = "1"

@@ -1,17 +1,3 @@
-// Copyright 2016 The kingshard Authors. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License"): you may
-// not use this file except in compliance with the License. You may obtain
-// a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-
 // The MIT License (MIT)
 
 // Copyright (c) 2016 Jerry Bai
@@ -46,7 +32,7 @@ import (
 	"github.com/berkaroad/saashard/config"
 	"github.com/berkaroad/saashard/errors"
 	"github.com/berkaroad/saashard/net/mysql"
-	"github.com/berkaroad/saashard/utils/golog"
+	"github.com/berkaroad/saashard/utils/simplelog"
 )
 
 // ClientConn client <-> proxy
@@ -84,8 +70,10 @@ func (c *ClientConn) IsAllowConnect() bool {
 
 	clientHost, _, err := net.SplitHostPort(c.c.RemoteAddr().String())
 	if err != nil {
-		golog.Error("server", "IsAllowConnect", "error", mysql.ER_ACCESS_DENIED_ERROR,
-			"ip address", c.c.RemoteAddr().String(), " access denied by saashard.")
+		simplelog.Error("%s %s %s error=%d,ip address=%s,",
+			"server", "IsAllowConnect", " access denied by saashard.",
+			mysql.ER_ACCESS_DENIED_ERROR,
+			c.c.RemoteAddr().String())
 		return false
 	}
 	c.clientIP = net.ParseIP(clientHost)
@@ -95,9 +83,10 @@ func (c *ClientConn) IsAllowConnect() bool {
 			return true
 		}
 	}
-
-	golog.Error("server", "IsAllowConnect", "error", mysql.ER_ACCESS_DENIED_ERROR,
-		"ip address", c.c.RemoteAddr().String(), " access denied by saashard.")
+	simplelog.Error("%s %s %s error=%d,ip address=%s,",
+		"server", "IsAllowConnect", " access denied by saashard.",
+		mysql.ER_ACCESS_DENIED_ERROR,
+		c.c.RemoteAddr().String())
 	return false
 }
 
@@ -105,8 +94,9 @@ func (c *ClientConn) IsAllowConnect() bool {
 func (c *ClientConn) Handshake() error {
 	var err error
 	if err = c.pkg.WriteInitialHandshake(c.connectionID, c.salt, mysql.DEFAULT_COLLATION_ID, mysql.DEFAULT_CAPABILITY, c.status); err != nil {
-		golog.Error("server", "Handshake", err.Error(),
-			c.connectionID, "msg", "send initial handshake error")
+		simplelog.Error("%s %s %s connection id=%d,msg=%s", "server", "Handshake", err.Error(),
+			c.connectionID,
+			"send initial handshake error")
 		return err
 	}
 
@@ -131,9 +121,10 @@ func (c *ClientConn) Handshake() error {
 	}
 	c.capability, c.collation, c.user, c.db, err = c.pkg.ReadHandshakeResponse(getDefaultSchemaByUser, c.c.RemoteAddr().String(), c.salt, getCredentialsConfigBySchema)
 	if err != nil {
-		golog.Error("server", "readHandshakeResponse",
-			err.Error(), c.connectionID,
-			"msg", "read Handshake Response error")
+		simplelog.Error("%s %s %s connection id=%d,msg=%s",
+			"server", "readHandshakeResponse", err.Error(),
+			c.connectionID,
+			"read Handshake Response error")
 
 		c.pkg.WriteError(c.capability, err)
 
@@ -142,9 +133,10 @@ func (c *ClientConn) Handshake() error {
 	c.schemas = c.proxy.getSchemasByUser(c.user)
 
 	if err := c.pkg.WriteOK(c.capability, c.status, nil); err != nil {
-		golog.Error("server", "readHandshakeResponse",
-			"write ok fail",
-			c.connectionID, "error", err.Error())
+		simplelog.Error("%s %s %s connection id=%d,msg=%s",
+			"server", "readHandshakeResponse", err.Error(),
+			c.connectionID,
+			"write ok fail")
 		return err
 	}
 
@@ -162,9 +154,9 @@ func (c *ClientConn) Run() {
 			buf := make([]byte, size)
 			buf = buf[:runtime.Stack(buf, false)]
 
-			golog.Error("ClientConn", "Run",
-				err.Error(), 0,
-				"stack", string(buf))
+			simplelog.Error("%s %s %s stack=%s",
+				"ClientConn", "Run", err.Error(),
+				string(buf))
 		}
 
 		c.Close()
@@ -174,22 +166,20 @@ func (c *ClientConn) Run() {
 		data, err := c.pkg.ReadPacket()
 
 		if err != nil {
-			golog.Error("server", "Run",
-				err.Error(), c.connectionID,
-			)
+			simplelog.Error("%s %s %s connection id=%d", "server", "Run", err.Error(), c.connectionID)
 			return
 		}
 		if err := c.dispatch(data); err != nil {
 			c.proxy.counter.IncrErrLogTotal()
 			if len(data) > 1 {
-				golog.Error("server", "Run",
-					err.Error(), c.connectionID,
-					"sql",
+				simplelog.Error("%s %s %s connection id=%d,sql=%s",
+					"server", "Run", err.Error(),
+					c.connectionID,
 					string(data[1:]))
 			} else {
-				golog.Error("server", "Run",
-					err.Error(), c.connectionID,
-				)
+				simplelog.Error("%s %s %s connection id=%d",
+					"server", "Run", err.Error(),
+					c.connectionID)
 			}
 			c.pkg.WriteError(c.capability, err)
 			if err == errors.ErrBadConn {
@@ -257,7 +247,7 @@ func (c *ClientConn) dispatch(data []byte) error {
 		return c.pkg.WriteEOF(c.capability, 0)
 	default:
 		msg := fmt.Sprintf("command %d not supported now", cmd)
-		golog.Error("ClientConn", "dispatch", msg, 0)
+		simplelog.Error("%s %s %s", "ClientConn", "dispatch", msg)
 		return mysql.NewError(mysql.ER_UNKNOWN_ERROR, msg)
 	}
 }
@@ -300,7 +290,7 @@ func (c *ClientConn) returnMasterConn(node *backend.DataNode) {
 	defer c.Unlock()
 
 	c.Lock()
-	if conn := c.backendMasterConns[node]; conn != nil {
+	if conn := c.backendMasterConns[node]; conn != nil && !conn.IsClosed() {
 		conn.Rollback()
 		conn.ReturnConnection()
 		delete(c.backendMasterConns, node)
@@ -311,7 +301,7 @@ func (c *ClientConn) getOrCreateSlaveConn(node *backend.DataNode) (conn backend.
 	defer c.Unlock()
 
 	c.Lock()
-	if conn = c.backendSlaveConns[node]; conn == nil {
+	if conn = c.backendSlaveConns[node]; conn == nil && !conn.IsClosed() {
 		for cachedNode := range c.backendSlaveConns {
 			if cachedNode.DataHost == node.DataHost {
 				conn = c.backendSlaveConns[cachedNode]

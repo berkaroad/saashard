@@ -1,17 +1,3 @@
-// Copyright 2016 The kingshard Authors. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License"): you may
-// not use this file except in compliance with the License. You may obtain
-// a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-
 // The MIT License (MIT)
 
 // Copyright (c) 2016 Jerry Bai
@@ -47,22 +33,23 @@ import (
 	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/route"
 	"github.com/berkaroad/saashard/sqlparser"
-	"github.com/berkaroad/saashard/utils/golog"
+	"github.com/berkaroad/saashard/utils/simplelog"
 )
 
 func (c *ClientConn) handleQuery(sql string) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			golog.OutputSql("Error", "err:%v,sql:%s", e, sql)
+			simplelog.Error("err:%v,sql:%s\n", e, sql)
 
 			if err, ok := e.(error); ok {
 				const size = 4096
 				buf := make([]byte, size)
 				buf = buf[:runtime.Stack(buf, false)]
 
-				golog.Error("ClientConn", "handleQuery",
-					err.Error(), 0,
-					"stack", string(buf), "sql", sql)
+				simplelog.Error("%s %s %s stack=%s,sql=%s",
+					"ClientConn", "handleQuery", err.Error(),
+					string(buf),
+					sql)
 			}
 			return
 		}
@@ -80,7 +67,7 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 	for _, sql := range sqls {
 		stmt, err := sqlparser.Parse(sql)
 		if err != nil {
-			golog.Error("proxy", "handleQuery", err.Error(), 0, "sql", sql)
+			simplelog.Error("%s %s %s sql=%s", "proxy", "handleQuery", err.Error(), sql)
 			return mysql.NewError(mysql.ER_SYNTAX_ERROR, fmt.Sprintf("Syntax error or not supported for '%s': '%s'", sql, err.Error()))
 		}
 		if stmt != nil {
@@ -94,7 +81,7 @@ func (c *ClientConn) handleQuery(sql string) (err error) {
 		if err != nil {
 			return
 		}
-		return plan.Execute(c.executePlanWithQueryCommand, c.c.RemoteAddr(), strings.ToLower(c.proxy.logSQL[c.proxy.logSQLIndex]) != golog.LogSqlOff, c.proxy.slowLogTime[c.proxy.slowLogTimeIndex], c.proxy.counter)
+		return plan.Execute(c.executePlanWithQueryCommand, c.c.RemoteAddr(), strings.ToLower(c.proxy.logSQL[c.proxy.logSQLIndex]) != "on", c.proxy.slowLogTime[c.proxy.slowLogTimeIndex], c.proxy.counter)
 	}
 	return c.pkg.WriteOK(c.capability, c.status, nil)
 }

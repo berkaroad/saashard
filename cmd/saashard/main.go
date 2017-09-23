@@ -1,17 +1,3 @@
-// Copyright 2016 The kingshard Authors. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License"): you may
-// not use this file except in compliance with the License. You may obtain
-// a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-// License for the specific language governing permissions and limitations
-// under the License.
-
 // The MIT License (MIT)
 
 // Copyright (c) 2016 Jerry Bai
@@ -42,16 +28,14 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"path"
 	"runtime"
 	"runtime/pprof"
-	"strings"
 	"syscall"
 
 	"github.com/berkaroad/saashard"
 	"github.com/berkaroad/saashard/config"
 	"github.com/berkaroad/saashard/server"
-	"github.com/berkaroad/saashard/utils/golog"
+	"github.com/berkaroad/saashard/utils/simplelog"
 )
 
 var (
@@ -123,37 +107,10 @@ func main() {
 		return
 	}
 
-	//when the log file size greater than 1GB, saashard will generate a new file
-	if len(cfg.LogPath) != 0 {
-		sysFilePath := path.Join(cfg.LogPath, sysLogName)
-		sysFile, err := golog.NewRotatingFileHandler(sysFilePath, maxLogSize, 1)
-		if err != nil {
-			fmt.Printf("new log file error:%v\n", err.Error())
-			return
-		}
-		golog.GlobalSysLogger = golog.New(sysFile, golog.Lfile|golog.Ltime|golog.Llevel)
-
-		sqlFilePath := path.Join(cfg.LogPath, sqlLogName)
-		sqlFile, err := golog.NewRotatingFileHandler(sqlFilePath, maxLogSize, 1)
-		if err != nil {
-			fmt.Printf("new log file error:%v\n", err.Error())
-			return
-		}
-		golog.GlobalSqlLogger = golog.New(sqlFile, golog.Lfile|golog.Ltime|golog.Llevel)
-	}
-
-	if *logLevel != "" {
-		setLogLevel(*logLevel)
-	} else {
-		setLogLevel(cfg.LogLevel)
-	}
-
 	var svr *server.Server
 	svr, err = server.NewServer(cfg)
 	if err != nil {
-		golog.Error("main", "main", err.Error(), 0)
-		golog.GlobalSysLogger.Close()
-		golog.GlobalSqlLogger.Close()
+		simplelog.Error("%s %s %s", "main", "main", err.Error())
 		return
 	}
 
@@ -169,31 +126,14 @@ func main() {
 		for {
 			sig := <-sc
 			if sig == syscall.SIGINT || sig == syscall.SIGTERM || sig == syscall.SIGQUIT {
-				golog.Info("main", "main", "Got signal", 0, "signal", sig)
-				golog.GlobalSysLogger.Close()
-				golog.GlobalSqlLogger.Close()
+				simplelog.Info("%s %s %s signal=%s", "main", "main", "Got signal", sig)
 				svr.Close()
 			} else if sig == syscall.SIGPIPE {
-				golog.Info("main", "main", "Ignore broken pipe signal", 0)
+				simplelog.Info("%s %s %s", "main", "main", "Ignore broken pipe signal")
 				signal.Ignore(sig)
 			}
 		}
 	}()
 
 	svr.Run()
-}
-
-func setLogLevel(level string) {
-	switch strings.ToLower(level) {
-	case "debug":
-		golog.GlobalSysLogger.SetLevel(golog.LevelDebug)
-	case "info":
-		golog.GlobalSysLogger.SetLevel(golog.LevelInfo)
-	case "warn":
-		golog.GlobalSysLogger.SetLevel(golog.LevelWarn)
-	case "error":
-		golog.GlobalSysLogger.SetLevel(golog.LevelError)
-	default:
-		golog.GlobalSysLogger.SetLevel(golog.LevelError)
-	}
 }

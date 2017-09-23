@@ -1,12 +1,19 @@
 CREATE SCHEMA `productcatalog_00` DEFAULT CHARACTER SET utf8 ;
+GO
 CREATE SCHEMA `productcatalog_01` DEFAULT CHARACTER SET utf8 ;
+GO
 CREATE SCHEMA `productcatalog_02` DEFAULT CHARACTER SET utf8 ;
+GO
 CREATE SCHEMA `productcatalog_03` DEFAULT CHARACTER SET utf8 ;
+GO
 CREATE SCHEMA `productcatalog_04` DEFAULT CHARACTER SET utf8 ;
+GO
 CREATE SCHEMA `productcatalog_05` DEFAULT CHARACTER SET utf8 ;
+GO
 CREATE SCHEMA `productcatalog_06` DEFAULT CHARACTER SET utf8 ;
+GO
 CREATE SCHEMA `productcatalog_07` DEFAULT CHARACTER SET utf8 ;
-
+GO
 
 CREATE TABLE `top_category` (
   `id` INT NOT NULL COMMENT '',
@@ -17,6 +24,7 @@ CREATE TABLE `top_category` (
   UNIQUE INDEX `code_UNIQUE` (`tenant_id` ASC, `code` ASC),
   UNIQUE INDEX `name_UNIQUE` (`tenant_id` ASC, `name` ASC)
 );
+GO
 
 CREATE TABLE `sub_category` (
   `id` INT NOT NULL COMMENT '',
@@ -30,6 +38,7 @@ CREATE TABLE `sub_category` (
   UNIQUE INDEX `name_UNIQUE` (`tenant_id` ASC, `name` ASC),
   CONSTRAINT `fk_sub_category_top_category_id` FOREIGN KEY (`top_category_id`) references `top_category`(`id`)
 );
+GO
 
 -- Generate tables config for saashard
 /*

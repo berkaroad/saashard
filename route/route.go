@@ -32,7 +32,7 @@ import (
 	"github.com/berkaroad/saashard/net/mysql"
 	"github.com/berkaroad/saashard/sqlparser"
 	"github.com/berkaroad/saashard/statistic"
-	"github.com/berkaroad/saashard/utils/golog"
+	"github.com/berkaroad/saashard/utils/simplelog"
 )
 
 // Route info
@@ -97,7 +97,8 @@ func (plan *normalPlan) Execute(executor func(statements []sqlparser.Statement, 
 		if logSQLEnabled &&
 			execTime > float64(slowLogTime) {
 			counter.IncrSlowLogTotal()
-			golog.OutputSql(state, "%.1fms - %s->%s(%s):OnSlave=%v:%s",
+			simplelog.Verbose("%s %.1fms - %s->%s(%s):OnSlave=%v:%s",
+				state,
 				execTime,
 				clientAddr,
 				strings.Join(plan.nodeNames, ","),
@@ -131,7 +132,8 @@ func (plan *normalPlan) ExecuteWithStmtPrepare(executor func(statements []sqlpar
 		if logSQLEnabled &&
 			execTime > float64(slowLogTime) {
 			counter.IncrSlowLogTotal()
-			golog.OutputSql(state, "%.1fms - %s->%s:OnSlave=%v:%s",
+			simplelog.Verbose("%s %.1fms - %s->%s:OnSlave=%v:%s",
+				state,
 				execTime,
 				clientAddr,
 				strings.Join(plan.nodeNames, ","),
@@ -189,7 +191,8 @@ func (plan *mergedPlan) Execute(executor func(statements []sqlparser.Statement, 
 		if logSQLEnabled &&
 			execTime > float64(slowLogTime) {
 			counter.IncrSlowLogTotal()
-			golog.OutputSql(state, "%.1fms - %s->%s(%s):OnSlave=%v:%s",
+			simplelog.Verbose("%s %.1fms - %s->%s(%s):OnSlave=%v:%s",
+				state,
 				execTime,
 				clientAddr,
 				strings.Join(plan.nodeNames, ","),
@@ -222,7 +225,8 @@ func (plan *mergedPlan) ExecuteWithStmtPrepare(executor func(statements []sqlpar
 		if logSQLEnabled &&
 			execTime > float64(slowLogTime) {
 			counter.IncrSlowLogTotal()
-			golog.OutputSql(state, "%.1fms - %s->%s:OnSlave=%v:%s",
+			simplelog.Verbose("%s %.1fms - %s->%s:OnSlave=%v:%s",
+				state,
 				execTime,
 				clientAddr,
 				strings.Join(plan.nodeNames, ","),

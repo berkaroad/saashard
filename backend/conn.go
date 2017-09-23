@@ -30,7 +30,7 @@ import (
 	"time"
 
 	"github.com/berkaroad/saashard/errors"
-	"github.com/berkaroad/saashard/utils/golog"
+	"github.com/berkaroad/saashard/utils/simplelog"
 )
 
 // CreateConnection create connection function, this is default value, must replace it.
@@ -76,6 +76,9 @@ type Connection interface {
 
 	// GetAddr Get addr info
 	GetAddr() string
+
+	// IsClosed check connection status
+	IsClosed() bool
 }
 
 // nilConnection default connection.
@@ -123,6 +126,9 @@ func (c *nilConnection) SetAutoCommit(autocommit bool) error { return nil }
 
 // GetAddr Get addr info
 func (c *nilConnection) GetAddr() string { return "127.0.0.1:6051" }
+
+// IsClosed check connection status
+func (c *nilConnection) IsClosed() bool { return true }
 
 // ConnectionPool to manage connection pool.
 type ConnectionPool struct {
@@ -221,24 +227,18 @@ func (p *ConnectionPool) logConnIdleInfo() {
 	idleCount := p.GetIdleCount()
 	// idleCount is zero, or less or equal then 20%, then warn
 	if idleCount*100/p.MaxPoolSize <= 20 {
-		golog.Warn("backend", "NewConnectionPool", "Idle count is less or equal then 20 pecent", 0,
-			"DBHost",
+		simplelog.Warn("%s %s %s DBHost=%s,used=%d,cached=%d,idle=%d",
+			"backend", "NewConnectionPool", "Idle count is less or equal then 20 pecent",
 			p.dbHost.Addr,
-			"used",
 			p.used,
-			"cached",
 			p.connections.Len(),
-			"idle",
 			idleCount)
 	} else {
-		golog.Info("backend", "NewConnectionPool", "Idle info", 0,
-			"DBHost",
+		simplelog.Info("%s %s %s DBHost=%s,used=%d,cached=%d,idle=%d",
+			"backend", "NewConnectionPool", "Idle info",
 			p.dbHost.Addr,
-			"used",
 			p.used,
-			"cached",
 			p.connections.Len(),
-			"idle",
 			idleCount)
 	}
 }
