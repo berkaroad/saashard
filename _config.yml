@@ -1,0 +1,8 @@
+title: SaaShard
+description: 根据具体业务数据的划分，实现MySQL下db级别的数据分片拆分。思路来源mycat和kingshard。
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-slate
+
+gems:
+  - jekyll-mentions
